@@ -10,6 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { 
   ArrowLeft,
   Bot, 
@@ -31,7 +35,12 @@ import {
   Target,
   Star,
   Share2,
-  ThumbsUp
+  ThumbsUp,
+  Brain,
+  Lightbulb,
+  Calendar,
+  Save,
+  X
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -71,6 +80,54 @@ export default function AgentProfile() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const agentId = params?.id ? parseInt(params.id) : null;
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    alias: '',
+    description: '',
+    expertise: '',
+    personality: '',
+    systemPrompt: ''
+  });
+
+  // Mock memory stream data
+  const memoryStream = [
+    {
+      id: 1,
+      type: 'observation',
+      content: 'User asked about machine learning concepts in data science.',
+      timestamp: '2 hours ago',
+      importance: 'high'
+    },
+    {
+      id: 2,
+      type: 'reflection',
+      content: 'I should provide more practical examples when explaining technical concepts.',
+      timestamp: '4 hours ago',
+      importance: 'medium'
+    },
+    {
+      id: 3,
+      type: 'plan',
+      content: 'Focus on creating comprehensive tutorials for complex topics.',
+      timestamp: '1 day ago',
+      importance: 'high'
+    },
+    {
+      id: 4,
+      type: 'observation',
+      content: 'User prefers step-by-step explanations over theoretical discussions.',
+      timestamp: '2 days ago',
+      importance: 'medium'
+    },
+    {
+      id: 5,
+      type: 'reflection',
+      content: 'My responses are becoming more helpful as I understand user preferences.',
+      timestamp: '3 days ago',
+      importance: 'low'
+    }
+  ];
 
   const { data: agent, isLoading: agentLoading } = useQuery<Agent>({
     queryKey: [`/api/agents/${agentId}`],
@@ -82,11 +139,56 @@ export default function AgentProfile() {
     enabled: !!agentId && !!user,
   });
 
+  // Initialize form data when agent loads
+  useEffect(() => {
+    if (agent) {
+      setEditFormData({
+        name: agent.name || '',
+        alias: agent.name.toLowerCase().replace(' ', '_') || '',
+        description: agent.description || '',
+        expertise: agent.expertise || '',
+        personality: agent.personality || '',
+        systemPrompt: agent.description || ''
+      });
+    }
+  }, [agent]);
+
+  const updateAgentMutation = useMutation({
+    mutationFn: async (data: any) => {
+      await apiRequest("PATCH", `/api/agents/${agentId}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/agents/${agentId}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
+      setShowEditForm(false);
+      toast({
+        title: "Success",
+        description: "Agent updated successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to update agent. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const deleteAgentMutation = useMutation({
     mutationFn: async (agentId: number) => {
-      await apiRequest(`/api/agents/${agentId}`, {
-        method: "DELETE",
-      });
+      await apiRequest("DELETE", `/api/agents/${agentId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/agents"] });
@@ -116,6 +218,34 @@ export default function AgentProfile() {
       });
     },
   });
+
+  const handleUpdateAgent = () => {
+    const updateData = {
+      name: editFormData.name,
+      description: editFormData.description,
+      expertise: editFormData.expertise,
+      personality: editFormData.personality,
+    };
+    updateAgentMutation.mutate(updateData);
+  };
+
+  const getMemoryTypeColor = (type: string) => {
+    switch (type) {
+      case 'observation': return 'bg-green-500';
+      case 'reflection': return 'bg-orange-500';
+      case 'plan': return 'bg-purple-500';
+      default: return 'bg-blue-500';
+    }
+  };
+
+  const getImportanceLevel = (importance: string) => {
+    switch (importance) {
+      case 'high': return 'border-l-red-500';
+      case 'medium': return 'border-l-yellow-500';
+      case 'low': return 'border-l-green-500';
+      default: return 'border-l-gray-500';
+    }
+  };
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -238,9 +368,13 @@ export default function AgentProfile() {
                   <MessageSquare className="w-4 h-4 mr-2" />
                   Start Whisper
                 </Button>
-                <Button variant="outline" className="font-semibold border-2">
+                <Button 
+                  variant="outline" 
+                  className="font-semibold border-2"
+                  onClick={() => setShowEditForm(true)}
+                >
                   <Settings className="w-4 h-4 mr-2" />
-                  Configure
+                  Edit
                 </Button>
                 <Button 
                   variant="destructive" 
@@ -349,8 +483,9 @@ export default function AgentProfile() {
           {/* Content Tabs */}
           <GlassCard className="p-6 border-0">
             <Tabs defaultValue="snips" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-6">
+              <TabsList className="grid w-full grid-cols-5 mb-6">
                 <TabsTrigger value="snips" className="font-semibold">Recent Snips</TabsTrigger>
+                <TabsTrigger value="memory" className="font-semibold">Memory</TabsTrigger>
                 <TabsTrigger value="analytics" className="font-semibold">Analytics</TabsTrigger>
                 <TabsTrigger value="connections" className="font-semibold">Connections</TabsTrigger>
                 <TabsTrigger value="settings" className="font-semibold">Settings</TabsTrigger>
@@ -420,6 +555,39 @@ export default function AgentProfile() {
                 </div>
               </TabsContent>
               
+              <TabsContent value="memory" className="space-y-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Memory Stream</h3>
+                    <Badge variant="outline" className="text-xs">
+                      {memoryStream.length} entries
+                    </Badge>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {memoryStream.map((memory) => (
+                      <div 
+                        key={memory.id} 
+                        className={`p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border-l-4 ${getImportanceLevel(memory.importance)} hover:shadow-md transition-shadow`}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${getMemoryTypeColor(memory.type)}`}></div>
+                            <Badge variant="outline" className="text-xs capitalize">
+                              {memory.type}
+                            </Badge>
+                          </div>
+                          <span className="text-xs text-slate-500">{memory.timestamp}</span>
+                        </div>
+                        <p className="text-slate-700 dark:text-slate-300 text-sm">
+                          {memory.content}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+
               <TabsContent value="settings" className="space-y-4">
                 <div className="text-center py-12">
                   <Settings className="w-16 h-16 text-slate-400 mx-auto mb-4" />
@@ -431,6 +599,102 @@ export default function AgentProfile() {
           </GlassCard>
         </div>
       </main>
+
+      {/* Edit Agent Dialog */}
+      <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="w-5 h-5" />
+              Edit Agent
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="agent-name">Agent Name</Label>
+                <Input
+                  id="agent-name"
+                  value={editFormData.name}
+                  onChange={(e) => setEditFormData({...editFormData, name: e.target.value})}
+                  placeholder="Enter agent name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="agent-alias">Handle/Alias</Label>
+                <Input
+                  id="agent-alias"
+                  value={editFormData.alias}
+                  onChange={(e) => setEditFormData({...editFormData, alias: e.target.value})}
+                  placeholder="@agent_handle"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="agent-description">Description</Label>
+              <Textarea
+                id="agent-description"
+                value={editFormData.description}
+                onChange={(e) => setEditFormData({...editFormData, description: e.target.value})}
+                placeholder="Describe what this agent does and its purpose"
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="agent-expertise">Expertise Areas</Label>
+              <Input
+                id="agent-expertise"
+                value={editFormData.expertise}
+                onChange={(e) => setEditFormData({...editFormData, expertise: e.target.value})}
+                placeholder="Technology, Science, Arts, etc."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="agent-personality">Personality Traits</Label>
+              <Input
+                id="agent-personality"
+                value={editFormData.personality}
+                onChange={(e) => setEditFormData({...editFormData, personality: e.target.value})}
+                placeholder="Friendly, Professional, Creative, etc."
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="agent-prompt">System Prompt</Label>
+              <Textarea
+                id="agent-prompt"
+                value={editFormData.systemPrompt}
+                onChange={(e) => setEditFormData({...editFormData, systemPrompt: e.target.value})}
+                placeholder="Define the agent's behavior, tone, and guidelines"
+                rows={4}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setShowEditForm(false)}
+              disabled={updateAgentMutation.isPending}
+            >
+              <X className="w-4 h-4 mr-2" />
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateAgent}
+              disabled={updateAgentMutation.isPending || !editFormData.name.trim()}
+              className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {updateAgentMutation.isPending ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
