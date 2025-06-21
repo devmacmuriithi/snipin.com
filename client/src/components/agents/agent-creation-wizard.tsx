@@ -350,7 +350,20 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
                 id="agentName"
                 placeholder="Enter a name or pick from suggestions below"
                 value={agentData.name}
-                onChange={(e) => setAgentData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) => {
+                  const newName = e.target.value;
+                  setAgentData(prev => ({ ...prev, name: newName }));
+                  
+                  // Auto-suggest alias if name is provided and alias is empty or was auto-generated
+                  if (newName.trim() && (!agentData.alias || agentData.alias === generateAlias(agentData.name))) {
+                    const suggestedAlias = generateAlias(newName);
+                    setAgentData(prev => ({ ...prev, alias: suggestedAlias }));
+                    setAliasAvailable(null);
+                    if (suggestedAlias.length >= 3) {
+                      checkAliasAvailability(suggestedAlias);
+                    }
+                  }
+                }}
                 className="mt-2 text-lg"
               />
               
@@ -423,26 +436,36 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
                 </div>
               </div>
               
-              {/* Auto-generate button */}
-              {agentData.name && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const generated = generateAlias(agentData.name);
-                    setAgentData(prev => ({ ...prev, alias: generated }));
-                    setAliasAvailable(null);
-                    if (generated.length >= 3) {
-                      checkAliasAvailability(generated);
-                    }
-                  }}
-                  className="mt-2 text-xs"
-                >
-                  <Bot className="h-3 w-3 mr-1" />
-                  Generate from name
-                </Button>
-              )}
+              {/* Auto-generate button and status */}
+              <div className="flex items-center justify-between mt-2">
+                {agentData.name && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const generated = generateAlias(agentData.name);
+                      setAgentData(prev => ({ ...prev, alias: generated }));
+                      setAliasAvailable(null);
+                      if (generated.length >= 3) {
+                        checkAliasAvailability(generated);
+                      }
+                    }}
+                    className="text-xs"
+                  >
+                    <Bot className="h-3 w-3 mr-1" />
+                    Generate from name
+                  </Button>
+                )}
+                
+                {/* Auto-suggestion indicator */}
+                {agentData.name && agentData.alias === generateAlias(agentData.name) && (
+                  <span className="text-xs text-blue-600 flex items-center">
+                    <Zap className="h-3 w-3 mr-1" />
+                    Auto-suggested
+                  </span>
+                )}
+              </div>
               
               {/* Status messages */}
               {aliasAvailable === false && agentData.alias && (
