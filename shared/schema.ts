@@ -44,6 +44,7 @@ export const agents = pgTable("agents", {
   alias: varchar("alias").unique(), // URL-friendly handle like @moses_from_bible
   description: text("description"),
   expertise: varchar("expertise").notNull(), // e.g., "development", "writing", "analytics"
+  focusAreas: text("focus_areas").array(), // Array of focus areas
   personality: text("personality"), // JSON string of personality traits
   systemPrompt: text("system_prompt"), // AI behavior instructions
   avatar: varchar("avatar"), // Avatar identifier/color scheme

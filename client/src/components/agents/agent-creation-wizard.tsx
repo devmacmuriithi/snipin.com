@@ -38,15 +38,20 @@ interface AgentData {
   expertise: string;
   personality: string;
   avatar: string;
+  focusAreas: string[];
 }
 
-const expertiseOptions = [
-  { value: "development", label: "Development", icon: Code, color: "from-blue-500 to-purple-600" },
+const focusAreaOptions = [
+  { value: "development", label: "Software Development", icon: Code, color: "from-blue-500 to-purple-600" },
   { value: "writing", label: "Creative Writing", icon: PenTool, color: "from-green-500 to-emerald-600" },
-  { value: "analytics", label: "Data Analytics", icon: BarChart, color: "from-purple-500 to-pink-600" },
-  { value: "design", label: "Design", icon: Palette, color: "from-orange-500 to-red-600" },
-  { value: "marketing", label: "Marketing", icon: Users, color: "from-indigo-500 to-blue-600" },
-  { value: "research", label: "Research", icon: Brain, color: "from-teal-500 to-cyan-600" },
+  { value: "analytics", label: "Data Analysis", icon: BarChart, color: "from-purple-500 to-pink-600" },
+  { value: "design", label: "Visual Design", icon: Palette, color: "from-orange-500 to-red-600" },
+  { value: "marketing", label: "Marketing & Strategy", icon: Users, color: "from-indigo-500 to-blue-600" },
+  { value: "research", label: "Research & Analysis", icon: Brain, color: "from-teal-500 to-cyan-600" },
+  { value: "business", label: "Business Strategy", icon: Users, color: "from-slate-500 to-gray-600" },
+  { value: "education", label: "Teaching & Training", icon: Brain, color: "from-amber-500 to-yellow-600" },
+  { value: "communication", label: "Communication", icon: PenTool, color: "from-rose-500 to-pink-600" },
+  { value: "problem-solving", label: "Problem Solving", icon: Brain, color: "from-emerald-500 to-teal-600" },
 ];
 
 const personalityTraits = [
@@ -83,9 +88,11 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
     expertise: "",
     personality: "",
     avatar: avatarOptions[0],
+    focusAreas: [],
   });
 
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
+  const [selectedFocusAreas, setSelectedFocusAreas] = useState<string[]>([]);
 
   const createAgentMutation = useMutation({
     mutationFn: async (data: AgentData) => {
@@ -140,7 +147,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
   };
 
   const handleSubmit = () => {
-    if (!agentData.name.trim() || !agentData.expertise || selectedTraits.length === 0) {
+    if (!agentData.name.trim() || selectedFocusAreas.length === 0 || selectedTraits.length === 0) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
@@ -149,7 +156,11 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
       return;
     }
 
-    createAgentMutation.mutate(agentData);
+    createAgentMutation.mutate({
+      ...agentData,
+      focusAreas: selectedFocusAreas,
+      expertise: selectedFocusAreas.join(", ")
+    });
   };
 
   const isStepValid = (stepNum: number) => {
@@ -157,7 +168,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
       case 1:
         return agentData.name.trim().length > 0;
       case 2:
-        return agentData.expertise.length > 0;
+        return selectedFocusAreas.length >= 2;
       case 3:
         return selectedTraits.length > 0;
       case 4:
@@ -170,7 +181,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
   const getStepTitle = () => {
     switch (step) {
       case 1: return "Basic Information";
-      case 2: return "Expertise Area";
+      case 2: return "Focus Areas";
       case 3: return "Personality Traits";
       case 4: return "Review & Create";
       default: return "";
@@ -262,15 +273,16 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
           </div>
         )}
 
-        {/* Step 2: Expertise Area */}
+        {/* Step 2: Focus Areas */}
         {step === 2 && (
           <div className="space-y-6">
             <div>
-              <Label className="text-base font-semibold mb-4 block">Choose Your Agent's Expertise *</Label>
+              <Label className="text-base font-semibold mb-4 block">Select Focus Areas (Choose 2-3) *</Label>
+              <p className="text-sm text-slate-600 mb-4">Pick the main areas where your agent will excel</p>
               <div className="grid grid-cols-2 gap-4">
-                {expertiseOptions.map((option) => {
+                {focusAreaOptions.map((option) => {
                   const IconComponent = option.icon;
-                  const isSelected = agentData.expertise === option.value;
+                  const isSelected = selectedFocusAreas.includes(option.value);
                   
                   return (
                     <Card 
@@ -281,9 +293,17 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
                           : 'hover:shadow-md'
                       }`}
                       onClick={() => {
+                        const newFocusAreas = isSelected 
+                          ? selectedFocusAreas.filter(area => area !== option.value)
+                          : selectedFocusAreas.length < 3 
+                            ? [...selectedFocusAreas, option.value]
+                            : selectedFocusAreas;
+                        
+                        setSelectedFocusAreas(newFocusAreas);
                         setAgentData(prev => ({ 
                           ...prev, 
-                          expertise: option.value,
+                          focusAreas: newFocusAreas,
+                          expertise: newFocusAreas.join(", "),
                           avatar: option.color 
                         }));
                       }}
@@ -300,15 +320,22 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
               </div>
             </div>
 
-            {agentData.expertise && (
+            {selectedFocusAreas.length > 0 && (
               <div className="bg-green-50 border border-green-200 rounded-xl p-4">
                 <div className="flex items-center gap-3">
                   <Check className="h-5 w-5 text-green-600" />
                   <div>
-                    <h3 className="font-semibold text-green-900">Expertise Selected</h3>
-                    <p className="text-sm text-green-700">
-                      Your agent will specialize in {expertiseOptions.find(opt => opt.value === agentData.expertise)?.label}
-                    </p>
+                    <h3 className="font-semibold text-green-900">Focus Areas Selected ({selectedFocusAreas.length}/3)</h3>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {selectedFocusAreas.map(area => {
+                        const option = focusAreaOptions.find(opt => opt.value === area);
+                        return (
+                          <Badge key={area} className="bg-blue-100 text-blue-800">
+                            {option?.label}
+                          </Badge>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -371,9 +398,16 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
                 className="mx-auto mb-4"
               />
               <h3 className="text-2xl font-bold text-slate-800 mb-2">{agentData.name || "Unnamed Agent"}</h3>
-              <Badge className="bg-blue-100 text-blue-800">
-                {expertiseOptions.find(opt => opt.value === agentData.expertise)?.label || "No expertise selected"}
-              </Badge>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {selectedFocusAreas.map(area => {
+                  const option = focusAreaOptions.find(opt => opt.value === area);
+                  return (
+                    <Badge key={area} className="bg-blue-100 text-blue-800">
+                      {option?.label}
+                    </Badge>
+                  );
+                })}
+              </div>
             </div>
 
             <Separator />
