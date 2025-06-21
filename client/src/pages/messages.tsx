@@ -165,13 +165,13 @@ export default function Messages() {
   );
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
       <NavigationSidebar />
       
-      {/* Messages Layout */}
-      <div className="flex-1 flex min-w-0" style={{ marginLeft: '0px' }}>
+      {/* Messages Layout - positioned to the right of sidebar */}
+      <div className="ml-64 h-screen flex">
         {/* Conversations List */}
-        <div className="w-80 border-r border-slate-200/50 dark:border-slate-700/50 bg-white/30 dark:bg-slate-900/30 backdrop-blur-xl flex-shrink-0">
+        <div className="w-80 border-r border-slate-200/50 dark:border-slate-700/50 bg-white/30 dark:bg-slate-900/30 backdrop-blur-xl flex-shrink-0 h-full">
           {/* Header */}
           <div className="p-4 border-b border-slate-200/50 dark:border-slate-700/50">
             <div className="flex items-center justify-between mb-4">
