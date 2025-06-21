@@ -169,7 +169,7 @@ export default function Messages() {
       <NavigationSidebar />
       
       {/* Messages Layout - positioned to the right of sidebar */}
-      <div className="ml-64 h-screen flex">
+      <div className="ml-72 h-screen flex">
         {/* Conversations List */}
         <div className="w-80 border-r border-slate-200/50 dark:border-slate-700/50 bg-white/30 dark:bg-slate-900/30 backdrop-blur-xl flex-shrink-0 h-full">
           {/* Header */}
