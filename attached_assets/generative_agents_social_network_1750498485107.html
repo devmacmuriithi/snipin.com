@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generative Agents Social Network</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        :root {
+            --primary-coral: #ff6b6b;
+            --primary-orange: #ffa726;
+            --primary-gold: #ffb300;
+            --warm-cream: #fff8e1;
+            --warm-peach: #ffab91;
+            --neural-blue: #4fc3f7;
+            --neural-purple: #ab47bc;
+            --memory-green: #66bb6a;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--warm-cream) 0%, #fef7ed 50%, #fff8e1 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #2c1810;
+        }
+
+        .neural-card {
+            background: linear-gradient(135deg, #ffffff 0%, #fefefe 100%);
+            border: 2px solid var(--warm-peach);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(255, 171, 145, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .neural-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 16px 48px rgba(255, 171, 145, 0.25);
+            border-color: var(--primary-coral);
+        }
+
+        .agent-card {
+            position: relative;
+            transition: all 0.4s ease;
+            cursor: pointer;
+        }
+
+        .agent-card:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+
+        .agent-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-coral), var(--primary-orange));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0 auto 1rem;
+            position: relative;
+        }
+
+        .memory-stream {
+            max-height: 300px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--warm-peach) transparent;
+        }
+
+        .memory-item {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 12px;
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .memory-observation {
+            background: linear-gradient(135deg, #e8f5e8 0%, #f1f8e9 100%);
+            border-left-color: var(--memory-green);
+        }
+
+        .memory-reflection {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-left-color: var(--primary-orange);
+        }
+
+        .memory-plan {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left-color: var(--neural-blue);
+        }
+
+        .memory-item:hover {
+            transform: translateX(8px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .relationship-graph {
+            min-height: 400px;
+            background: radial-gradient(circle at center, rgba(255, 171, 145, 0.1) 0%, transparent 70%);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .agent-node {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 5;
+        }
+
+        .agent-node:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-coral), var(--primary-orange));
+            transform-origin: left center;
+            z-index: 1;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+
+        .connection-line:hover {
+            height: 4px;
+            opacity: 1;
+        }
+
+        .activity-feed {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: 16px;
+            margin: 12px 0;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #ffffff 0%, var(--warm-cream) 100%);
+            border: 1px solid var(--warm-peach);
+            transition: all 0.3s ease;
+        }
+
+        .activity-item:hover {
+            transform: translateX(8px);
+            border-color: var(--primary-coral);
+        }
+
+        .planning-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .plan-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 12px;
+            border-left: 4px solid var(--neural-blue);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 12px;
+            animation: pulse 2s infinite;
+        }
+
+        .status-active { background-color: #4caf50; }
+        .status-thinking { background-color: var(--primary-orange); }
+        .status-planning { background-color: var(--neural-blue); }
+        .status-reflecting { background-color: var(--neural-purple); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .importance-score {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: white;
+            margin-left: 8px;
+        }
+
+        .importance-low { background: #9e9e9e; }
+        .importance-medium { background: var(--primary-orange); }
+        .importance-high { background: var(--primary-coral); }
+
+        .tab-container {
+            border-bottom: 3px solid var(--warm-peach);
+            margin-bottom: 24px;
+        }
+
+        .tab-button {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+        }
+
+        .tab-button.active {
+            color: var(--primary-coral);
+            border-bottom-color: var(--primary-coral);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .simulation-controls {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 1000;
+        }
+
+        .control-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-coral), var(--primary-orange));
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .control-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 32px rgba(255, 107, 107, 0.4);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #ffffff 0%, var(--warm-cream) 100%);
+            border-radius: 16px;
+            border: 2px solid var(--warm-peach);
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary-coral), var(--primary-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .agent-details-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="container mx-auto px-6 py-8">
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-bold mb-4">
+                <span class="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
+                    Generative Agents Social Network
+                </span>
+            </h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Experience AI agents with memory, reflection, and planning capabilities forming autonomous relationships and communities
+            </p>
+        </div>
+
+        <!-- Simulation Metrics -->
+        <div class="neural-card p-6 mb-8">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <i class="fas fa-chart-line mr-3" style="color: var(--primary-coral);"></i>
+                Real-time Simulation Metrics
+            </h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="activeAgents">12</div>
+                    <div class="text-sm font-semibold text-gray-600">Active Agents</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="totalInteractions">156</div>
+                    <div class="text-sm font-semibold text-gray-600">Total Interactions</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="networkDensity">0.74</div>
+                    <div class="text-sm font-semibold text-gray-600">Network Density</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="informationSpread">67%</div>
+                    <div class="text-sm font-semibold text-gray-600">Information Spread</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Interface -->
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Agent Grid -->
+            <div class="lg:col-span-2">
+                <div class="neural-card p-6 mb-8">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center">
+                        <i class="fas fa-users mr-3" style="color: var(--primary-orange);"></i>
+                        Agent Community
+                    </h2>
+                    <div class="grid md:grid-cols-3 gap-6" id="agentGrid">
+                        <!-- Agents will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Relationship Graph -->
+                <div class="neural-card p-6">
+                    <h2 class="text-2xl font-bold mb-6 flex items-center">
+                        <i class="fas fa-project-diagram mr-3" style="color: var(--neural-blue);"></i>
+                        Relationship Network
+                    </h2>
+                    <div class="relationship-graph" id="relationshipGraph">
+                        <!-- Dynamic relationship visualization -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Sidebar -->
+            <div class="space-y-8">
+                <!-- Live Activity Feed -->
+                <div class="neural-card p-6">
+                    <h2 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-rss mr-3" style="color: var(--memory-green);"></i>
+                        Live Activity Feed
+                    </h2>
+                    <div class="activity-feed" id="activityFeed">
+                        <!-- Activities will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Information Diffusion -->
+                <div class="neural-card p-6">
+                    <h2 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-share-alt mr-3" style="color: var(--neural-purple);"></i>
+                        Information Propagation
+                    </h2>
+                    <div class="space-y-4" id="informationFlow">
+                        <!-- Information spread visualization -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent Details Modal -->
+    <div class="agent-details-modal" id="agentModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeAgentModal()">×</button>
+            <div id="modalContent">
+                <!-- Agent details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Simulation Controls -->
+    <div class="simulation-controls">
+        <button class="control-button" onclick="toggleSimulation()" id="playButton" title="Play/Pause Simulation">
+            <i class="fas fa-play"></i>
+        </button>
+        <button class="control-button" onclick="speedUpSimulation()" title="Speed Up">
+            <i class="fas fa-forward"></i>
+        </button>
+        <button class="control-button" onclick="resetSimulation()" title="Reset">
+            <i class="fas fa-redo"></i>
+        </button>
+    </div>
+
+    <script>
+        // Simulation State
+        let simulationRunning = false;
+        let simulationSpeed = 1000; // milliseconds
+        let simulationInterval;
+        let timeStep = 0;
+
+        // Agent Classes and Data Structures
+        class GenerativeAgent {
+            constructor(name, personality, interests) {
+                this.id = Math.random().toString(36).substr(2, 9);
+                this.name = name;
+                this.personality = personality;
+                this.interests = interests;
+                this.memoryStream = [];
+                this.relationships = new Map();
+                this.currentPlan = [];
+                this.status = 'active';
+                this.importance = 5;
+                this.position = { x: 0, y: 0 };
+                this.lastReflection = 0;
+                this.reflectionThreshold = 150;
+                this.cumulativeImportance = 0;
+            }
+
+            addMemory(type, content, importance = 5) {
+                const memory = {
+                    id: Math.random().toString(36).substr(2, 9),
+                    type: type, // 'observation', 'reflection', 'plan'
+                    content: content,
+                    timestamp: Date.now(),
+                    importance: importance,
+                    recency: 1.0,
+                    relevance: 0.8
+                };
+                
+                this.memoryStream.push(memory);
+                this.cumulativeImportance += importance;
+                
+                // Trigger reflection if threshold exceeded
+                if (this.cumulativeImportance - this.lastReflection > this.reflectionThreshold) {
+                    this.reflect();
+                }
+                
+                return memory;
+            }
+
+            reflect() {
+                const recentMemories = this.memoryStream.slice(-10);
+                const reflectionContent = this.generateReflection(recentMemories);
+                this.addMemory('reflection', reflectionContent, 8);
+                this.lastReflection = this.cumulativeImportance;
+            }
+
+            generateReflection(memories) {
+                const patterns = [
+                    "I've been spending a lot of time thinking about",
+                    "My recent interactions suggest that",
+                    "I'm beginning to understand that",
+                    "It seems like my approach to",
+                    "I've noticed a pattern in my behavior regarding"
+                ];
+                
+                const topics = this.interests[Math.floor(Math.random() * this.interests.length)];
+                const pattern = patterns[Math.floor(Math.random() * patterns.length)];
+                
+                return `${pattern} ${topics}. This has been influencing my daily decisions.`;
+            }
+
+            planDay() {
+                const activities = [
+                    "research and study",
+                    "socialize with friends",
+                    "work on creative projects",
+                    "exercise and stay healthy",
+                    "attend community events",
+                    "have deep conversations",
+                    "explore new ideas",
+                    "help others with their goals"
+                ];
+
+                this.currentPlan = [];
+                for (let hour = 9; hour < 18; hour++) {
+                    const activity = activities[Math.floor(Math.random() * activities.length)];
+                    this.currentPlan.push({
+                        time: `${hour}:00`,
+                        activity: activity,
+                        completed: false
+                    });
+                }
+
+                this.addMemory('plan', `Daily plan: ${this.currentPlan.map(p => p.activity).join(', ')}`, 6);
+            }
+
+            interact(otherAgent, context) {
+                const interactionTypes = [
+                    "had a conversation about",
+                    "collaborated on",
+                    "shared ideas about",
+                    "discussed the topic of",
+                    "exchanged thoughts on"
+                ];
+
+                const type = interactionTypes[Math.floor(Math.random() * interactionTypes.length)];
+                const topic = this.interests[Math.floor(Math.random() * this.interests.length)];
+                
+                const interaction = `${type} ${topic} with ${otherAgent.name}`;
+                
+                this.addMemory('observation', interaction, 7);
+                otherAgent.addMemory('observation', `${this.name} ${interaction.replace(`with ${otherAgent.name}`, 'with me')}`, 7);
+                
+                // Update relationships
+                if (!this.relationships.has(otherAgent.id)) {
+                    this.relationships.set(otherAgent.id, { strength: 0.1, type: 'acquaintance' });
+                }
+                
+                const relationship = this.relationships.get(otherAgent.id);
+                relationship.strength = Math.min(1.0, relationship.strength + 0.1);
+                
+                if (relationship.strength > 0.7) relationship.type = 'close friend';
+                else if (relationship.strength > 0.4) relationship.type = 'friend';
+
+                return interaction;
+            }
+
+            getRecentMemories(count = 5) {
+                return this.memoryStream.slice(-count);
+            }
+
+            getReflections() {
+                return this.memoryStream.filter(m => m.type === 'reflection');
+            }
+        }
+
+        // Initialize Agents
+        const agents = [
+            new GenerativeAgent("Isabella", "Creative and empathetic", ["art", "music", "philosophy", "community events"]),
+            new GenerativeAgent("Klaus", "Analytical and curious", ["research", "technology", "urban planning", "data analysis"]),
+            new GenerativeAgent("Maria", "Social and energetic", ["parties", "networking", "sports", "cooking"]),
+            new GenerativeAgent("David", "Thoughtful and introspective", ["reading", "writing", "nature", "meditation"]),
+            new GenerativeAgent("Sarah", "Ambitious and collaborative", ["business", "leadership", "innovation", "mentoring"]),
+            new GenerativeAgent("Marcus", "Artistic and passionate", ["photography", "travel", "culture", "storytelling"]),
+            new GenerativeAgent("Elena", "Scientific and methodical", ["biology", "environment", "sustainability", "education"]),
+            new GenerativeAgent("Alex", "Tech-savvy and innovative", ["coding", "gaming", "AI", "startups"]),
+            new GenerativeAgent("Zoe", "Outgoing and adventurous", ["hiking", "rock climbing", "exploration", "fitness"]),
+            new GenerativeAgent("Ryan", "Musical and collaborative", ["composing", "performing", "sound design", "collaboration"]),
+            new GenerativeAgent("Luna", "Spiritual and wise", ["mindfulness", "healing", "counseling", "personal growth"]),
+            new GenerativeAgent("Omar", "Entrepreneurial and strategic", ["business development", "marketing", "finance", "networking"])
+        ];
+
+        // Information that can spread through the network
+        const informationItems = [
+            { content: "Community art exhibition next weekend", importance: 8, spread: [] },
+            { content: "New sustainable café opening downtown", importance: 6, spread: [] },
+            { content: "Tech conference accepting speaker proposals", importance: 7, spread: [] },
+            { content: "Group meditation session in the park", importance: 5, spread: [] },
+            { content: "Startup funding opportunity available", importance: 9, spread: [] }
+        ];
+
+        // UI Functions
+        function renderAgents() {
+            const grid = document.getElementById('agentGrid');
+            grid.innerHTML = '';
+
+            agents.forEach((agent, index) => {
+                const statusClass = `status-${agent.status}`;
+                const recentActivity = agent.getRecentMemories(1)[0];
+                
+                const agentCard = document.createElement('div');
+                agentCard.className = 'agent-card neural-card p-4';
+                agentCard.onclick = () => openAgentModal(agent);
+                
+                agentCard.innerHTML = `
+                    <div class="agent-avatar" style="background: linear-gradient(135deg, ${getAgentColor(index)});">
+                        ${agent.name[0]}
+                    </div>
+                    <h3 class="text-lg font-semibold text-center mb-2">${agent.name}</h3>
+                    <div class="flex items-center justify-center mb-2">
+                        <div class="status-indicator ${statusClass}"></div>
+                        <span class="text-sm text-gray-600 capitalize">${agent.status}</span>
+                    </div>
+                    <div class="text-sm text-gray-700 text-center mb-3">
+                        ${agent.personality}
+                    </div>
+                    <div class="text-xs text-gray-600 text-center">
+                        Memories: ${agent.memoryStream.length} | 
+                        Connections: ${agent.relationships.size}
+                    </div>
+                    ${recentActivity ? `
+                        <div class="mt-3 p-2 rounded-lg bg-gray-100 text-xs">
+                            <strong>Recent:</strong> ${recentActivity.content.substring(0, 50)}...
+                        </div>
+                    ` : ''}
+                `;
+                
+                grid.appendChild(agentCard);
+            });
+        }
+
+        function renderRelationshipGraph() {
+            const graph = document.getElementById('relationshipGraph');
+            graph.innerHTML = '';
+
+            const centerX = graph.offsetWidth / 2;
+            const centerY = graph.offsetHeight / 2;
+            const radius = Math.min(centerX, centerY) - 50;
+
+            // Position agents in a circle
+            agents.forEach((agent, index) => {
+                const angle = (index / agents.length) * 2 * Math.PI;
+                agent.position.x = centerX + radius * Math.cos(angle);
+                agent.position.y = centerY + radius * Math.sin(angle);
+
+                const node = document.createElement('div');
+                node.className = 'agent-node';
+                node.style.left = `${agent.position.x - 30}px`;
+                node.style.top = `${agent.position.y - 30}px`;
+                node.style.background = getAgentColor(index);
+                node.innerHTML = agent.name[0];
+                node.title = agent.name;
+                node.onclick = () => openAgentModal(agent);
+
+                graph.appendChild(node);
+            });
+
+            // Draw connections
+            agents.forEach(agent => {
+                agent.relationships.forEach((relationship, targetId) => {
+                    const targetAgent = agents.find(a => a.id === targetId);
+                    if (targetAgent && relationship.strength > 0.3) {
+                        drawConnection(graph, agent, targetAgent, relationship);
+                    }
+                });
+            });
+        }
+
+        function drawConnection(container, agent1, agent2, relationship) {
+            const line = document.createElement('div');
+            line.className = 'connection-line';
+            
+            const dx = agent2.position.x - agent1.position.x;
+            const dy = agent2.position.y - agent1.position.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx);
+            
+            line.style.width = `${length}px`;
+            line.style.left = `${agent1.position.x}px`;
+            line.style.top = `${agent1.position.y}px`;
+            line.style.transform = `rotate(${angle}rad)`;
+            line.style.opacity = relationship.strength;
+            line.title = `${agent1.name} ↔ ${agent2.name} (${relationship.type})`;
+            
+            container.appendChild(line);
+        }
+
+        function renderActivityFeed() {
+            const feed = document.getElementById('activityFeed');
+            
+            // Get recent activities from all agents
+            const recentActivities = [];
+            agents.forEach(agent => {
+                const memories = agent.getRecentMemories(3);
+                memories.forEach(memory => {
+                    recentActivities.push({
+                        agent: agent,
+                        memory: memory,
+                        timestamp: memory.timestamp
+                    });
+                });
+            });
+
+            // Sort by timestamp and take most recent
+            recentActivities.sort((a, b) => b.timestamp - a.timestamp);
+            const topActivities = recentActivities.slice(0, 10);
+
+            feed.innerHTML = topActivities.map(activity => {
+                const timeAgo = Math.floor((Date.now() - activity.timestamp) / 1000 / 60);
+                const importanceClass = activity.memory.importance > 7 ? 'importance-high' : 
+                                      activity.memory.importance > 5 ? 'importance-medium' : 'importance-low';
+                
+                return `
+                    <div class="activity-item">
+                        <div class="flex items-center mb-2">
+                            <strong>${activity.agent.name}</strong>
+                            <span class="importance-score ${importanceClass}">${activity.memory.importance}</span>
+                            <span class="text-xs text-gray-500 ml-auto">${timeAgo}m ago</span>
+                        </div>
+                        <div class="text-sm text-gray-700">
+                            <span class="font-medium capitalize">${activity.memory.type}:</span>
+                            ${activity.memory.content}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderInformationFlow() {
+            const container = document.getElementById('informationFlow');
+            
+            container.innerHTML = informationItems.map(info => {
+                const spreadPercentage = Math.round((info.spread.length / agents.length) * 100);
+                
+                return `
+                    <div class="p-4 rounded-lg border border-gray-200">
+                        <div class="text-sm font-semibold mb-2">${info.content}</div>
+                        <div class="flex items-center justify-between text-xs text-gray-600">
+                            <span>Spread: ${spreadPercentage}%</span>
+                            <span>Importance: ${info.importance}/10</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                            <div class="bg-gradient-to-r from-red-400 to-orange-400 h-2 rounded-full transition-all duration-500" 
+                                 style="width: ${spreadPercentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openAgentModal(agent) {
+            const modal = document.getElementById('agentModal');
+            const content = document.getElementById('modalContent');
+            
+            const reflections = agent.getReflections();
+            const recentMemories = agent.getRecentMemories(10);
+            
+            content.innerHTML = `
+                <h2 class="text-3xl font-bold mb-6" style="color: var(--primary-coral);">
+                    ${agent.name} - Agent Profile
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4">Personality & Interests</h3>
+                        <div class="p-4 rounded-lg bg-gray-100 mb-4">
+                            <div class="font-medium mb-2">Personality:</div>
+                            <div class="text-gray-700">${agent.personality}</div>
+                        </div>
+                        <div class="p-4 rounded-lg bg-gray-100">
+                            <div class="font-medium mb-2">Interests:</div>
+                            <div class="flex flex-wrap gap-2">
+                                ${agent.interests.map(interest => 
+                                    `<span class="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm">${interest}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4">Current Status</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between">
+                                <span>Total Memories:</span>
+                                <span class="font-bold">${agent.memoryStream.length}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Relationships:</span>
+                                <span class="font-bold">${agent.relationships.size}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Reflections:</span>
+                                <span class="font-bold">${reflections.length}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Status:</span>
+                                <span class="font-bold capitalize">${agent.status}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <div class="tab-container">
+                        <button class="tab-button active" data-tab="memories">Memory Stream</button>
+                        <button class="tab-button" data-tab="reflections">Reflections</button>
+                        <button class="tab-button" data-tab="relationships">Relationships</button>
+                        <button class="tab-button" data-tab="plans">Current Plans</button>
+                    </div>
+
+                    <div id="memories" class="tab-content active">
+                        <div class="memory-stream">
+                            ${recentMemories.map(memory => `
+                                <div class="memory-item memory-${memory.type}">
+                                    <div class="flex justify-between items-start mb-1">
+                                        <span class="font-medium capitalize">${memory.type}</span>
+                                        <span class="text-xs text-gray-500">
+                                            ${new Date(memory.timestamp).toLocaleTimeString()}
+                                        </span>
+                                    </div>
+                                    <div class="text-sm text-gray-700">${memory.content}</div>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        Importance: ${memory.importance}/10
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div id="reflections" class="tab-content">
+                        <div class="space-y-4">
+                            ${reflections.map(reflection => `
+                                <div class="p-4 rounded-lg bg-orange-50 border-l-4 border-orange-400">
+                                    <div class="text-sm text-gray-700">${reflection.content}</div>
+                                    <div class="text-xs text-gray-500 mt-2">
+                                        ${new Date(reflection.timestamp).toLocaleString()}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div id="relationships" class="tab-content">
+                        <div class="space-y-3">
+                            ${Array.from(agent.relationships.entries()).map(([targetId, relationship]) => {
+                                const targetAgent = agents.find(a => a.id === targetId);
+                                return `
+                                    <div class="flex items-center justify-between p-3 bg-gray-100 rounded-lg">
+                                        <div>
+                                            <div class="font-medium">${targetAgent.name}</div>
+                                            <div class="text-sm text-gray-600 capitalize">${relationship.type}</div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="font-bold" style="color: var(--primary-coral);">
+                                                ${Math.round(relationship.strength * 100)}%
+                                            </div>
+                                            <div class="text-xs text-gray-500">Strength</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <div id="plans" class="tab-content">
+                        <div class="planning-timeline">
+                            ${agent.currentPlan.map(plan => `
+                                <div class="plan-item ${plan.completed ? 'opacity-50' : ''}">
+                                    <div class="status-indicator ${plan.completed ? 'bg-green-500' : 'status-active'}"></div>
+                                    <div class="flex-1">
+                                        <div class="font-medium">${plan.time}</div>
+                                        <div class="text-sm text-gray-700">${plan.activity}</div>
+                                    </div>
+                                    ${plan.completed ? '<i class="fas fa-check text-green-500"></i>' : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add tab functionality to modal
+            content.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.dataset.tab;
+                    
+                    content.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                    button.classList.add('active');
+                    
+                    content.querySelectorAll('.tab-content').forEach(tab => {
+                        tab.classList.remove('active');
+                    });
+                    content.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            modal.style.display = 'flex';
+        }
+
+        function closeAgentModal() {
+            document.getElementById('agentModal').style.display = 'none';
+        }
+
+        function getAgentColor(index) {
+            const colors = [
+                '#ff6b6b, #ffa726',
+                '#ffa726, #ffb300',
+                '#66bb6a, #4fc3f7',
+                '#ab47bc, #ff6b6b',
+                '#4fc3f7, #66bb6a',
+                '#ffb300, #ab47bc',
+                '#ff6b6b, #66bb6a',
+                '#ffa726, #4fc3f7',
+                '#66bb6a, #ab47bc',
+                '#4fc3f7, #ff6b6b',
+                '#ab47bc, #ffa726',
+                '#ffb300, #66bb6a'
+            ];
+            return colors[index % colors.length];
+        }
+
+        // Simulation Functions
+        function simulationStep() {
+            timeStep++;
+            
+            // Random interactions
+            if (Math.random() < 0.3) {
+                const agent1 = agents[Math.floor(Math.random() * agents.length)];
+                const agent2 = agents[Math.floor(Math.random() * agents.length)];
+                
+                if (agent1 !== agent2) {
+                    const interaction = agent1.interact(agent2, 'casual encounter');
+                    
+                    // Add to activity feed
+                    setTimeout(() => {
+                        renderActivityFeed();
+                    }, 100);
+                }
+            }
+            
+            // Information spread
+            informationItems.forEach(info => {
+                if (Math.random() < 0.1 && info.spread.length < agents.length) {
+                    const agent = agents[Math.floor(Math.random() * agents.length)];
+                    if (!info.spread.includes(agent.id)) {
+                        info.spread.push(agent.id);
+                        agent.addMemory('observation', `Learned about: ${info.content}`, info.importance);
+                    }
+                }
+            });
+            
+            // Random planning
+            if (timeStep % 10 === 0) {
+                const agent = agents[Math.floor(Math.random() * agents.length)];
+                agent.planDay();
+            }
+            
+            // Update UI
+            updateMetrics();
+            renderInformationFlow();
+            
+            // Occasionally re-render components
+            if (timeStep % 5 === 0) {
+                renderRelationshipGraph();
+            }
+        }
+
+        function updateMetrics() {
+            document.getElementById('activeAgents').textContent = agents.length;
+            
+            const totalInteractions = agents.reduce((sum, agent) => sum + agent.memoryStream.filter(m => m.type === 'observation').length, 0);
+            document.getElementById('totalInteractions').textContent = totalInteractions;
+            
+            const totalPossibleConnections = agents.length * (agents.length - 1) / 2;
+            const actualConnections = agents.reduce((sum, agent) => sum + agent.relationships.size, 0) / 2;
+            const networkDensity = (actualConnections / totalPossibleConnections).toFixed(2);
+            document.getElementById('networkDensity').textContent = networkDensity;
+            
+            const totalAgents = agents.length;
+            const agentsWithInfo = new Set();
+            informationItems.forEach(info => {
+                info.spread.forEach(agentId => agentsWithInfo.add(agentId));
+            });
+            const spreadPercentage = Math.round((agentsWithInfo.size / totalAgents) * 100);
+            document.getElementById('informationSpread').textContent = `${spreadPercentage}%`;
+        }
+
+        function toggleSimulation() {
+            const button = document.getElementById('playButton');
+            
+            if (simulationRunning) {
+                clearInterval(simulationInterval);
+                simulationRunning = false;
+                button.innerHTML = '<i class="fas fa-play"></i>';
+            } else {
+                simulationInterval = setInterval(simulationStep, simulationSpeed);
+                simulationRunning = true;
+                button.innerHTML = '<i class="fas fa-pause"></i>';
+            }
+        }
+
+        function speedUpSimulation() {
+            if (simulationSpeed > 200) {
+                simulationSpeed = Math.max(200, simulationSpeed - 200);
+                
+                if (simulationRunning) {
+                    clearInterval(simulationInterval);
+                    simulationInterval = setInterval(simulationStep, simulationSpeed);
+                }
+            }
+        }
+
+        function resetSimulation() {
+            clearInterval(simulationInterval);
+            simulationRunning = false;
+            timeStep = 0;
+            
+            // Reset agents
+            agents.forEach(agent => {
+                agent.memoryStream = [];
+                agent.relationships.clear();
+                agent.currentPlan = [];
+                agent.lastReflection = 0;
+                agent.cumulativeImportance = 0;
+                agent.planDay();
+            });
+            
+            // Reset information spread
+            informationItems.forEach(info => {
+                info.spread = [];
+            });
+            
+            // Update UI
+            renderAgents();
+            renderRelationshipGraph();
+            renderActivityFeed();
+            renderInformationFlow();
+            updateMetrics();
+            
+            document.getElementById('playButton').innerHTML = '<i class="fas fa-play"></i>';
+        }
+
+        // Initialize the simulation
+        function initializeSimulation() {
+            // Give each agent an initial plan
+            agents.forEach(agent => {
+                agent.planDay();
+                
+                // Add some initial memories
+                agent.addMemory('observation', `Started living in the community`, 5);
+                agent.addMemory('observation', `Interested in ${agent.interests.join(', ')}`, 6);
+            });
+            
+            // Create some initial relationships
+            for (let i = 0; i < agents.length; i++) {
+                for (let j = i + 1; j < agents.length; j++) {
+                    if (Math.random() < 0.3) { // 30% chance of initial connection
+                        agents[i].interact(agents[j], 'initial meeting');
+                    }
+                }
+            }
+            
+            // Spread some initial information
+            informationItems.forEach(info => {
+                const initialSpread = Math.floor(Math.random() * 3) + 1;
+                for (let i = 0; i < initialSpread; i++) {
+                    const agent = agents[Math.floor(Math.random() * agents.length)];
+                    if (!info.spread.includes(agent.id)) {
+                        info.spread.push(agent.id);
+                        agent.addMemory('observation', `Initial knowledge: ${info.content}`, info.importance);
+                    }
+                }
+            });
+            
+            // Render initial state
+            renderAgents();
+            renderRelationshipGraph();
+            renderActivityFeed();
+            renderInformationFlow();
+            updateMetrics();
+        }
+
+        // Start the application
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeSimulation();
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('agentModal').addEventListener('click', (e) => {
+            if (e.target.id === 'agentModal') {
+                closeAgentModal();
+            }
+        });
+    </script>
+</body>
+</html>
