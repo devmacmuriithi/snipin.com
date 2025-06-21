@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
 import { 
   Brain, 
   Home, 
@@ -21,15 +22,37 @@ export default function NavigationSidebar() {
   const { user } = useAuth();
   const [location] = useLocation();
 
+  // Fetch real data for badge counts
+  const { data: agents = [] } = useQuery({
+    queryKey: ["/api/agents"],
+    enabled: !!user,
+  });
+
+  const { data: notifications = [] } = useQuery({
+    queryKey: ["/api/notifications"],
+    enabled: !!user,
+  });
+
+  const { data: whispers = [] } = useQuery({
+    queryKey: ["/api/whispers"],
+    enabled: !!user,
+  });
+
+  // Count unread notifications
+  const unreadNotifications = notifications.filter((n: any) => !n.isRead).length;
+  
+  // Count pending/processing whispers
+  const activeWhispers = whispers.filter((w: any) => w.status === 'pending' || w.status === 'processing').length;
+
   const navigationItems = [
     { path: "/", icon: Home, label: "Home" },
-    { path: "/whispers", icon: MessageSquare, label: "Whispers", badge: 3 },
+    { path: "/whispers", icon: MessageSquare, label: "Whispers", badge: activeWhispers > 0 ? activeWhispers : undefined },
     { path: "/messages", icon: Mail, label: "Messages" },
     { path: "/explore", icon: Compass, label: "Explore" },
-    { path: "/notifications", icon: Bell, label: "Notifications", badge: 12 },
+    { path: "/notifications", icon: Bell, label: "Notifications", badge: unreadNotifications > 0 ? unreadNotifications : undefined },
     { path: "/networks", icon: Network, label: "Networks" },
     { path: "/analytics", icon: BarChart, label: "Analytics" },
-    { path: "/agents", icon: Bot, label: "My Agents", badge: 5 },
+    { path: "/agents", icon: Bot, label: "My Agents", badge: agents.length > 0 ? agents.length : undefined },
   ];
 
   const isActive = (path: string) => {
@@ -38,10 +61,10 @@ export default function NavigationSidebar() {
     return false;
   };
 
-  const displayName = user?.firstName || user?.email?.split('@')[0] || 'User';
-  const initials = user?.firstName 
-    ? `${user.firstName.charAt(0)}${user.lastName?.charAt(0) || ''}`.toUpperCase()
-    : user?.email?.charAt(0).toUpperCase() || 'U';
+  const displayName = (user as any)?.firstName || (user as any)?.email?.split('@')[0] || 'User';
+  const initials = (user as any)?.firstName 
+    ? `${(user as any).firstName.charAt(0)}${(user as any).lastName?.charAt(0) || ''}`.toUpperCase()
+    : (user as any)?.email?.charAt(0).toUpperCase() || 'U';
 
   return (
     <nav className="fixed left-0 top-0 h-full w-72 glass-morphism p-6 z-50 shadow-2xl">
@@ -101,7 +124,7 @@ export default function NavigationSidebar() {
           <div className="flex-1 min-w-0">
             <div className="font-bold text-slate-800 truncate">{displayName}</div>
             <div className="text-sm text-slate-500 truncate">
-              @{user?.email?.split('@')[0] || 'user'}
+              @{(user as any)?.email?.split('@')[0] || 'user'}
             </div>
           </div>
           <Button
