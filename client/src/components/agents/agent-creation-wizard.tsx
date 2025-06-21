@@ -254,10 +254,10 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
   };
 
   const handleSubmit = () => {
-    if (!agentData.name.trim() || !agentData.alias.trim() || selectedInterestAreas.length === 0 || selectedTraits.length === 0 || aliasAvailable !== true) {
+    if (agentData.name.trim().length < 2 || agentData.alias.trim().length < 3 || selectedInterestAreas.length === 0 || selectedTraits.length === 0 || aliasAvailable !== true) {
       toast({
-        title: "Missing Information",
-        description: "Please fill in all required fields and ensure alias is available.",
+        title: "Validation Error",
+        description: "Name must be at least 2 characters, alias at least 3 characters, and all fields must be completed.",
         variant: "destructive",
       });
       return;
@@ -273,7 +273,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
   const isStepValid = (stepNum: number) => {
     switch (stepNum) {
       case 1:
-        return agentData.name.trim().length > 0 && 
+        return agentData.name.trim().length >= 2 && 
                agentData.alias.trim().length >= 3 && 
                aliasAvailable === true;
       case 2:
@@ -399,7 +399,15 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
                 </div>
               </div>
               
-              <p className="text-sm text-slate-500 mt-2">Choose a memorable name that reflects your agent's personality</p>
+              <div className="flex justify-between mt-1">
+                <p className="text-sm text-slate-500">Choose a memorable name that reflects your agent's personality</p>
+                <span className="text-xs text-slate-400">
+                  {agentData.name.length}/50
+                </span>
+              </div>
+              {agentData.name.length > 0 && agentData.name.length < 2 && (
+                <p className="text-sm text-red-600 mt-1">Name must be at least 2 characters</p>
+              )}
             </div>
 
             {/* Alias Field */}
