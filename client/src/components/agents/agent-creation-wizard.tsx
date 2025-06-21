@@ -390,7 +390,14 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => setAgentData(prev => ({ ...prev, name }))}
+                      onClick={() => {
+                        const suggestedAlias = generateAlias(name);
+                        setAgentData(prev => ({ ...prev, name, alias: suggestedAlias }));
+                        setAliasAvailable(null);
+                        if (suggestedAlias.length >= 3) {
+                          checkAliasAvailability(suggestedAlias);
+                        }
+                      }}
                       className="text-sm h-8 hover:bg-blue-50 hover:border-blue-300"
                     >
                       {name}
