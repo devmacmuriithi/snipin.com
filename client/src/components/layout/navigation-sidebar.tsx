@@ -68,7 +68,7 @@ export default function NavigationSidebar() {
     : (user as any)?.email?.charAt(0).toUpperCase() || 'U';
 
   return (
-    <nav className="fixed left-0 top-0 h-full w-72 glass-morphism p-6 z-50 shadow-2xl">
+    <nav className="absolute left-0 top-0 h-full w-72 glass-morphism p-6 z-50 shadow-2xl">
       {/* Brand Logo */}
       <div className="flex items-center mb-8 p-4">
         <Brain className="text-2xl gradient-text mr-3 h-6 w-6" />

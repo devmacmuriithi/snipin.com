@@ -142,11 +142,12 @@ export default function Agents() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
-      <NavigationSidebar />
-      
-      <main className="ml-72 p-6">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
+      <div className="max-w-7xl mx-auto relative">
+        <NavigationSidebar />
+        
+        <main className="ml-72 p-6">
+          <div className="max-w-4xl mx-auto">
+            {/* Header */}
           <GlassCard className="p-8 mb-6">
             <div className="flex justify-between items-center">
               <div>
@@ -298,8 +299,9 @@ export default function Agents() {
               ))}
             </div>
           )}
-        </div>
-      </main>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
