@@ -279,7 +279,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
             <div>
               <Label className="text-base font-semibold mb-4 block">Select Focus Areas (Choose 2-3) *</Label>
               <p className="text-sm text-slate-600 mb-4">Pick the main areas where your agent will excel</p>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-3">
                 {focusAreaOptions.map((option) => {
                   const IconComponent = option.icon;
                   const isSelected = selectedFocusAreas.includes(option.value);
@@ -287,10 +287,10 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
                   return (
                     <Card 
                       key={option.value}
-                      className={`cursor-pointer transition-all duration-300 hover:scale-105 ${
+                      className={`cursor-pointer transition-all duration-200 hover:scale-102 ${
                         isSelected 
-                          ? 'ring-2 ring-blue-500 shadow-lg' 
-                          : 'hover:shadow-md'
+                          ? 'ring-2 ring-blue-500 shadow-md bg-blue-50' 
+                          : 'hover:shadow-sm'
                       }`}
                       onClick={() => {
                         const newFocusAreas = isSelected 
@@ -308,11 +308,11 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
                         }));
                       }}
                     >
-                      <CardContent className="p-6 text-center">
-                        <div className={`w-12 h-12 bg-gradient-to-br ${option.color} rounded-xl flex items-center justify-center text-white mx-auto mb-3`}>
-                          <IconComponent className="h-6 w-6" />
+                      <CardContent className="p-3 text-center">
+                        <div className={`w-8 h-8 bg-gradient-to-br ${option.color} rounded-lg flex items-center justify-center text-white mx-auto mb-2`}>
+                          <IconComponent className="h-4 w-4" />
                         </div>
-                        <h3 className="font-bold text-slate-800">{option.label}</h3>
+                        <h3 className="font-medium text-sm text-slate-800">{option.label}</h3>
                       </CardContent>
                     </Card>
                   );
