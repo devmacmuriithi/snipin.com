@@ -9,6 +9,8 @@ import {
   notifications,
   agentConnections,
   mempodItems,
+  goalMetrics,
+  goalProgress,
   type User,
   type UpsertUser,
   type Agent,
@@ -29,6 +31,10 @@ import {
   type InsertAgentConnection,
   type MemPodItem,
   type InsertMemPodItem,
+  type GoalMetric,
+  type InsertGoalMetric,
+  type GoalProgress,
+  type InsertGoalProgress,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, sql, count } from "drizzle-orm";
@@ -90,6 +96,17 @@ export interface IStorage {
   getMemPodItem(id: number): Promise<MemPodItem | undefined>;
   updateMemPodItem(id: number, updates: Partial<InsertMemPodItem>): Promise<MemPodItem>;
   deleteMemPodItem(id: number): Promise<void>;
+  
+  // Goal metrics operations
+  createGoalMetric(metric: InsertGoalMetric): Promise<GoalMetric>;
+  getGoalMetrics(goalId: number): Promise<GoalMetric[]>;
+  updateGoalMetric(id: number, updates: Partial<InsertGoalMetric>): Promise<GoalMetric>;
+  deleteGoalMetric(id: number): Promise<void>;
+  
+  // Goal progress operations
+  addGoalProgress(progress: InsertGoalProgress): Promise<GoalProgress>;
+  getMetricProgress(metricId: number): Promise<GoalProgress[]>;
+  updateGoalOverallProgress(goalId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -418,6 +435,85 @@ export class DatabaseStorage implements IStorage {
 
   async deleteMemPodItem(id: number): Promise<void> {
     await db.delete(mempodItems).where(eq(mempodItems.id, id));
+  }
+
+  // Goal metrics operations
+  async createGoalMetric(metric: InsertGoalMetric): Promise<GoalMetric> {
+    const [newMetric] = await db.insert(goalMetrics).values(metric).returning();
+    return newMetric;
+  }
+
+  async getGoalMetrics(goalId: number): Promise<GoalMetric[]> {
+    return await db
+      .select()
+      .from(goalMetrics)
+      .where(eq(goalMetrics.goalId, goalId))
+      .orderBy(goalMetrics.createdAt);
+  }
+
+  async updateGoalMetric(id: number, updates: Partial<InsertGoalMetric>): Promise<GoalMetric> {
+    const [updatedMetric] = await db
+      .update(goalMetrics)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(goalMetrics.id, id))
+      .returning();
+    return updatedMetric;
+  }
+
+  async deleteGoalMetric(id: number): Promise<void> {
+    await db.delete(goalMetrics).where(eq(goalMetrics.id, id));
+  }
+
+  // Goal progress operations
+  async addGoalProgress(progress: InsertGoalProgress): Promise<GoalProgress> {
+    const [newProgress] = await db.insert(goalProgress).values(progress).returning();
+    
+    // Update the metric's current value
+    await db
+      .update(goalMetrics)
+      .set({ currentValue: progress.value, updatedAt: new Date() })
+      .where(eq(goalMetrics.id, progress.metricId));
+    
+    // Update overall goal progress
+    const metric = await db.select().from(goalMetrics).where(eq(goalMetrics.id, progress.metricId)).limit(1);
+    if (metric[0]) {
+      await this.updateGoalOverallProgress(metric[0].goalId);
+    }
+    
+    return newProgress;
+  }
+
+  async getMetricProgress(metricId: number): Promise<GoalProgress[]> {
+    return await db
+      .select()
+      .from(goalProgress)
+      .where(eq(goalProgress.metricId, metricId))
+      .orderBy(desc(goalProgress.recordedAt));
+  }
+
+  async updateGoalOverallProgress(goalId: number): Promise<void> {
+    // Get all metrics for this goal
+    const metrics = await db
+      .select()
+      .from(goalMetrics)
+      .where(eq(goalMetrics.goalId, goalId));
+    
+    if (metrics.length === 0) return;
+    
+    // Calculate overall progress as average of all metric progress percentages
+    let totalProgress = 0;
+    for (const metric of metrics) {
+      const progressPercentage = Math.min(100, (metric.currentValue / metric.targetValue) * 100);
+      totalProgress += progressPercentage;
+    }
+    
+    const overallProgress = Math.round(totalProgress / metrics.length);
+    
+    // Update the goal's progress
+    await db
+      .update(mempodItems)
+      .set({ progress: overallProgress, updatedAt: new Date() })
+      .where(eq(mempodItems.id, goalId));
   }
 }
 

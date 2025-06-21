@@ -22,9 +22,14 @@ import {
   Database,
   Activity,
   Check,
-  X
+  X,
+  TrendingUp,
+  BarChart3,
+  Settings,
+  Calendar
 } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 
 interface MemPodItem {
@@ -200,6 +205,214 @@ export default function MemPod() {
       case 'knowledge': return <Database className="h-4 w-4" />;
       default: return <Lightbulb className="h-4 w-4" />;
     }
+  };
+
+  // Goal Card Component with metrics tracking
+  const GoalCard = ({ goal }: { goal: MemPodItem }) => {
+    const [metrics, setMetrics] = useState<any[]>([]);
+    const [showMetrics, setShowMetrics] = useState(false);
+    const [newMetric, setNewMetric] = useState({ name: '', targetValue: '', unit: 'count' });
+    const [progressUpdate, setProgressUpdate] = useState({ metricId: '', value: '', note: '' });
+
+    const { data: goalMetrics = [] } = useQuery({
+      queryKey: [`/api/goals/${goal.id}/metrics`],
+      enabled: !!goal.id && showMetrics,
+    });
+
+    const createMetricMutation = useMutation({
+      mutationFn: async (data: any) => {
+        await apiRequest("POST", `/api/goals/${goal.id}/metrics`, data);
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [`/api/goals/${goal.id}/metrics`] });
+        setNewMetric({ name: '', targetValue: '', unit: 'count' });
+        toast({ title: "Metric Added", description: "New metric added to goal." });
+      },
+      onError: (error) => {
+        if (isUnauthorizedError(error)) {
+          toast({
+            title: "Unauthorized",
+            description: "You are logged out. Logging in again...",
+            variant: "destructive",
+          });
+          setTimeout(() => window.location.href = "/api/login", 500);
+          return;
+        }
+        toast({ title: "Error", description: "Failed to add metric.", variant: "destructive" });
+      },
+    });
+
+    const addProgressMutation = useMutation({
+      mutationFn: async ({ metricId, value, note }: any) => {
+        await apiRequest("POST", `/api/metrics/${metricId}/progress`, { value: parseInt(value), note });
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: [`/api/goals/${goal.id}/metrics`] });
+        queryClient.invalidateQueries({ queryKey: ["/api/mempod"] });
+        setProgressUpdate({ metricId: '', value: '', note: '' });
+        toast({ title: "Progress Updated", description: "Goal progress has been recorded." });
+      },
+      onError: (error) => {
+        if (isUnauthorizedError(error)) {
+          toast({
+            title: "Unauthorized",
+            description: "You are logged out. Logging in again...",
+            variant: "destructive",
+          });
+          setTimeout(() => window.location.href = "/api/login", 500);
+          return;
+        }
+        toast({ title: "Error", description: "Failed to update progress.", variant: "destructive" });
+      },
+    });
+
+    const handleAddMetric = () => {
+      if (!newMetric.name.trim() || !newMetric.targetValue) return;
+      createMetricMutation.mutate({
+        name: newMetric.name,
+        targetValue: parseInt(newMetric.targetValue),
+        unit: newMetric.unit,
+      });
+    };
+
+    const handleUpdateProgress = () => {
+      if (!progressUpdate.metricId || !progressUpdate.value) return;
+      addProgressMutation.mutate(progressUpdate);
+    };
+
+    return (
+      <div className="p-4 bg-white rounded-lg border">
+        <div className="flex justify-between items-start mb-3">
+          <div className="flex-1">
+            <h3 className="font-semibold text-lg mb-1">{goal.title}</h3>
+            <p className="text-sm text-gray-600 mb-2">{goal.content}</p>
+          </div>
+          <div className="text-right">
+            <span className="text-lg font-bold text-blue-600">{goal.progress || 0}%</span>
+          </div>
+        </div>
+        
+        <Progress value={goal.progress || 0} className="h-3 mb-3" />
+        
+        <div className="flex justify-between items-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowMetrics(!showMetrics)}
+            className="flex items-center gap-2"
+          >
+            <BarChart3 className="h-4 w-4" />
+            {showMetrics ? 'Hide Metrics' : 'Manage Metrics'}
+          </Button>
+          
+          <div className="text-xs text-gray-500">
+            Created {new Date(goal.createdAt).toLocaleDateString()}
+          </div>
+        </div>
+
+        {showMetrics && (
+          <div className="mt-4 pt-4 border-t">
+            {/* Metrics List */}
+            <div className="space-y-3 mb-4">
+              <h4 className="font-semibold text-sm flex items-center gap-2">
+                <Target className="h-4 w-4" />
+                Goal Metrics
+              </h4>
+              
+              {goalMetrics.map((metric: any) => (
+                <div key={metric.id} className="p-3 bg-gray-50 rounded border">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-medium">{metric.name}</span>
+                    <span className="text-sm text-gray-600">
+                      {metric.currentValue}/{metric.targetValue} {metric.unit}
+                    </span>
+                  </div>
+                  <Progress 
+                    value={Math.min(100, (metric.currentValue / metric.targetValue) * 100)} 
+                    className="h-2 mb-2" 
+                  />
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder={`Update ${metric.unit}`}
+                      value={progressUpdate.metricId === metric.id.toString() ? progressUpdate.value : ''}
+                      onChange={(e) => setProgressUpdate({ 
+                        ...progressUpdate, 
+                        metricId: metric.id.toString(), 
+                        value: e.target.value 
+                      })}
+                      className="flex-1"
+                      type="number"
+                    />
+                    <Input
+                      placeholder="Note (optional)"
+                      value={progressUpdate.metricId === metric.id.toString() ? progressUpdate.note : ''}
+                      onChange={(e) => setProgressUpdate({ 
+                        ...progressUpdate, 
+                        note: e.target.value 
+                      })}
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={handleUpdateProgress}
+                      disabled={addProgressMutation.isPending || progressUpdate.metricId !== metric.id.toString() || !progressUpdate.value}
+                      size="sm"
+                    >
+                      <TrendingUp className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add New Metric */}
+            <div className="p-3 bg-blue-50 rounded border">
+              <h5 className="font-medium text-sm mb-3">Add New Metric</h5>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
+                <Input
+                  placeholder="Metric name"
+                  value={newMetric.name}
+                  onChange={(e) => setNewMetric({ ...newMetric, name: e.target.value })}
+                />
+                <Input
+                  placeholder="Target value"
+                  type="number"
+                  value={newMetric.targetValue}
+                  onChange={(e) => setNewMetric({ ...newMetric, targetValue: e.target.value })}
+                />
+                <Select
+                  value={newMetric.unit}
+                  onValueChange={(value) => setNewMetric({ ...newMetric, unit: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="count">Count</SelectItem>
+                    <SelectItem value="hours">Hours</SelectItem>
+                    <SelectItem value="days">Days</SelectItem>
+                    <SelectItem value="weeks">Weeks</SelectItem>
+                    <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="kg">Kilograms</SelectItem>
+                    <SelectItem value="lbs">Pounds</SelectItem>
+                    <SelectItem value="miles">Miles</SelectItem>
+                    <SelectItem value="km">Kilometers</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                onClick={handleAddMetric}
+                disabled={createMetricMutation.isPending || !newMetric.name.trim() || !newMetric.targetValue}
+                size="sm"
+                className="w-full"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Metric
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -381,15 +594,9 @@ export default function MemPod() {
                         </Button>
                       </div>
                       
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         {goals.map((goal: MemPodItem) => (
-                          <div key={goal.id} className="p-4 bg-white rounded-lg border">
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="font-semibold">{goal.title}</span>
-                              <span className="text-sm font-bold text-blue-600">{goal.progress || 0}%</span>
-                            </div>
-                            <Progress value={goal.progress || 0} className="h-2" />
-                          </div>
+                          <GoalCard key={goal.id} goal={goal} />
                         ))}
                       </div>
                     </div>

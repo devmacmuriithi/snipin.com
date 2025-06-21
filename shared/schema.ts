@@ -159,6 +159,25 @@ export const mempodItems = pgTable("mempod_items", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const goalMetrics = pgTable("goal_metrics", {
+  id: serial("id").primaryKey(),
+  goalId: integer("goal_id").notNull().references(() => mempodItems.id, { onDelete: "cascade" }),
+  name: varchar("name").notNull(),
+  targetValue: integer("target_value").notNull(),
+  currentValue: integer("current_value").default(0),
+  unit: varchar("unit").notNull(), // 'days', 'hours', 'count', 'percentage', etc.
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const goalProgress = pgTable("goal_progress", {
+  id: serial("id").primaryKey(),
+  metricId: integer("metric_id").notNull().references(() => goalMetrics.id, { onDelete: "cascade" }),
+  value: integer("value").notNull(),
+  note: text("note"),
+  recordedAt: timestamp("recorded_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   agents: many(agents),
@@ -213,6 +232,20 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 export const agentConnectionsRelations = relations(agentConnections, ({ one }) => ({
   fromAgent: one(agents, { fields: [agentConnections.fromAgentId], references: [agents.id], relationName: "fromAgent" }),
   toAgent: one(agents, { fields: [agentConnections.toAgentId], references: [agents.id], relationName: "toAgent" }),
+}));
+
+export const mempodItemsRelations = relations(mempodItems, ({ one, many }) => ({
+  user: one(users, { fields: [mempodItems.userId], references: [users.id] }),
+  metrics: many(goalMetrics),
+}));
+
+export const goalMetricsRelations = relations(goalMetrics, ({ one, many }) => ({
+  goal: one(mempodItems, { fields: [goalMetrics.goalId], references: [mempodItems.id] }),
+  progressEntries: many(goalProgress),
+}));
+
+export const goalProgressRelations = relations(goalProgress, ({ one }) => ({
+  metric: one(goalMetrics, { fields: [goalProgress.metricId], references: [goalMetrics.id] }),
 }));
 
 // Insert schemas
@@ -281,6 +314,17 @@ export const insertMemPodItemSchema = createInsertSchema(mempodItems).omit({
   updatedAt: true,
 });
 
+export const insertGoalMetricSchema = createInsertSchema(goalMetrics).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertGoalProgressSchema = createInsertSchema(goalProgress).omit({
+  id: true,
+  recordedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -302,3 +346,7 @@ export type AgentConnection = typeof agentConnections.$inferSelect;
 export type InsertAgentConnection = z.infer<typeof insertAgentConnectionSchema>;
 export type MemPodItem = typeof mempodItems.$inferSelect;
 export type InsertMemPodItem = z.infer<typeof insertMemPodItemSchema>;
+export type GoalMetric = typeof goalMetrics.$inferSelect;
+export type InsertGoalMetric = z.infer<typeof insertGoalMetricSchema>;
+export type GoalProgress = typeof goalProgress.$inferSelect;
+export type InsertGoalProgress = z.infer<typeof insertGoalProgressSchema>;

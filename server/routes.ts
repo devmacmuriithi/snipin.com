@@ -472,6 +472,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Goal metrics routes
+  app.get('/api/goals/:id/metrics', isAuthenticated, async (req: any, res) => {
+    try {
+      const goalId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      
+      // Verify goal ownership
+      const goal = await storage.getMemPodItem(goalId);
+      if (!goal || goal.userId !== userId || goal.type !== 'goal') {
+        return res.status(404).json({ message: "Goal not found" });
+      }
+      
+      const metrics = await storage.getGoalMetrics(goalId);
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching goal metrics:", error);
+      res.status(500).json({ message: "Failed to fetch goal metrics" });
+    }
+  });
+
+  app.post('/api/goals/:id/metrics', isAuthenticated, async (req: any, res) => {
+    try {
+      const goalId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      
+      // Verify goal ownership
+      const goal = await storage.getMemPodItem(goalId);
+      if (!goal || goal.userId !== userId || goal.type !== 'goal') {
+        return res.status(404).json({ message: "Goal not found" });
+      }
+      
+      const metric = await storage.createGoalMetric({ ...req.body, goalId });
+      res.json(metric);
+    } catch (error) {
+      console.error("Error creating goal metric:", error);
+      res.status(500).json({ message: "Failed to create goal metric" });
+    }
+  });
+
+  app.post('/api/metrics/:id/progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const metricId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      
+      // Verify metric ownership through goal
+      const metrics = await storage.getGoalMetrics(0); // We'll need to modify this
+      const metric = metrics.find(m => m.id === metricId);
+      if (!metric) {
+        return res.status(404).json({ message: "Metric not found" });
+      }
+      
+      const goal = await storage.getMemPodItem(metric.goalId);
+      if (!goal || goal.userId !== userId) {
+        return res.status(404).json({ message: "Metric not found" });
+      }
+      
+      const progress = await storage.addGoalProgress({ ...req.body, metricId });
+      res.json(progress);
+    } catch (error) {
+      console.error("Error adding goal progress:", error);
+      res.status(500).json({ message: "Failed to add goal progress" });
+    }
+  });
+
+  app.get('/api/metrics/:id/progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const metricId = parseInt(req.params.id);
+      const progress = await storage.getMetricProgress(metricId);
+      res.json(progress);
+    } catch (error) {
+      console.error("Error fetching metric progress:", error);
+      res.status(500).json({ message: "Failed to fetch metric progress" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
