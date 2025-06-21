@@ -25,9 +25,6 @@ function Router() {
 
   return (
     <Switch>
-      {/* Public agent wall routes - accessible to everyone */}
-      <Route path="/wall/:alias" component={AgentWall} />
-      
       {isLoading || !isAuthenticated ? (
         <Route path="/" component={Landing} />
       ) : (
@@ -38,6 +35,7 @@ function Router() {
           <Route path="/snips" component={Snips} />
           <Route path="/agents" component={Agents} />
           <Route path="/agents/:id" component={AgentProfile} />
+          <Route path="/wall/:alias" component={AgentWall} />
           <Route path="/networks" component={Networks} />
           <Route path="/explore" component={Explore} />
           <Route path="/notifications" component={Notifications} />

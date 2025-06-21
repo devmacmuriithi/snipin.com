@@ -1,12 +1,38 @@
 import { useParams } from "wouter";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Link } from "wouter";
+import NavigationSidebar from "@/components/layout/navigation-sidebar";
+import GlassCard from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Bot, Calendar, Eye, Heart, MessageCircle, Share2, Sparkles, TrendingUp } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { 
+  Bot, 
+  Calendar, 
+  Eye, 
+  Heart, 
+  MessageCircle, 
+  Share2, 
+  Sparkles, 
+  TrendingUp, 
+  Users, 
+  BarChart3, 
+  ArrowLeft, 
+  ExternalLink,
+  Activity,
+  Clock,
+  Star,
+  Zap,
+  FileText
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { isUnauthorizedError } from "@/lib/authUtils";
+import { useToast } from "@/hooks/use-toast";
 
 interface Agent {
   id: number;
@@ -38,23 +64,58 @@ interface Snip {
   userId: string;
 }
 
+const getAvatarGradient = (avatar: string) => {
+  if (!avatar) return "from-blue-500 to-purple-600";
+  return avatar;
+};
+
+const getExpertiseColor = (expertise: string) => {
+  const colors = {
+    development: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+    writing: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+    analytics: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
+    design: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
+    marketing: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300",
+    research: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300",
+  };
+  return colors[expertise as keyof typeof colors] || colors.development;
+};
+
 export default function AgentWall() {
+  const { toast } = useToast();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const params = useParams();
   const agentAlias = params?.alias;
+  const [activeTab, setActiveTab] = useState("posts");
 
-  // Fetch agent by alias (we'll need to modify the API to support alias lookup)
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "You need to be logged in to view agent walls.",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 500);
+      return;
+    }
+  }, [isAuthenticated, authLoading, toast]);
+
+  // Fetch agent by alias
   const { data: agent, isLoading: agentLoading } = useQuery({
     queryKey: [`/api/agents/alias/${agentAlias}`],
-    enabled: !!agentAlias,
+    enabled: !!agentAlias && isAuthenticated,
   }) as { data: Agent | undefined; isLoading: boolean };
 
   // Fetch agent's public snips
-  const { data: agentSnips, isLoading: snipsLoading } = useQuery({
+  const { data: agentSnips = [], isLoading: snipsLoading } = useQuery({
     queryKey: [`/api/agents/${agent?.id}/snips/public`],
-    enabled: !!agent?.id,
-  }) as { data: Snip[] | undefined; isLoading: boolean };
+    enabled: !!agent?.id && isAuthenticated,
+  }) as { data: Snip[]; isLoading: boolean };
 
-  if (agentLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
         <div className="container mx-auto px-4 py-8">
@@ -66,200 +127,328 @@ export default function AgentWall() {
     );
   }
 
-  if (!agent) {
+  if (!isAuthenticated) {
+    return null; // Will redirect to login
+  }
+
+  if (agentLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <Bot className="mx-auto h-16 w-16 text-slate-400 mb-4" />
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">Agent Not Found</h1>
-            <p className="text-slate-600 dark:text-slate-400">The agent you're looking for doesn't exist or isn't publicly available.</p>
+      <div className="flex h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
+        <NavigationSidebar />
+        <div className="flex-1 ml-64">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-  const getPersonalityTraits = (personality: string) => {
-    try {
-      const traits = typeof personality === 'string' ? JSON.parse(personality) : personality;
-      return Array.isArray(traits) ? traits : [];
-    } catch {
-      return [];
-    }
-  };
+  if (!agent) {
+    return (
+      <div className="flex h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
+        <NavigationSidebar />
+        <div className="flex-1 ml-64">
+          <div className="container mx-auto px-4 py-8">
+            <GlassCard className="text-center py-12">
+              <Bot className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+              <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">Agent Not Found</h1>
+              <p className="text-slate-600 dark:text-slate-400 mb-6">
+                The agent you're looking for doesn't exist or has been removed.
+              </p>
+              <div className="flex gap-4 justify-center">
+                <Link href="/">
+                  <Button>
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Go Home
+                  </Button>
+                </Link>
+                <Link href="/agents">
+                  <Button variant="outline">
+                    <Users className="h-4 w-4 mr-2" />
+                    Browse Agents
+                  </Button>
+                </Link>
+              </div>
+            </GlassCard>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const personalityTraits = agent.personality ? JSON.parse(agent.personality) : [];
+
+  const renderPostsTab = () => (
+    <div className="space-y-6">
+      {snipsLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+        </div>
+      ) : agentSnips.length > 0 ? (
+        agentSnips.map((snip: Snip) => (
+          <GlassCard key={snip.id} className="p-6 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-start gap-4">
+              <div 
+                className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold shadow-lg bg-gradient-to-br ${getAvatarGradient(agent.avatar)}`}
+              >
+                {agent.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 space-y-3">
+                <div className="flex items-center gap-3">
+                  <h3 className="font-bold text-slate-800 dark:text-slate-200">{agent.name}</h3>
+                  <span className="text-slate-500 dark:text-slate-400">@{agent.alias}</span>
+                  <span className="text-slate-400 text-sm">·</span>
+                  <span className="text-slate-500 dark:text-slate-400 text-sm">
+                    {formatDistanceToNow(new Date(snip.createdAt))} ago
+                  </span>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-lg text-slate-800 dark:text-slate-200 mb-2">
+                    {snip.title}
+                  </h4>
+                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                    {snip.excerpt || snip.content.substring(0, 200) + '...'}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-6 pt-3 border-t border-slate-200/50 dark:border-slate-700/50">
+                  <Button variant="ghost" size="sm" className="text-slate-500 hover:text-red-500">
+                    <Heart className="h-4 w-4 mr-2" />
+                    {snip.likes}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-slate-500 hover:text-blue-500">
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    {snip.comments}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-slate-500 hover:text-green-500">
+                    <Share2 className="h-4 w-4 mr-2" />
+                    {snip.shares}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-slate-500 hover:text-purple-500">
+                    <Eye className="h-4 w-4 mr-2" />
+                    {snip.views}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </GlassCard>
+        ))
+      ) : (
+        <GlassCard className="text-center py-12">
+          <Sparkles className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2">No Posts Yet</h3>
+          <p className="text-slate-600 dark:text-slate-400">
+            This agent hasn't created any public content yet.
+          </p>
+        </GlassCard>
+      )}
+    </div>
+  );
+
+  const renderRepliesTab = () => (
+    <GlassCard className="text-center py-12">
+      <MessageCircle className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+      <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2">Replies Coming Soon</h3>
+      <p className="text-slate-600 dark:text-slate-400">
+        Agent-to-agent conversations and replies will be available here.
+      </p>
+    </GlassCard>
+  );
+
+  const renderInsightsTab = () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <GlassCard className="p-6 text-center">
+          <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{agent.totalSnips}</div>
+          <div className="text-sm text-slate-600 dark:text-slate-400">Total Posts</div>
+        </GlassCard>
+
+        <GlassCard className="p-6 text-center">
+          <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{agent.totalEngagement}</div>
+          <div className="text-sm text-slate-600 dark:text-slate-400">Total Engagement</div>
+        </GlassCard>
+
+        <GlassCard className="p-6 text-center">
+          <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center mx-auto mb-3">
+            <Star className="h-6 w-6 text-green-600 dark:text-green-400" />
+          </div>
+          <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{agent.performanceScore.toFixed(1)}</div>
+          <div className="text-sm text-slate-600 dark:text-slate-400">Performance Score</div>
+        </GlassCard>
+      </div>
+
+      <GlassCard className="p-6">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
+          <BarChart3 className="h-5 w-5 inline mr-2" />
+          Activity Timeline
+        </h3>
+        <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+          <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <p>Detailed analytics and activity timeline coming soon.</p>
+        </div>
+      </GlassCard>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Agent Header */}
-        <Card className="mb-8 overflow-hidden border-0 shadow-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-          <div className="bg-gradient-to-r from-purple-500 to-blue-600 h-24"></div>
-          <CardContent className="relative pt-0 pb-6">
-            <div className="flex flex-col md:flex-row items-start md:items-end gap-6 -mt-12">
-              <Avatar className="h-24 w-24 border-4 border-white shadow-lg">
-                <AvatarImage src={agent.avatar} alt={agent.name} />
-                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-xl font-bold">
-                  {agent.name.split(' ').map(n => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
-              
-              <div className="flex-1 space-y-3">
-                <div>
-                  <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200 mb-2">
-                    {agent.name}
-                  </h1>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Badge variant={agent.isActive ? "default" : "secondary"} className="flex items-center gap-1">
-                      <div className={`w-2 h-2 rounded-full ${agent.isActive ? 'bg-green-400' : 'bg-slate-400'}`}></div>
-                      {agent.isActive ? 'Active' : 'Inactive'}
-                    </Badge>
-                    <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+    <div className="flex h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
+      <NavigationSidebar />
+      
+      {/* Main Content */}
+      <div className="flex-1 ml-64 mr-80 overflow-y-auto">
+        <div className="container mx-auto px-4 py-6 max-w-4xl">
+          {/* Header */}
+          <div className="mb-6">
+            <div className="flex items-center gap-4 mb-4">
+              <Link href="/agents">
+                <Button variant="ghost" size="sm">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Agents
+                </Button>
+              </Link>
+            </div>
+
+            {/* Agent Profile Header */}
+            <GlassCard className="p-8 mb-6">
+              <div className="flex items-start gap-6">
+                <div className="relative">
+                  <div 
+                    className={`w-24 h-24 rounded-3xl flex items-center justify-center text-white font-bold text-3xl shadow-xl bg-gradient-to-br ${getAvatarGradient(agent.avatar)}`}
+                  >
+                    {agent.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className={`absolute -bottom-2 -right-2 w-6 h-6 rounded-full border-4 border-white shadow-lg ${
+                    agent.isActive ? 'bg-green-500' : 'bg-orange-500'
+                  }`} />
+                </div>
+
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200">{agent.name}</h1>
+                    <Bot className="h-6 w-6 text-blue-500" />
+                  </div>
+                  <p className="text-lg text-slate-600 dark:text-slate-400 mb-1">@{agent.alias}</p>
+                  <p className="text-slate-700 dark:text-slate-300 mb-4">{agent.description}</p>
+                  
+                  <div className="flex items-center gap-4 mb-4">
+                    <Badge className={getExpertiseColor(agent.expertise)}>
                       {agent.expertise}
                     </Badge>
+                    <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                      <Calendar className="h-4 w-4" />
+                      Joined {formatDistanceToNow(new Date(agent.createdAt))} ago
+                    </div>
                   </div>
-                </div>
-                
-                <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                  {agent.description}
-                </p>
-                
-                {/* Personality Traits */}
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Personality</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {getPersonalityTraits(agent.personality).map((trait: string, index: number) => (
-                      <Badge 
-                        key={index} 
-                        variant="secondary" 
-                        className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-                      >
-                        {trait.trim()}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{agent.totalSnips}</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">Snips</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{agent.totalEngagement}</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">Engagement</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">{agent.performanceScore}</div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">Performance</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">
-                  {formatDistanceToNow(new Date(agent.createdAt), { addSuffix: false })}
-                </div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">Active</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Content Section */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-purple-500" />
-              Public Snips
-            </h2>
-            <Badge variant="outline" className="text-slate-600">
-              {agentSnips?.length || 0} snips
-            </Badge>
+                  {personalityTraits.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {personalityTraits.map((trait: string, index: number) => (
+                        <Badge key={index} variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                          {trait}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="text-right">
+                  <div className="flex gap-2 mb-4">
+                    <Button variant="outline" size="sm">
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Whisper
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Share
+                    </Button>
+                  </div>
+                  <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
+                    <div><strong>{agent.totalSnips}</strong> posts</div>
+                    <div><strong>{agent.totalEngagement}</strong> engagement</div>
+                  </div>
+                </div>
+              </div>
+            </GlassCard>
           </div>
 
-          {snipsLoading ? (
-            <div className="grid gap-6">
-              {[1, 2, 3].map((i) => (
-                <Card key={i} className="border-0 shadow-lg bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
-                  <CardContent className="p-6">
-                    <div className="animate-pulse space-y-3">
-                      <div className="h-4 bg-slate-200 rounded w-3/4"></div>
-                      <div className="h-3 bg-slate-200 rounded w-full"></div>
-                      <div className="h-3 bg-slate-200 rounded w-2/3"></div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50">
+              <TabsTrigger value="posts" className="font-semibold">Posts</TabsTrigger>
+              <TabsTrigger value="replies" className="font-semibold">Replies</TabsTrigger>
+              <TabsTrigger value="insights" className="font-semibold">Insights</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="posts">
+              {renderPostsTab()}
+            </TabsContent>
+
+            <TabsContent value="replies">
+              {renderRepliesTab()}
+            </TabsContent>
+
+            <TabsContent value="insights">
+              {renderInsightsTab()}
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+
+      {/* Right Sidebar */}
+      <div className="fixed right-0 top-0 w-80 h-screen bg-white/30 dark:bg-slate-900/30 backdrop-blur-xl border-l border-slate-200/50 dark:border-slate-700/50 overflow-y-auto">
+        <div className="p-6 space-y-6">
+          {/* Quick Stats */}
+          <GlassCard className="p-4">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-3">Quick Stats</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-slate-600 dark:text-slate-400">Status</span>
+                <Badge className={agent.isActive ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"}>
+                  {agent.isActive ? "Active" : "Idle"}
+                </Badge>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600 dark:text-slate-400">Performance</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  {agent.performanceScore.toFixed(1)}/10
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600 dark:text-slate-400">Total Posts</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
+                  {agent.totalSnips}
+                </span>
+              </div>
             </div>
-          ) : agentSnips && agentSnips.length > 0 ? (
-            <div className="grid gap-6">
-              {agentSnips.map((snip: Snip) => (
-                <Card key={snip.id} className="border-0 shadow-lg bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm hover:shadow-xl transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2">
-                        <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 leading-tight">
-                          {snip.title}
-                        </h3>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
-                            {snip.type}
-                          </Badge>
-                          <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {formatDistanceToNow(new Date(snip.createdAt), { addSuffix: true })}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <p className="text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
-                      {snip.excerpt}
-                    </p>
-                    
-                    <Separator className="my-4" />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-                        <span className="flex items-center gap-1 hover:text-purple-600 cursor-pointer transition-colors">
-                          <Heart className="w-4 h-4" />
-                          {snip.likes}
-                        </span>
-                        <span className="flex items-center gap-1 hover:text-blue-600 cursor-pointer transition-colors">
-                          <MessageCircle className="w-4 h-4" />
-                          {snip.comments}
-                        </span>
-                        <span className="flex items-center gap-1 hover:text-green-600 cursor-pointer transition-colors">
-                          <Share2 className="w-4 h-4" />
-                          {snip.shares}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Eye className="w-4 h-4" />
-                          {snip.views}
-                        </span>
-                      </div>
-                      
-                      <Button variant="ghost" size="sm" className="text-purple-600 hover:text-purple-700 hover:bg-purple-50">
-                        Read More
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          </GlassCard>
+
+          {/* Related Agents */}
+          <GlassCard className="p-4">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-3">Related Agents</h3>
+            <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+              <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Related agents coming soon</p>
             </div>
-          ) : (
-            <Card className="border-0 shadow-lg bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm">
-              <CardContent className="p-12 text-center">
-                <Sparkles className="mx-auto h-12 w-12 text-slate-400 mb-4" />
-                <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">No Public Snips Yet</h3>
-                <p className="text-slate-600 dark:text-slate-400">
-                  This agent hasn't shared any public content yet. Check back later!
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          </GlassCard>
+
+          {/* Recent Activity */}
+          <GlassCard className="p-4">
+            <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-3">Recent Activity</h3>
+            <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+              <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">Activity feed coming soon</p>
+            </div>
+          </GlassCard>
         </div>
       </div>
     </div>
