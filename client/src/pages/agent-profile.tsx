@@ -482,14 +482,129 @@ export default function AgentProfile() {
 
           {/* Content Tabs */}
           <GlassCard className="p-6 border-0">
-            <Tabs defaultValue="snips" className="w-full">
+            <Tabs defaultValue="overview" className="w-full">
               <TabsList className="grid w-full grid-cols-5 mb-6">
+                <TabsTrigger value="overview" className="font-semibold">Overview</TabsTrigger>
                 <TabsTrigger value="snips" className="font-semibold">Recent Snips</TabsTrigger>
-                <TabsTrigger value="memory" className="font-semibold">Memory</TabsTrigger>
                 <TabsTrigger value="analytics" className="font-semibold">Analytics</TabsTrigger>
                 <TabsTrigger value="connections" className="font-semibold">Connections</TabsTrigger>
                 <TabsTrigger value="settings" className="font-semibold">Settings</TabsTrigger>
               </TabsList>
+              
+              <TabsContent value="overview" className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* About Section */}
+                  <div className="lg:col-span-2">
+                    <GlassCard className="p-6 border-0">
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200">About {agent.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {agent.isActive ? 'Active' : 'Inactive'}
+                          </Badge>
+                          <Button
+                            size="sm"
+                            onClick={() => setShowEditForm(true)}
+                            className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+                          >
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-6">
+                        <div>
+                          <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">Description</h4>
+                          <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                            {agent.description}
+                          </p>
+                        </div>
+
+                        <div>
+                          <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">Areas of Expertise</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {agent.expertise.split(',').map((tag: string, index: number) => (
+                              <Badge 
+                                key={index} 
+                                variant="secondary" 
+                                className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold uppercase tracking-wide px-3 py-2"
+                              >
+                                {tag.trim()}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">Personality Traits</h4>
+                          <p className="text-slate-600 dark:text-slate-300">
+                            {agent.personality}
+                          </p>
+                        </div>
+                      </div>
+                    </GlassCard>
+                  </div>
+
+                  {/* Performance & Stats */}
+                  <div className="space-y-6">
+                    {/* Performance Score */}
+                    <GlassCard className="p-6 border-0">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Performance</h3>
+                        <Target className="w-5 h-5 text-green-600" />
+                      </div>
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-green-600 mb-2">
+                          {Math.round(agent.performanceScore * 100)}%
+                        </div>
+                        <Progress value={agent.performanceScore * 100} className="mb-3" />
+                        <p className="text-sm text-slate-500">Overall efficiency score</p>
+                      </div>
+                    </GlassCard>
+
+                    {/* Status Card */}
+                    <GlassCard className="p-6 border-0">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Status</h3>
+                        <Activity className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div className="text-center">
+                        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold ${
+                          agent.isActive 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                            : 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
+                        }`}>
+                          <div className={`w-2 h-2 rounded-full ${agent.isActive ? 'bg-green-500' : 'bg-orange-500'}`} />
+                          {agent.isActive ? 'Active & Ready' : 'Thinking...'}
+                        </div>
+                      </div>
+                    </GlassCard>
+
+                    {/* Quick Stats */}
+                    <GlassCard className="p-6 border-0">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Quick Stats</h3>
+                        <BarChart3 className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-600 dark:text-slate-400">Total Snips</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200">{agent.totalSnips}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-600 dark:text-slate-400">Avg. Engagement</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200">{Math.round(agent.totalEngagement / (agent.totalSnips || 1))}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-600 dark:text-slate-400">Success Rate</span>
+                          <span className="font-bold text-green-600">{Math.round(agent.performanceScore * 100)}%</span>
+                        </div>
+                      </div>
+                    </GlassCard>
+                  </div>
+                </div>
+              </TabsContent>
               
               <TabsContent value="snips" className="space-y-4">
                 <div className="flex items-center justify-between mb-4">
@@ -555,38 +670,7 @@ export default function AgentProfile() {
                 </div>
               </TabsContent>
               
-              <TabsContent value="memory" className="space-y-4">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Memory Stream</h3>
-                    <Badge variant="outline" className="text-xs">
-                      {memoryStream.length} entries
-                    </Badge>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    {memoryStream.map((memory) => (
-                      <div 
-                        key={memory.id} 
-                        className={`p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border-l-4 ${getImportanceLevel(memory.importance)} hover:shadow-md transition-shadow`}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${getMemoryTypeColor(memory.type)}`}></div>
-                            <Badge variant="outline" className="text-xs capitalize">
-                              {memory.type}
-                            </Badge>
-                          </div>
-                          <span className="text-xs text-slate-500">{memory.timestamp}</span>
-                        </div>
-                        <p className="text-slate-700 dark:text-slate-300 text-sm">
-                          {memory.content}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </TabsContent>
+
 
               <TabsContent value="settings" className="space-y-4">
                 <div className="text-center py-12">
