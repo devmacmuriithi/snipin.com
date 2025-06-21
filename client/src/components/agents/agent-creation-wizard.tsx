@@ -45,6 +45,7 @@ interface AgentCreationWizardProps {
 
 interface AgentData {
   name: string;
+  alias: string;
   description: string;
   expertise: string;
   personality: string;
@@ -130,6 +131,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
   const [step, setStep] = useState(1);
   const [agentData, setAgentData] = useState<AgentData>({
     name: "",
+    alias: "",
     description: "",
     expertise: "",
     personality: "",
@@ -139,6 +141,8 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
 
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
   const [selectedInterestAreas, setSelectedInterestAreas] = useState<string[]>([]);
+  const [aliasCheckLoading, setAliasCheckLoading] = useState(false);
+  const [aliasAvailable, setAliasAvailable] = useState<boolean | null>(null);
 
   // Enhanced name suggestions based on different categories
   const getNameSuggestions = () => {
@@ -167,6 +171,35 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
   };
 
   const [nameSuggestions, setNameSuggestions] = useState(getNameSuggestions());
+
+  // Generate URL-friendly alias from name
+  const generateAlias = (name: string) => {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+      .replace(/\s+/g, '_') // Replace spaces with underscores
+      .slice(0, 30); // Limit length
+  };
+
+  // Check if alias is available
+  const checkAliasAvailability = async (alias: string) => {
+    if (!alias.trim()) {
+      setAliasAvailable(null);
+      return;
+    }
+
+    setAliasCheckLoading(true);
+    try {
+      const response = await fetch(`/api/agents/check-alias?alias=${encodeURIComponent(alias)}`);
+      const { available } = await response.json();
+      setAliasAvailable(available);
+    } catch (error) {
+      console.error('Error checking alias:', error);
+      setAliasAvailable(null);
+    } finally {
+      setAliasCheckLoading(false);
+    }
+  };
 
   const createAgentMutation = useMutation({
     mutationFn: async (data: AgentData) => {
@@ -221,10 +254,10 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
   };
 
   const handleSubmit = () => {
-    if (!agentData.name.trim() || selectedInterestAreas.length === 0 || selectedTraits.length === 0) {
+    if (!agentData.name.trim() || !agentData.alias.trim() || selectedInterestAreas.length === 0 || selectedTraits.length === 0 || aliasAvailable !== true) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields.",
+        description: "Please fill in all required fields and ensure alias is available.",
         variant: "destructive",
       });
       return;
@@ -240,7 +273,9 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
   const isStepValid = (stepNum: number) => {
     switch (stepNum) {
       case 1:
-        return agentData.name.trim().length > 0;
+        return agentData.name.trim().length > 0 && 
+               agentData.alias.trim().length >= 3 && 
+               aliasAvailable === true;
       case 2:
         return selectedInterestAreas.length >= 2;
       case 3:
@@ -351,6 +386,77 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
               </div>
               
               <p className="text-sm text-slate-500 mt-2">Choose a memorable name that reflects your agent's personality</p>
+            </div>
+
+            {/* Alias Field */}
+            <div>
+              <Label htmlFor="agentAlias" className="text-base font-semibold">Agent Handle *</Label>
+              <div className="relative mt-2">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-slate-500 text-lg">@</span>
+                </div>
+                <Input
+                  id="agentAlias"
+                  placeholder="unique_handle"
+                  value={agentData.alias}
+                  onChange={(e) => {
+                    const newAlias = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+                    setAgentData(prev => ({ ...prev, alias: newAlias }));
+                    setAliasAvailable(null);
+                    if (newAlias.length >= 3) {
+                      checkAliasAvailability(newAlias);
+                    }
+                  }}
+                  className="pl-8 text-lg"
+                  maxLength={30}
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  {aliasCheckLoading && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                  )}
+                  {!aliasCheckLoading && aliasAvailable === true && (
+                    <Check className="h-4 w-4 text-green-600" />
+                  )}
+                  {!aliasCheckLoading && aliasAvailable === false && (
+                    <X className="h-4 w-4 text-red-600" />
+                  )}
+                </div>
+              </div>
+              
+              {/* Auto-generate button */}
+              {agentData.name && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const generated = generateAlias(agentData.name);
+                    setAgentData(prev => ({ ...prev, alias: generated }));
+                    setAliasAvailable(null);
+                    if (generated.length >= 3) {
+                      checkAliasAvailability(generated);
+                    }
+                  }}
+                  className="mt-2 text-xs"
+                >
+                  <Bot className="h-3 w-3 mr-1" />
+                  Generate from name
+                </Button>
+              )}
+              
+              {/* Status messages */}
+              {aliasAvailable === false && agentData.alias && (
+                <p className="text-sm text-red-600 mt-1">@{agentData.alias} is already taken</p>
+              )}
+              {aliasAvailable === true && agentData.alias && (
+                <p className="text-sm text-green-600 mt-1">@{agentData.alias} is available!</p>
+              )}
+              {agentData.alias && agentData.alias.length < 3 && (
+                <p className="text-sm text-slate-500 mt-1">Handle must be at least 3 characters</p>
+              )}
+              {!agentData.alias && (
+                <p className="text-sm text-slate-500 mt-1">Create a unique handle for your agent (e.g., @creative_muse)</p>
+              )}
             </div>
 
             <div>

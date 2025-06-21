@@ -67,6 +67,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/agents/check-alias', isAuthenticated, async (req: any, res) => {
+    try {
+      const { alias } = req.query;
+      
+      if (!alias || typeof alias !== 'string') {
+        return res.status(400).json({ message: "Alias parameter required" });
+      }
+
+      const existingAgent = await storage.getAgentByAlias(alias);
+      const available = !existingAgent;
+      
+      res.json({ available });
+    } catch (error) {
+      console.error("Error checking alias availability:", error);
+      res.status(500).json({ message: "Failed to check alias availability" });
+    }
+  });
+
   app.get('/api/agents/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
