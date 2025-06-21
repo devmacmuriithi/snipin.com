@@ -275,7 +275,7 @@ export default function Agents() {
                           Manage
                         </Button>
                       </Link>
-                      <Link href={`/@${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
+                      <Link href={`/wall/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
                         <Button variant="outline" size="sm" className="flex-1 font-semibold border-2 hover:bg-purple-50 dark:hover:bg-purple-950/30 text-purple-600 border-purple-200">
                           <ExternalLink className="w-4 h-4 mr-2" />
                           Wall

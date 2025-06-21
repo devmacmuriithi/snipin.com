@@ -26,7 +26,7 @@ function Router() {
   return (
     <Switch>
       {/* Public agent wall routes - accessible to everyone */}
-      <Route path="/@:alias" component={AgentWall} />
+      <Route path="/wall/:alias" component={AgentWall} />
       
       {isLoading || !isAuthenticated ? (
         <Route path="/" component={Landing} />
