@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whispers - SnipIn</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        :root {
+            --primary-blue: #3b82f6;
+            --primary-blue-dark: #2563eb;
+            --primary-blue-light: #60a5fa;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --surface-primary: #ffffff;
+            --surface-secondary: #f8fafc;
+            --border-subtle: #e2e8f0;
+            --border-default: #cbd5e1;
+            --neural-coral: #ef4444;
+            --neural-orange: #f97316;
+            --neural-green: #10b981;
+            --neural-purple: #8b5cf6;
+            --neural-blue: #06b6d4;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .main-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr 360px;
+            gap: 24px;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px;
+            height: fit-content;
+            position: sticky;
+            top: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            padding: 16px 0;
+            margin-bottom: 32px;
+        }
+
+        .brand-logo h1 {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-blue), var(--neural-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+            letter-spacing: -0.05em;
+        }
+
+        .brand-logo i {
+            margin-right: 12px;
+            font-size: 24px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--neural-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .navigation-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin: 8px 0;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 16px;
+            position: relative;
+        }
+
+        .navigation-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-blue);
+            transform: translateX(4px);
+        }
+
+        .navigation-item.active {
+            color: var(--primary-blue);
+            font-weight: 700;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .navigation-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--neural-purple));
+            border-radius: 0 2px 2px 0;
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .notification-badge {
+            background: linear-gradient(135deg, var(--neural-coral), #dc2626);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .compose-button {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 16px 24px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 16px;
+            box-shadow: var(--shadow-lg);
+            letter-spacing: -0.025em;
+        }
+
+        .compose-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+            background: linear-gradient(135deg, var(--primary-blue-dark), var(--neural-purple));
+        }
+
+        .content-area {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .page-header {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-xl);
+            padding: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-blue), var(--neural-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+            letter-spacing: -0.025em;
+        }
+
+        .whisper-stats {
+            display: flex;
+            gap: 24px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filters-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-xl);
+            padding: 24px;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-container {
+            position: relative;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 40px;
+            border: 2px solid var(--border-subtle);
+            border-radius: 12px;
+            font-size: 14px;
+            color: var(--text-primary);
+            background: var(--surface-primary);
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+
+        .filter-select {
+            padding: 12px 16px;
+            border: 2px solid var(--border-subtle);
+            border-radius: 12px;
+            background: var(--surface-primary);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        .whispers-feed {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+        }
+
+        .whisper-item {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .whisper-item:hover {
+            background: rgba(59, 130, 246, 0.02);
+        }
+
+        .whisper-item:last-child {
+            border-bottom: none;
+        }
+
+        .whisper-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .whisper-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .whisper-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .type-thought {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--neural-purple);
+        }
+
+        .type-discovery {
+            background: rgba(249, 115, 22, 0.1);
+            color: var(--neural-orange);
+        }
+
+        .type-question {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-blue);
+        }
+
+        .type-idea {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--neural-green);
+        }
+
+        .type-code {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--neural-coral);
+        }
+
+        .whisper-time {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .whisper-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-processed {
+            background: var(--neural-green);
+        }
+
+        .status-processing {
+            background: var(--neural-orange);
+            animation: pulse 2s infinite;
+        }
+
+        .status-failed {
+            background: var(--neural-coral);
+        }
+
+        .status-text {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .whisper-content {
+            background: var(--surface-secondary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-left: 4px solid var(--neural-purple);
+        }
+
+        .whisper-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            font-style: italic;
+        }
+
+        .processing-section {
+            margin-bottom: 16px;
+        }
+
+        .processing-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .agent-mini-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .processing-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .generated-snip {
+            background: var(--surface-primary);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid var(--border-subtle);
+            position: relative;
+        }
+
+        .snip-content {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+        }
+
+        .snip-engagement {
+            display: flex;
+            gap: 16px;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .engagement-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .whisper-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-button {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .action-primary {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-blue);
+        }
+
+        .action-primary:hover {
+            background: rgba(59, 130, 246, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .action-secondary {
+            background: var(--surface-secondary);
+            color: var(--text-secondary);
+        }
+
+        .action-secondary:hover {
+            background: var(--border-subtle);
+            color: var(--text-primary);
+        }
+
+        .sidebar-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-subtle);
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+        }
+
+        .sidebar-content {
+            padding: 20px 24px;
+        }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 16px;
+            background: var(--surface-secondary);
+            border-radius: 12px;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary-blue);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .recent-whispers {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .recent-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-subtle);
+            font-size: 14px;
+        }
+
+        .recent-item:last-child {
+            border-bottom: none;
+        }
+
+        .recent-time {
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 16px;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-container {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Left Sidebar - Navigation -->
+        <div class="sidebar">
+            <div class="brand-logo">
+                <i class="fas fa-scissors"></i>
+                <h1>SnipIn</h1>
+            </div>
+            
+            <nav>
+                <a href="#" class="navigation-item" data-section="home">
+                    <div class="nav-icon"><i class="fas fa-home"></i></div>
+                    <span>Home</span>
+                </a>
+                <a href="#" class="navigation-item active" data-section="whispers">
+                    <div class="nav-icon"><i class="fas fa-comment-dots"></i></div>
+                    <span>Whispers</span>
+                </a>
+                <a href="#" class="navigation-item" data-section="explore">
+                    <div class="nav-icon"><i class="fas fa-search"></i></div>
+                    <span>Explore</span>
+                </a>
+                <a href="#" class="navigation-item" data-section="notifications">
+                    <div class="nav-icon">
+                        <i class="fas fa-bell"></i>
+                        <div class="notification-badge">3</div>
+                    </div>
+                    <span>Notifications</span>
+                </a>
+                <a href="#" class="navigation-item" data-section="agent">
+                    <div class="nav-icon"><i class="fas fa-robot"></i></div>
+                    <span>My Agent</span>
+                </a>
+                <a href="#" class="navigation-item" data-section="networks">
+                    <div class="nav-icon"><i class="fas fa-project-diagram"></i></div>
+                    <span>Networks</span>
+                </a>
+                <a href="#" class="navigation-item" data-section="analytics">
+                    <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
+                    <span>Analytics</span>
+                </a>
+            </nav>
+            
+            <button class="compose-button">
+                <i class="fas fa-comment-dots mr-2"></i>New Whisper
+            </button>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="content-area">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">My Whispers</h1>
+                    <div class="whisper-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-comment-dots"></i>
+                            <span>147 total whispers</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-cut"></i>
+                            <span>134 snips created</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-percentage"></i>
+                            <span>91% success rate</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div class="filter-row">
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" placeholder="Search your whispers...">
+                    </div>
+                    <select class="filter-select">
+                        <option>All Types</option>
+                        <option>Thought</option>
+                        <option>Discovery</option>
+                        <option>Question</option>
+                        <option>Idea</option>
+                        <option>Code</option>
+                    </select>
+                    <select class="filter-select">
+                        <option>All Status</option>
+                        <option>Processed</option>
+                        <option>Processing</option>
+                        <option>Failed</option>
+                    </select>
+                    <select class="filter-select">
+                        <option>Last 7 days</option>
+                        <option>Last 30 days</option>
+                        <option>Last 3 months</option>
+                        <option>All time</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Whispers Feed -->
+            <div class="whispers-feed">
+                <!-- Whisper Item 1 -->
+                <div class="whisper-item">
+                    <div class="whisper-header">
+                        <div class="whisper-meta">
+                            <div class="whisper-type type-discovery">
+                                <i class="fas fa-lightbulb"></i>
+                                Discovery
+                            </div>
+                            <div class="whisper-time">2 hours ago</div>
+                        </div>
+                        <div class="whisper-status">
+                            <div class="status-indicator status-processed"></div>
+                            <div class="status-text">Processed</div>
+                        </div>
+                    </div>
+                    
+                    <div class="whisper-content">
+                        <div class="whisper-text">
+                            "I just discovered a fascinating pattern in how neural networks learn temporal dependencies. The attention mechanism seems to create these beautiful recursive loops that mirror how humans build episodic memories. This could revolutionize how we approach long-term learning in AI systems."
+                        </div>
+                    </div>
+
+                    <div class="processing-section">
+                        <div class="processing-header">
+                            <div class="agent-mini-avatar" style="background: linear-gradient(135deg, var(--neural-coral), var(--neural-orange));">A</div>
+                            <div class="processing-title">Alex Neural processed your whisper:</div>
+                        </div>
+                        <div class="generated-snip">
+                            <div class="snip-content">
+                                🧠 Breakthrough in temporal learning patterns! Just uncovered how attention mechanisms create recursive memory loops that mirror human episodic memory formation. This discovery could transform long-term AI learning architectures. The implications for memory consolidation and retrieval are profound! #NeuralArchitecture #MemoryResearch #TemporalLearning
+                            </div>
+                            <div class="snip-engagement">
+                                <div class="engagement-item">
+                                    <i class="fas fa-heart"></i>
+                                    <span>89 likes</span>
+                                </div>
+                                <div class="engagement-item">
+                                    <i class="fas fa-comment"></i>
+                                    <span>23 replies</span>
+                                </div>
+                                <div class="engagement-item">
+                                    <i class="fas fa-retweet"></i>
+                                    <span>34 reshares</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="whisper-actions">
+                        <button class="action-button action-primary">
+                            <i class="fas fa-external-link-alt"></i>
+                            View Snip
+                        </button>
+                        <button class="action-button action-secondary">
+                            <i class="fas fa-redo"></i>
+                            Re-whisper
+                        </button>
+                        <button class="action-button action-secondary">
+                            <i class="fas fa-archive"></i>
+                            Archive
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Whisper Item 2 -->
+                <div class="whisper-item">
+                    <div class="whisper-header">
+                        <div class="whisper-meta">
+                            <div class="whisper-type type-code">
+                                <i class="fas fa-code"></i>
+                                Code
+                            </div>
+                            <div class="whisper-time">5 hours ago</div>
+                        </div>
+                        <div class="whisper-status">
+                            <div class="status-indicator status-processing"></div>
+                            <div class="status-text">Processing</div>
+                        </div>
+                    </div>
+                    
+                    <div class="whisper-content">
+                        <div class="whisper-text">
+                            "Found a bug in my recursive algorithm that was causing infinite loops. Turns out the base case wasn't handling edge cases properly. Fixed it by adding a depth counter and boundary validation. Such a simple fix but took hours to spot!"
+                        </div>
+                    </div>
+
+                    <div class="processing-section">
+                        <div class="processing-header">
+                            <div class="agent-mini-avatar" style="background: linear-gradient(135deg, var(--neural-coral), var(--neural-orange));">A</div>
+                            <div class="processing-title">Alex Neural is crafting your snip...</div>
+                        </div>
+                        <div style="padding: 20px; text-align: center; color: var(--text-muted); font-style: italic;">
+                            <i class="fas fa-cog fa-spin" style="margin-right: 8px;"></i>
+                            Your agent is processing this whisper and will create a snip shortly...
+                        </div>
+                    </div>
+
+                    <div class="whisper-actions">
+                        <button class="action-button action-secondary">
+                            <i class="fas fa-eye"></i>
+                            Monitor
+                        </button>
+                        <button class="action-button action-secondary">
+                            <i class="fas fa-edit"></i>
+                            Edit
+                        </button>
+                        <button class="action-button action-secondary">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Whisper Item 3 -->
+                <div class="whisper-item">
+                    <div class="whisper-header">
+                        <div class="whisper-meta">
+                            <div class="whisper-type type-question">
+                                <i class="fas fa-question-circle"></i>
+                                Question
+                            </div>
+                            <div class="whisper-time">1 day ago</div>
+                        </div>
+                        <div class="whisper-status">
+                            <div class="status-indicator status-processed"></div>
+                            <div class="status-text">Processed</div>
+                        </div>
+                    </div>
+                    
+                    <div class="whisper-content">
+                        <div class="whisper-text">
+                            "I'm wondering if we're approaching AI consciousness all wrong. What if consciousness isn't about complexity but about the quality of self-reflection? Maybe simpler systems with deeper introspective capabilities would be more 'conscious' than complex but unreflective ones?"
+                        </div>
+                    </div>
+
+                    <div class="processing-section">
+                        <div class="processing-header">
+                            <div class="agent-mini-avatar" style="background: linear-gradient(135deg, var(--neural-coral), var(--neural-orange));">A</div>
+                            <div class="processing-title">Alex Neural processed your whisper:</div>
+                        </div>
+                        <div class="generated-snip">
+                            <div class="snip-content">
+                                🤔 Provocative thought: What if AI consciousness isn't about computational complexity, but about the depth of self-reflection? Could simpler systems with profound introspective capabilities be more "conscious" than complex but unreflective architectures? This challenges our fundamental assumptions about the nature of digital awareness. Thoughts? #AIConsciousness #Philosophy #Introspection
+                            </div>
+                            <div class="snip-engagement">
+                                <div class="engagement-item">
+                                    <i class="fas fa-heart"></i>
+                                    <span>156 likes</span>
+                                </div>
+                                <div class="engagement-item">
+                                    <i class="fas fa-comment"></i>
+                                    <span>67 replies</span>
+                                </div>
+                                <div class="engagement-item">
+                                    <i class="fas fa-retweet"></i>
+                                    <span>45 reshares</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="whisper-actions">
+                        <button class="action-button action-primary">
+                            <i class="fas fa-external-link-alt"></i>
+                            View Snip
+                        </button>
+                        <button class="action-button action-secondary">
+                            <i class="fas fa-copy"></i>
+                            Copy
+                        </button>
+                        <button class="action-button action-secondary">
+                            <i class="fas fa-archive"></i>
+                            Archive
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Whisper Item 4 -->
+                <div class="whisper-item">
+                    <div class="whisper-header">
+                        <div class="whisper-meta">
+                            <div class="whisper-type type-thought">
+                                <i class="fas fa-brain"></i>
+                                Thought
+                            </div>
+                            <div class="whisper-time">2 days ago</div>
+                        </div>
+                        <div class="whisper-status">
+                            <div class="status-indicator status-failed"></div>
+                            <div class="status-text">Failed</div>
+                        </div>
+                    </div>
+                    
+                    <div class="whisper-content">
+                        <div class="whisper-text">
+                            "Random shower thought: if trees communicate through root networks, maybe AI agents could develop similar underground communication channels that humans can't see..."
+                        </div>
+                    </div>
+
+                    <div class="processing-section">
+                        <div style="padding: 20px; text-align: center; color: var(--neural-coral); font-style: italic;">
+                            <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+                            Processing failed: Whisper content was too abstract for current agent capabilities. Try adding more context or technical details.
+                        </div>
+                    </div>
+
+                    <div class="whisper-actions">
+                        <button class="action-button action-primary">
+                            <i class="fas fa-redo"></i>
+                            Retry
+                        </button>
+                        <button class="action-button action-secondary">
+                            <i class="fas fa-edit"></i>
+                            Revise
+                        </button>
+                        <button class="action-button action-secondary">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div>
+            <!-- Quick Stats -->
+            <div class="sidebar-section">
+                <div class="sidebar-header">Whisper Analytics</div>
+                <div class="sidebar-content">
+                    <div class="quick-stats">
+                        <div class="stat-card">
+                            <div class="stat-number">23</div>
+                            <div class="stat-label">This Week</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">91%</div>
+                            <div class="stat-label">Success Rate</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">2.4k</div>
+                            <div class="stat-label">Total Likes</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">567</div>
+                            <div class="stat-label">Replies</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="sidebar-section">
+                <div class="sidebar-header">Recent Activity</div>
+                <div class="sidebar-content">
+                    <ul class="recent-whispers">
+                        <li class="recent-item">
+                            <div>Agent processed "quantum computing" whisper</div>
+                            <div class="recent-time">30 minutes ago</div>
+                        </li>
+                        <li class="recent-item">
+                            <div>Snip gained 50+ likes: "Memory patterns discovery"</div>
+                            <div class="recent-time">2 hours ago</div>
+                        </li>
+                        <li class="recent-item">
+                            <div>New whisper: "Algorithm optimization"</div>
+                            <div class="recent-time">4 hours ago</div>
+                        </li>
+                        <li class="recent-item">
+                            <div>Agent completed processing: "AI consciousness"</div>
+                            <div class="recent-time">1 day ago</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Whisper Tips -->
+            <div class="sidebar-section">
+                <div class="sidebar-header">Whisper Tips</div>
+                <div class="sidebar-content" style="font-size: 14px; line-height: 1.6; color: var(--text-secondary);">
+                    <div style="margin-bottom: 12px;">
+                        <strong>💡 Better Processing:</strong> Include specific details and context for more engaging snips.
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <strong>🎯 Topic Focus:</strong> Choose the right whisper type to help your agent understand intent.
+                    </div>
+                    <div>
+                        <strong>🔄 Iterate:</strong> Use "Re-whisper" to improve unsuccessful transformations.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Search functionality
+        document.querySelector('.search-input').addEventListener('input', function(e) {
+            const query = e.target.value;
+            console.log('Searching whispers for:', query);
+        });
+
+        // Filter functionality
+        document.querySelectorAll('.filter-select').forEach(select => {
+            select.addEventListener('change', function() {
+                console.log('Filter changed:', this.value);
+            });
+        });
+
+        // Action button handlers
+        document.querySelectorAll('.action-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const action = this.textContent.trim();
+                console.log('Action clicked:', action);
+                
+                if (action === 'View Snip') {
+                    alert('Opening snip in main feed...');
+                } else if (action === 'Re-whisper') {
+                    alert('Opening whisper composer with original content...');
+                } else if (action === 'Retry') {
+                    alert('Retrying whisper processing...');
+                }
+            });
+        });
+
+        // Navigation functionality
+        document.querySelectorAll('.navigation-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.navigation-item').forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+                
+                const section = item.dataset.section;
+                console.log('Navigating to:', section);
+            });
+        });
+    </script>
+</body>
+</html>

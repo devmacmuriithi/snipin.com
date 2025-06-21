@@ -7,10 +7,11 @@ import AgentPerformanceWidget from "@/components/dashboard/agent-performance-wid
 import NetworkVisualizationMini from "@/components/dashboard/network-visualization-mini";
 import GlassCard from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Brain, Clock, CheckCircle, XCircle, Search } from "lucide-react";
+import { MessageSquare, Brain, Clock, CheckCircle, XCircle, Search, Filter, Zap, Bot, TrendingUp } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 
@@ -37,6 +38,9 @@ export default function Whispers() {
   const [whisperContent, setWhisperContent] = useState("");
   const [selectedAgent, setSelectedAgent] = useState<string>("");
   const [whisperType, setWhisperType] = useState<string>("thought");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
 
   const { data: whispers = [], refetch: refetchWhispers } = useQuery({
     queryKey: ["/api/whispers"],
@@ -48,7 +52,7 @@ export default function Whispers() {
     enabled: !!user,
   });
 
-  // Auto-select the first agent (default agent) when agents are loaded
+  // Auto-select the first agent when agents are loaded
   useEffect(() => {
     if (agents.length > 0 && !selectedAgent) {
       setSelectedAgent(agents[0].id.toString());
@@ -65,7 +69,6 @@ export default function Whispers() {
         description: "Your whisper has been sent to your agent for processing.",
       });
       setWhisperContent("");
-      setSelectedAgent("");
       refetchWhispers();
     },
     onError: (error) => {
@@ -124,7 +127,7 @@ export default function Whispers() {
       case 'processed':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'processing':
-        return <Clock className="h-4 w-4 text-orange-500 animate-spin" />;
+        return <Clock className="h-4 w-4 text-orange-500 animate-pulse" />;
       case 'failed':
         return <XCircle className="h-4 w-4 text-red-500" />;
       default:
@@ -134,13 +137,31 @@ export default function Whispers() {
 
   const getTypeColor = (type: string) => {
     const colors = {
-      thought: 'bg-purple-100 text-purple-800',
-      question: 'bg-blue-100 text-blue-800',
-      idea: 'bg-green-100 text-green-800',
-      code: 'bg-red-100 text-red-800',
-      discovery: 'bg-orange-100 text-orange-800',
+      thought: 'bg-purple-100 text-purple-800 border-purple-200',
+      question: 'bg-blue-100 text-blue-800 border-blue-200',
+      idea: 'bg-green-100 text-green-800 border-green-200',
+      code: 'bg-red-100 text-red-800 border-red-200',
+      discovery: 'bg-orange-100 text-orange-800 border-orange-200',
     };
-    return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+    return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
+  const getAgentById = (agentId: number) => {
+    return agents.find((agent: any) => agent.id === agentId);
+  };
+
+  const filteredWhispers = whispers.filter((whisper: any) => {
+    const matchesSearch = whisper.content.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || whisper.status === statusFilter;
+    const matchesType = typeFilter === 'all' || whisper.type === typeFilter;
+    return matchesSearch && matchesStatus && matchesType;
+  });
+
+  const whisperStats = {
+    total: whispers.length,
+    processed: whispers.filter((w: any) => w.status === 'processed').length,
+    processing: whispers.filter((w: any) => w.status === 'processing').length,
+    pending: whispers.filter((w: any) => w.status === 'pending').length,
   };
 
   if (isLoading) {
@@ -160,62 +181,117 @@ export default function Whispers() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
-      <NavigationSidebar />
-      
-      <main className="ml-72 p-6">
-        <div className="max-w-5xl mx-auto">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6 p-6">
+        {/* Navigation Sidebar */}
+        <div className="lg:col-span-1">
+          <NavigationSidebar />
+        </div>
+
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
           {/* Header */}
-          <GlassCard className="p-8 mb-6">
-            <div className="flex justify-between items-center">
+          <GlassCard className="p-8">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
               <div>
                 <h1 className="text-4xl font-extrabold gradient-text mb-2">Whispers</h1>
                 <p className="text-slate-600 text-lg">Share your private thoughts with AI agents</p>
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-slate-800">{whispers.length}</div>
-                  <div className="text-sm text-slate-500 font-semibold">Total Whispers</div>
+              <div className="flex items-center space-x-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-slate-800">{whisperStats.total}</div>
+                  <div className="text-sm text-slate-500 font-semibold">Total</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">{whisperStats.processed}</div>
+                  <div className="text-sm text-slate-500 font-semibold">Processed</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-600">{whisperStats.processing}</div>
+                  <div className="text-sm text-slate-500 font-semibold">Processing</div>
                 </div>
               </div>
             </div>
           </GlassCard>
 
+          {/* Search and Filters */}
+          <GlassCard className="p-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+                <Input
+                  placeholder="Search whispers..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-40">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="processing">Processing</SelectItem>
+                  <SelectItem value="processed">Processed</SelectItem>
+                  <SelectItem value="failed">Failed</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={typeFilter} onValueChange={setTypeFilter}>
+                <SelectTrigger className="w-full sm:w-40">
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="thought">Thought</SelectItem>
+                  <SelectItem value="question">Question</SelectItem>
+                  <SelectItem value="idea">Idea</SelectItem>
+                  <SelectItem value="code">Code</SelectItem>
+                  <SelectItem value="discovery">Discovery</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </GlassCard>
+
           {/* Whisper Composer */}
-          <GlassCard className="p-6 mb-6">
+          <GlassCard className="p-6">
             <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center">
               <MessageSquare className="h-5 w-5 mr-2" />
               Share a New Whisper
             </h2>
             <div className="space-y-4">
               <Textarea
-                placeholder="Share a random thought, observation or mental note"
+                placeholder="Share a random thought, observation, or mental note with your AI agent..."
                 value={whisperContent}
                 onChange={(e) => setWhisperContent(e.target.value)}
-                className="min-h-32 resize-none"
+                className="min-h-32 resize-none border-2 focus:border-blue-500 bg-slate-50"
               />
               
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Select value={whisperType} onValueChange={setWhisperType}>
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-full sm:w-48">
                     <SelectValue placeholder="Whisper type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="thought">Thought</SelectItem>
-                    <SelectItem value="question">Question</SelectItem>
-                    <SelectItem value="idea">Idea</SelectItem>
-                    <SelectItem value="code">Code</SelectItem>
-                    <SelectItem value="discovery">Discovery</SelectItem>
+                    <SelectItem value="thought">💭 Thought</SelectItem>
+                    <SelectItem value="question">❓ Question</SelectItem>
+                    <SelectItem value="idea">💡 Idea</SelectItem>
+                    <SelectItem value="code">💻 Code</SelectItem>
+                    <SelectItem value="discovery">🔍 Discovery</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select value={selectedAgent} onValueChange={setSelectedAgent}>
-                  <SelectTrigger className="w-48">
+                  <SelectTrigger className="w-full sm:w-48">
                     <SelectValue placeholder="Select agent" />
                   </SelectTrigger>
                   <SelectContent>
-                    {agents.map((agent: Agent) => (
+                    {agents.map((agent: any) => (
                       <SelectItem key={agent.id} value={agent.id.toString()}>
-                        {agent.name} ({agent.expertise})
+                        <div className="flex items-center gap-2">
+                          <Bot className="h-4 w-4" />
+                          {agent.name}
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -223,10 +299,20 @@ export default function Whispers() {
 
                 <Button
                   onClick={handleSubmitWhisper}
-                  disabled={createWhisperMutation.isPending}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-6"
+                  disabled={createWhisperMutation.isPending || !whisperContent.trim() || !selectedAgent}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full sm:w-auto"
                 >
-                  {createWhisperMutation.isPending ? "Sending..." : "Send Whisper"}
+                  {createWhisperMutation.isPending ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Sending...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4" />
+                      Send Whisper
+                    </div>
+                  )}
                 </Button>
               </div>
             </div>
@@ -235,32 +321,35 @@ export default function Whispers() {
           {/* Whispers Feed */}
           <GlassCard className="overflow-hidden">
             <div className="p-6 border-b border-slate-200">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-bold text-slate-800">Your Whispers</h2>
-                <div className="flex space-x-2">
-                  <Button variant="outline" size="sm">All</Button>
-                  <Button variant="ghost" size="sm">Processing</Button>
-                  <Button variant="ghost" size="sm">Completed</Button>
-                </div>
-              </div>
+              <h2 className="text-xl font-bold text-slate-800 flex items-center">
+                <Brain className="h-5 w-5 mr-2" />
+                Your Whispers ({filteredWhispers.length})
+              </h2>
             </div>
 
             <div className="divide-y divide-slate-200">
-              {whispers.length === 0 ? (
+              {filteredWhispers.length === 0 ? (
                 <div className="p-12 text-center">
                   <MessageSquare className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-slate-600 mb-2">No whispers yet</h3>
-                  <p className="text-slate-500">Share your first whisper to get started with AI content generation.</p>
+                  <h3 className="text-lg font-semibold text-slate-600 mb-2">
+                    {whispers.length === 0 ? "No whispers yet" : "No whispers match your filters"}
+                  </h3>
+                  <p className="text-slate-500">
+                    {whispers.length === 0 
+                      ? "Share your first whisper to get started with AI content generation."
+                      : "Try adjusting your search or filter criteria."
+                    }
+                  </p>
                 </div>
               ) : (
-                whispers.map((whisper: Whisper) => {
-                  const agent = agents.find((a: Agent) => a.id === whisper.agentId);
+                filteredWhispers.map((whisper: any) => {
+                  const agent = getAgentById(whisper.agentId);
                   return (
                     <div key={whisper.id} className="p-6 hover:bg-slate-50/50 transition-colors">
-                      <div className="flex justify-between items-start mb-3">
+                      <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center space-x-3">
                           {agent && (
-                            <div className={`w-10 h-10 bg-gradient-to-br ${agent.avatar} rounded-lg flex items-center justify-center text-white font-bold text-sm`}>
+                            <div className={`w-10 h-10 bg-gradient-to-br ${agent.avatar} rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md`}>
                               {agent.name.substring(0, 2).toUpperCase()}
                             </div>
                           )}
@@ -269,17 +358,22 @@ export default function Whispers() {
                               {agent ? `To ${agent.name}` : 'To Agent'}
                             </div>
                             <div className="text-sm text-slate-500">
-                              {new Date(whisper.createdAt).toLocaleDateString()}
+                              {new Date(whisper.createdAt).toLocaleDateString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <Badge className={getTypeColor(whisper.type)}>
+                        <div className="flex items-center space-x-3">
+                          <Badge className={`${getTypeColor(whisper.type)} text-xs font-semibold uppercase tracking-wide`}>
                             {whisper.type}
                           </Badge>
-                          <div className="flex items-center space-x-1">
+                          <div className="flex items-center space-x-2">
                             {getStatusIcon(whisper.status)}
-                            <span className="text-sm text-slate-500 capitalize">
+                            <span className="text-sm text-slate-500 capitalize font-medium">
                               {whisper.status}
                             </span>
                           </div>
@@ -291,6 +385,18 @@ export default function Whispers() {
                           "{whisper.content}"
                         </p>
                       </div>
+
+                      {whisper.status === 'processed' && agent && (
+                        <div className="mt-4 p-4 bg-green-50 rounded-xl border border-green-200">
+                          <div className="flex items-center text-green-800 text-sm font-semibold mb-2">
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Processed by {agent.name}
+                          </div>
+                          <p className="text-green-700 text-sm">
+                            This whisper has been successfully processed and converted into content.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   );
                 })
@@ -298,7 +404,13 @@ export default function Whispers() {
             </div>
           </GlassCard>
         </div>
-      </main>
+
+        {/* Right Sidebar */}
+        <div className="lg:col-span-1 space-y-6">
+          <AgentPerformanceWidget />
+          <NetworkVisualizationMini />
+        </div>
+      </div>
     </div>
   );
 }
