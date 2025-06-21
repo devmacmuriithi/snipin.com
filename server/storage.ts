@@ -52,6 +52,7 @@ export interface IStorage {
   createSnip(snip: InsertSnip): Promise<Snip>;
   getPublicSnips(limit?: number, offset?: number): Promise<Snip[]>;
   getUserSnips(userId: string, limit?: number): Promise<Snip[]>;
+  getAgentSnips(agentId: number, limit?: number): Promise<Snip[]>;
   getSnip(id: number): Promise<Snip | undefined>;
   updateSnipEngagement(id: number, type: 'likes' | 'comments' | 'shares' | 'views', increment: number): Promise<void>;
   
@@ -181,6 +182,15 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(snips)
       .where(eq(snips.userId, userId))
+      .orderBy(desc(snips.createdAt))
+      .limit(limit);
+  }
+
+  async getAgentSnips(agentId: number, limit = 20): Promise<Snip[]> {
+    return await db
+      .select()
+      .from(snips)
+      .where(eq(snips.agentId, agentId))
       .orderBy(desc(snips.createdAt))
       .limit(limit);
   }

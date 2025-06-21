@@ -1,0 +1,1467 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemPod - Personal Intelligence Watchtower</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        :root {
+            --primary-blue: #3b82f6;
+            --primary-blue-dark: #2563eb;
+            --primary-blue-light: #60a5fa;
+            --primary-dark: #0f172a;
+            --secondary-dark: #1e293b;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --surface-primary: #ffffff;
+            --surface-secondary: #f8fafc;
+            --surface-elevated: #ffffff;
+            --border-subtle: #e2e8f0;
+            --border-default: #cbd5e1;
+            --neural-coral: #ef4444;
+            --neural-orange: #f97316;
+            --neural-green: #10b981;
+            --neural-purple: #8b5cf6;
+            --neural-blue: #06b6d4;
+            --neural-indigo: #6366f1;
+            --neural-pink: #ec4899;
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: var(--text-primary);
+            line-height: 1.5;
+            font-weight: 400;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .main-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr 360px;
+            gap: 24px;
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        /* SnipIn Sidebar Styling */
+        .sidebar {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px;
+            height: fit-content;
+            position: sticky;
+            top: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-xl);
+        }
+
+        /* SnipIn Brand Logo Styling */
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            padding: 16px 0;
+            margin-bottom: 32px;
+        }
+
+        .brand-logo h1 {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-blue), var(--neural-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0;
+            letter-spacing: -0.05em;
+        }
+
+        .brand-logo i {
+            margin-right: 12px;
+            font-size: 24px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--neural-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* SnipIn Navigation Styling */
+        .navigation-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin: 8px 0;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 16px;
+            position: relative;
+        }
+
+        .navigation-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-blue);
+            transform: translateX(4px);
+        }
+
+        .navigation-item.active {
+            color: var(--primary-blue);
+            font-weight: 700;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .navigation-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--neural-purple));
+            border-radius: 0 2px 2px 0;
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .notification-badge {
+            background: linear-gradient(135deg, var(--neural-coral), #dc2626);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .compose-button {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 16px 24px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 24px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 16px;
+            box-shadow: var(--shadow-lg);
+            letter-spacing: -0.025em;
+        }
+
+        .compose-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+            background: linear-gradient(135deg, var(--primary-blue-dark), var(--neural-purple));
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .quick-capture-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-2xl);
+            overflow: hidden;
+        }
+
+        .quick-capture-header {
+            padding: 28px 32px 20px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+        }
+
+        .quick-capture-title {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary-blue), var(--neural-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            letter-spacing: -0.025em;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .capture-mode-pills {
+            display: flex;
+            gap: 6px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .capture-mode-pills::-webkit-scrollbar {
+            display: none;
+        }
+
+        .capture-pill {
+            padding: 8px 14px;
+            border: 2px solid var(--border-subtle);
+            border-radius: 12px;
+            background: var(--surface-primary);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .capture-pill:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+            background: rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .capture-pill.active {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+            color: white;
+            border-color: var(--primary-blue);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .quick-capture-content {
+            padding: 32px;
+        }
+
+        .capture-interface {
+            background: var(--surface-primary);
+            border-radius: 20px;
+            padding: 24px;
+            border: 2px solid var(--border-subtle);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 24px;
+        }
+
+        .capture-interface:focus-within {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .capture-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            resize: none;
+            font-size: 18px;
+            padding: 0;
+            min-height: 160px;
+            font-family: inherit;
+            background: transparent;
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        .capture-input::placeholder {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .capture-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .activity-feed {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+        }
+
+        .activity-header {
+            padding: 24px 32px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .activity-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .activity-content {
+            padding: 28px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: start;
+            padding: 20px;
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            background: var(--surface-primary);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .activity-item:hover {
+            background: rgba(59, 130, 246, 0.02);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-blue-light);
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+
+        .activity-content-text {
+            flex: 1;
+        }
+
+        .activity-text {
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .activity-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .activity-tag {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-blue);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .intelligence-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .sidebar-widget {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar-widget:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-2xl);
+        }
+
+        .sidebar-widget-header {
+            padding: 20px 24px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+        }
+
+        .sidebar-widget-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sidebar-widget-content {
+            padding: 20px 24px;
+        }
+
+        .life-overview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .life-metric {
+            background: var(--surface-primary);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid var(--border-subtle);
+            transition: all 0.3s ease;
+        }
+
+        .life-metric:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .life-metric-value {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, var(--primary-blue), var(--neural-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .life-metric-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Tab Content Management */
+        .capture-mode-content {
+            display: none;
+        }
+
+        .capture-mode-content.active {
+            display: block;
+        }
+
+        .task-input-container {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .task-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid var(--border-subtle);
+            border-radius: 12px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .task-input:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .add-task-btn {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-task-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-subtle);
+            transition: all 0.3s ease;
+        }
+
+        .task-item:hover {
+            background: rgba(59, 130, 246, 0.02);
+            transform: translateX(4px);
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-default);
+            border-radius: 6px;
+            margin-right: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .task-checkbox:hover {
+            border-color: var(--primary-blue);
+            transform: scale(1.1);
+        }
+
+        .task-checkbox.completed {
+            background: linear-gradient(135deg, var(--primary-blue), var(--neural-purple));
+            border-color: var(--primary-blue);
+            color: white;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 14px;
+            color: var(--text-primary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .task-text.completed {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .priority-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+
+        .priority-high { background: var(--neural-coral); }
+        .priority-medium { background: var(--neural-orange); }
+        .priority-low { background: var(--neural-green); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            background: linear-gradient(135deg, var(--primary-blue-dark), var(--neural-purple));
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 16px;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .main-container > div:last-child {
+                display: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .main-container {
+                padding: 12px;
+            }
+        }
+
+        /* Animations */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .quick-capture-section,
+        .activity-feed,
+        .sidebar-widget {
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--surface-secondary);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--primary-blue), var(--neural-purple));
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Left Sidebar - SnipIn Navigation -->
+        <div class="sidebar">
+            <div class="brand-logo">
+                <i class="fas fa-scissors"></i>
+                <h1>SnipIn</h1>
+            </div>
+            
+            <nav>
+                <a href="#" class="navigation-item" data-section="home">
+                    <div class="nav-icon"><i class="fas fa-home"></i></div>
+                    <span>Home</span>
+                </a>
+                <a href="#" class="navigation-item" data-section="whispers">
+                    <div class="nav-icon"><i class="fas fa-comment-dots"></i></div>
+                    <span>Whispers</span>
+                </a>
+                <a href="#" class="navigation-item" data-section="explore">
+                    <div class="nav-icon"><i class="fas fa-search"></i></div>
+                    <span>Explore</span>
+                </a>
+                <a href="#" class="navigation-item" data-section="notifications">
+                    <div class="nav-icon">
+                        <i class="fas fa-bell"></i>
+                        <div class="notification-badge" id="notificationCount">3</div>
+                    </div>
+                    <span>Notifications</span>
+                </a>
+                <a href="#" class="navigation-item" data-section="networks">
+                    <div class="nav-icon"><i class="fas fa-project-diagram"></i></div>
+                    <span>Networks</span>
+                </a>
+                <a href="#" class="navigation-item" data-section="analytics">
+                    <div class="nav-icon"><i class="fas fa-chart-bar"></i></div>
+                    <span>Analytics</span>
+                </a>
+                <a href="#" class="navigation-item" data-section="agents">
+                    <div class="nav-icon"><i class="fas fa-robot"></i></div>
+                    <span>My Agents</span>
+                </a>
+                <a href="#" class="navigation-item active" data-section="mempod">
+                    <div class="nav-icon"><i class="fas fa-brain"></i></div>
+                    <span>MemPod</span>
+                </a>
+            </nav>
+            
+            <button class="compose-button">
+                <i class="fas fa-comment-dots mr-2"></i>New Whisper
+            </button>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Quick Capture Section -->
+            <div class="quick-capture-section">
+                <div class="quick-capture-header">
+                    <div class="quick-capture-title">
+                        <i class="fas fa-brain"></i>
+                        MemPod
+                    </div>
+                    <div class="capture-mode-pills">
+                        <div class="capture-pill active" data-mode="capture">
+                            <i class="fas fa-feather-alt"></i>
+                            Capture
+                        </div>
+                        <div class="capture-pill" data-mode="tasks">
+                            <i class="fas fa-tasks"></i>
+                            Tasks
+                        </div>
+                        <div class="capture-pill" data-mode="notes">
+                            <i class="fas fa-sticky-note"></i>
+                            Notes
+                        </div>
+                        <div class="capture-pill" data-mode="goals">
+                            <i class="fas fa-target"></i>
+                            Goals
+                        </div>
+                        <div class="capture-pill" data-mode="knowledge">
+                            <i class="fas fa-book"></i>
+                            Knowledge
+                        </div>
+                    </div>
+                </div>
+                <div class="quick-capture-content">
+                    <!-- Capture Tab Content (Default Active) -->
+                    <div class="capture-mode-content active" id="capture-content">
+                        <div class="capture-interface">
+                            <textarea class="capture-input" placeholder="Capture thoughts, insights, ideas, decisions, learnings, or any intelligence for your AI agent..."></textarea>
+                        </div>
+                        <div class="capture-controls">
+                            <div style="flex: 1;"></div>
+                            <button class="btn-primary">
+                                <i class="fas fa-brain"></i>Process
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tasks Tab Content -->
+                    <div class="capture-mode-content" id="tasks-content">
+                        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-tasks" style="color: var(--primary-blue);"></i>
+                            Task Management
+                        </h3>
+                        <div class="task-input-container">
+                            <input type="text" class="task-input" placeholder="Add a new task..." id="taskInput">
+                            <button class="add-task-btn" onclick="addTask()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div id="taskList">
+                            <div class="task-item">
+                                <div class="task-checkbox completed">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div class="task-text completed">Complete MemPod interface redesign</div>
+                                <div class="priority-indicator priority-high"></div>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-checkbox">
+                                </div>
+                                <div class="task-text">Implement Quick Capture functionality</div>
+                                <div class="priority-indicator priority-high"></div>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-checkbox">
+                                </div>
+                                <div class="task-text">Test AI agent integration</div>
+                                <div class="priority-indicator priority-medium"></div>
+                            </div>
+                            <div class="task-item">
+                                <div class="task-checkbox">
+                                </div>
+                                <div class="task-text">Update documentation</div>
+                                <div class="priority-indicator priority-low"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes Tab Content -->
+                    <div class="capture-mode-content" id="notes-content">
+                        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-sticky-note" style="color: var(--neural-orange);"></i>
+                            Notes
+                        </h3>
+                        <div class="task-input-container">
+                            <input type="text" class="task-input" placeholder="Add a quick note..." id="noteInput">
+                            <button class="add-task-btn" onclick="addNote()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div>
+                            <h4 style="font-size: 14px; font-weight: 700; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Recent Notes</h4>
+                            <div style="background: var(--surface-primary); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-subtle);">
+                                <div style="font-size: 14px; color: var(--text-primary); line-height: 1.5; margin-bottom: 8px;">Meeting notes from Q4 strategy session. Key decisions on MemPod positioning and feature prioritization.</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Today • #meeting #strategy</div>
+                            </div>
+                            <div style="background: var(--surface-primary); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-subtle);">
+                                <div style="font-size: 14px; color: var(--text-primary); line-height: 1.5; margin-bottom: 8px;">Research findings on AI-first product development principles from Kevin Weil interview.</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Yesterday • #research #ai</div>
+                            </div>
+                            <div style="background: var(--surface-primary); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-subtle);">
+                                <div style="font-size: 14px; color: var(--text-primary); line-height: 1.5; margin-bottom: 8px;">Quick thought: User feedback suggests need for better onboarding flow</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">Yesterday • #feedback #ux</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Goals Tab Content -->
+                    <div class="capture-mode-content" id="goals-content">
+                        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-bullseye" style="color: var(--neural-purple);"></i>
+                            Goals
+                        </h3>
+                        <div class="task-input-container">
+                            <input type="text" class="task-input" placeholder="Add a new goal..." id="goalInput">
+                            <button class="add-task-btn" onclick="addGoal()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div>
+                            <h4 style="font-size: 14px; font-weight: 700; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Active Goals</h4>
+                            <div style="background: var(--surface-primary); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-subtle);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="font-weight: 700; font-size: 14px; color: var(--text-primary);">Launch MemPod Platform</div>
+                                    <div style="font-size: 12px; font-weight: 700; color: var(--primary-blue);">87%</div>
+                                </div>
+                                <div style="width: 100%; height: 6px; background: var(--border-subtle); border-radius: 3px; overflow: hidden;">
+                                    <div style="height: 100%; background: linear-gradient(90deg, var(--primary-blue), var(--neural-purple)); border-radius: 3px; width: 87%; transition: width 0.8s ease;"></div>
+                                </div>
+                            </div>
+                            <div style="background: var(--surface-primary); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-subtle);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="font-weight: 700; font-size: 14px; color: var(--text-primary);">Read 24 Books This Year</div>
+                                    <div style="font-size: 12px; font-weight: 700; color: var(--primary-blue);">63%</div>
+                                </div>
+                                <div style="width: 100%; height: 6px; background: var(--border-subtle); border-radius: 3px; overflow: hidden;">
+                                    <div style="height: 100%; background: linear-gradient(90deg, var(--primary-blue), var(--neural-purple)); border-radius: 3px; width: 63%; transition: width 0.8s ease;"></div>
+                                </div>
+                            </div>
+                            <div style="background: var(--surface-primary); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-subtle);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="font-weight: 700; font-size: 14px; color: var(--text-primary);">Build Emergency Fund ($50K)</div>
+                                    <div style="font-size: 12px; font-weight: 700; color: var(--primary-blue);">42%</div>
+                                </div>
+                                <div style="width: 100%; height: 6px; background: var(--border-subtle); border-radius: 3px; overflow: hidden;">
+                                    <div style="height: 100%; background: linear-gradient(90deg, var(--primary-blue), var(--neural-purple)); border-radius: 3px; width: 42%; transition: width 0.8s ease;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Knowledge Tab Content -->
+                    <div class="capture-mode-content" id="knowledge-content">
+                        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-database" style="color: var(--neural-blue);"></i>
+                            Knowledge Base
+                        </h3>
+                        <div class="task-input-container">
+                            <input type="text" class="task-input" placeholder="Add knowledge item..." id="knowledgeInput">
+                            <button class="add-task-btn" onclick="addKnowledge()">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div>
+                            <h4 style="font-size: 14px; font-weight: 700; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Knowledge Items</h4>
+                            <div style="background: var(--surface-primary); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-subtle); position: relative; overflow: hidden;">
+                                <div style="content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--neural-blue), var(--neural-purple));"></div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="font-weight: 700; font-size: 14px; color: var(--text-primary);">AI-First Design Principles</div>
+                                    <div style="background: linear-gradient(135deg, var(--neural-blue), var(--neural-purple)); color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Technical</div>
+                                </div>
+                                <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px;">Core principles for designing products with AI as the foundational technology rather than an add-on...</div>
+                                <div style="font-size: 11px; color: var(--text-muted);">Added today • High relevance</div>
+                            </div>
+                            <div style="background: var(--surface-primary); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border-subtle); position: relative; overflow: hidden;">
+                                <div style="content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, var(--neural-blue), var(--neural-purple));"></div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="font-weight: 700; font-size: 14px; color: var(--text-primary);">Product Strategy Framework</div>
+                                    <div style="background: linear-gradient(135deg, var(--neural-blue), var(--neural-purple)); color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Business</div>
+                                </div>
+                                <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px;">Comprehensive framework for product strategy decisions and go-to-market planning...</div>
+                                <div style="font-size: 11px; color: var(--text-muted);">Added yesterday • Medium relevance</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intelligence Activity Stream -->
+            <div class="activity-feed">
+                <div class="activity-header">
+                    <div class="activity-title">
+                        <i class="fas fa-stream"></i>
+                        Intelligence Activity Stream
+                    </div>
+                    <div style="color: var(--primary-blue); font-size: 14px; font-weight: 700; cursor: pointer; padding: 8px 14px; border-radius: 10px; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 0.05em;" onmouseover="this.style.background='rgba(59, 130, 246, 0.15)'" onmouseout="this.style.background='transparent'">
+                        View All
+                    </div>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background: linear-gradient(135deg, var(--neural-blue), var(--neural-purple));">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div class="activity-content-text">
+                            <div class="activity-text">Processed insight about AI-first product development patterns</div>
+                            <div class="activity-meta">
+                                <span>2 minutes ago</span>
+                                <span class="activity-tag">insight</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background: linear-gradient(135deg, var(--neural-green), var(--neural-blue));">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="activity-content-text">
+                            <div class="activity-text">Completed task: "Design Quick Capture interface"</div>
+                            <div class="activity-meta">
+                                <span>15 minutes ago</span>
+                                <span class="activity-tag">task</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background: linear-gradient(135deg, var(--neural-orange), var(--neural-coral));">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <div class="activity-content-text">
+                            <div class="activity-text">Captured idea about reorganizing MemPod layout structure</div>
+                            <div class="activity-meta">
+                                <span>32 minutes ago</span>
+                                <span class="activity-tag">idea</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background: linear-gradient(135deg, var(--neural-purple), var(--neural-pink));">
+                            <i class="fas fa-target"></i>
+                        </div>
+                        <div class="activity-content-text">
+                            <div class="activity-text">Updated goal progress for "Launch MemPod Platform" to 87%</div>
+                            <div class="activity-meta">
+                                <span>1 hour ago</span>
+                                <span class="activity-tag">goal</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Intelligence Sidebar -->
+        <div class="intelligence-sidebar">
+            <!-- Life Intelligence Overview -->
+            <div class="sidebar-widget">
+                <div class="sidebar-widget-header">
+                    <div class="sidebar-widget-title">
+                        <i class="fas fa-satellite-dish" style="color: var(--neural-coral);"></i>
+                        Life Intelligence
+                    </div>
+                </div>
+                <div class="sidebar-widget-content">
+                    <div class="life-overview-grid">
+                        <div class="life-metric">
+                            <div class="life-metric-value">87</div>
+                            <div class="life-metric-label">Productivity</div>
+                        </div>
+                        <div class="life-metric">
+                            <div class="life-metric-value">4.2</div>
+                            <div class="life-metric-label">Focus Hours</div>
+                        </div>
+                        <div class="life-metric">
+                            <div class="life-metric-value">73%</div>
+                            <div class="life-metric-label">Goals</div>
+                        </div>
+                        <div class="life-metric">
+                            <div class="life-metric-value">$2.1K</div>
+                            <div class="life-metric-label">Net/Month</div>
+                        </div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%); border-radius: 12px; padding: 16px; border: 1px solid rgba(59, 130, 246, 0.2);">
+                        <div style="font-size: 12px; font-weight: 700; color: var(--primary-blue); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+                            <i class="fas fa-brain"></i> AI Insight
+                        </div>
+                        <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                            Peak productivity detected between 9-11 AM. Consider scheduling critical tasks during this window.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Financial Snapshot -->
+            <div class="sidebar-widget">
+                <div class="sidebar-widget-header">
+                    <div class="sidebar-widget-title">
+                        <i class="fas fa-wallet" style="color: var(--neural-green);"></i>
+                        Financial Snapshot
+                    </div>
+                </div>
+                <div class="sidebar-widget-content">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                        <div style="background: var(--surface-primary); border-radius: 12px; padding: 16px; text-align: center; border: 1px solid var(--border-subtle);">
+                            <div style="font-size: 18px; font-weight: 800; color: var(--neural-green); margin-bottom: 4px;">+$4.8K</div>
+                            <div style="font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Income</div>
+                        </div>
+                        <div style="background: var(--surface-primary); border-radius: 12px; padding: 16px; text-align: center; border: 1px solid var(--border-subtle);">
+                            <div style="font-size: 18px; font-weight: 800; color: var(--neural-coral); margin-bottom: 4px;">-$2.6K</div>
+                            <div style="font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Expenses</div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-bottom: 16px;">
+                        <div style="font-size: 20px; font-weight: 800; color: var(--neural-green);">+$2,200</div>
+                        <div style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Net This Month</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="sidebar-widget">
+                <div class="sidebar-widget-header">
+                    <div class="sidebar-widget-title">
+                        <i class="fas fa-lightning-bolt" style="color: var(--neural-orange);"></i>
+                        Quick Actions
+                    </div>
+                </div>
+                <div class="sidebar-widget-content">
+                    <button class="btn-primary" style="width: 100%; margin-bottom: 12px;">
+                        <i class="fas fa-robot"></i>
+                        Agent Sync
+                    </button>
+                    <button class="btn-primary" style="width: 100%; margin-bottom: 12px; background: linear-gradient(135deg, var(--neural-green), var(--neural-blue));">
+                        <i class="fas fa-chart-bar"></i>
+                        Generate Report
+                    </button>
+                    <button class="btn-primary" style="width: 100%; background: linear-gradient(135deg, var(--neural-purple), var(--neural-pink));">
+                        <i class="fas fa-search"></i>
+                        Deep Search
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // MemPod Intelligence System
+        let currentCaptureMode = 'capture';
+        let intelligenceData = {
+            captures: [],
+            tasks: [
+                { id: 1, text: 'Complete MemPod interface redesign', completed: true, priority: 'high' },
+                { id: 2, text: 'Implement Quick Capture functionality', completed: false, priority: 'high' },
+                { id: 3, text: 'Test AI agent integration', completed: false, priority: 'medium' },
+                { id: 4, text: 'Update documentation', completed: false, priority: 'low' }
+            ],
+            notes: [],
+            goals: [],
+            knowledge: [],
+            activityFeed: []
+        };
+
+        // Initialize MemPod
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+            updateDashboard();
+        });
+
+        function initializeEventListeners() {
+            // Navigation
+            document.querySelectorAll('.navigation-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.querySelectorAll('.navigation-item').forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+                    
+                    const section = item.dataset.section;
+                    console.log('Navigating to:', section);
+                });
+            });
+
+            // Capture mode pills
+            document.querySelectorAll('.capture-pill').forEach(pill => {
+                pill.addEventListener('click', (e) => {
+                    document.querySelectorAll('.capture-pill').forEach(p => p.classList.remove('active'));
+                    pill.classList.add('active');
+                    
+                    currentCaptureMode = pill.dataset.mode;
+                    switchCaptureMode(currentCaptureMode);
+                });
+            });
+
+            // Capture processing
+            document.querySelector('.btn-primary').addEventListener('click', function() {
+                if (currentCaptureMode === 'capture') {
+                    processCapture();
+                }
+            });
+
+            // Task management
+            document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('click', function() {
+                    toggleTask(this);
+                });
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key) {
+                        case 'k':
+                            e.preventDefault();
+                            document.querySelector('.capture-input').focus();
+                            break;
+                        case '1':
+                            e.preventDefault();
+                            switchCaptureMode('capture');
+                            break;
+                        case '2':
+                            e.preventDefault();
+                            switchCaptureMode('tasks');
+                            break;
+                        case '3':
+                            e.preventDefault();
+                            switchCaptureMode('notes');
+                            break;
+                    }
+                }
+            });
+        }
+
+        function switchCaptureMode(mode) {
+            // Hide all tab contents
+            document.querySelectorAll('.capture-mode-content').forEach(content => {
+                content.classList.remove('active');
+            });
+
+            // Show selected tab content
+            const contentMap = {
+                'capture': 'capture-content',
+                'tasks': 'tasks-content',
+                'notes': 'notes-content',
+                'goals': 'goals-content',
+                'knowledge': 'knowledge-content'
+            };
+
+            const targetContent = document.getElementById(contentMap[mode]);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+
+            // Update pill states
+            document.querySelectorAll('.capture-pill').forEach(pill => {
+                pill.classList.remove('active');
+                if (pill.dataset.mode === mode) {
+                    pill.classList.add('active');
+                }
+            });
+
+            currentCaptureMode = mode;
+            console.log('Switched to mode:', mode);
+        }
+
+        // Initialize MemPod
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+            updateDashboard();
+        });
+
+        function processCapture() {
+            const captureInput = document.querySelector('.capture-input');
+            const captureText = captureInput.value.trim();
+            
+            if (captureText) {
+                const capture = {
+                    id: Date.now(),
+                    text: captureText,
+                    timestamp: new Date(),
+                    tags: extractTags(captureText),
+                    type: 'capture'
+                };
+                
+                intelligenceData.captures.push(capture);
+                addToActivityFeed(capture);
+                
+                captureInput.value = '';
+                
+                // Visual feedback
+                const btn = document.querySelector('.btn-primary');
+                btn.innerHTML = '<i class="fas fa-brain"></i>Processing...';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-check"></i>Processed!';
+                    setTimeout(() => {
+                        btn.innerHTML = '<i class="fas fa-brain"></i>Process';
+                    }, 1500);
+                }, 800);
+
+                console.log('Capture processed:', capture);
+            }
+        }
+
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const taskText = taskInput.value.trim();
+            
+            if (taskText) {
+                const task = {
+                    id: Date.now(),
+                    text: taskText,
+                    completed: false,
+                    priority: 'medium'
+                };
+                
+                intelligenceData.tasks.push(task);
+                renderTaskList();
+                addToActivityFeed({...task, type: 'task'});
+                
+                taskInput.value = '';
+            }
+        }
+
+        function toggleTask(checkbox) {
+            const taskItem = checkbox.closest('.task-item');
+            const taskText = taskItem.querySelector('.task-text');
+            
+            if (checkbox.classList.contains('completed')) {
+                checkbox.classList.remove('completed');
+                checkbox.innerHTML = '';
+                taskText.classList.remove('completed');
+            } else {
+                checkbox.classList.add('completed');
+                checkbox.innerHTML = '<i class="fas fa-check"></i>';
+                taskText.classList.add('completed');
+                
+                addToActivityFeed({
+                    text: `Completed task: "${taskText.textContent}"`,
+                    type: 'task_completion',
+                    timestamp: new Date()
+                });
+            }
+        }
+
+        function renderTaskList() {
+            const taskList = document.getElementById('taskList');
+            if (!taskList) return;
+            
+            taskList.innerHTML = intelligenceData.tasks.map(task => `
+                <div class="task-item">
+                    <div class="task-checkbox ${task.completed ? 'completed' : ''}">
+                        ${task.completed ? '<i class="fas fa-check"></i>' : ''}
+                    </div>
+                    <div class="task-text ${task.completed ? 'completed' : ''}">${task.text}</div>
+                    <div class="priority-indicator priority-${task.priority}"></div>
+                </div>
+            `).join('');
+            
+            // Re-attach event listeners
+            document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('click', function() {
+                    toggleTask(this);
+                });
+            });
+        }
+
+        function addToActivityFeed(item) {
+            const activity = {
+                id: Date.now(),
+                text: getActivityText(item),
+                type: item.type,
+                timestamp: item.timestamp || new Date(),
+                icon: getActivityIcon(item.type),
+                color: getActivityColor(item.type)
+            };
+            
+            intelligenceData.activityFeed.unshift(activity);
+            
+            // Keep only latest 10 activities
+            if (intelligenceData.activityFeed.length > 10) {
+                intelligenceData.activityFeed = intelligenceData.activityFeed.slice(0, 10);
+            }
+            
+            renderActivityFeed();
+        }
+
+        function getActivityText(item) {
+            switch(item.type) {
+                case 'capture':
+                    return `Processed ${item.tags.length > 0 ? item.tags[0] : 'insight'}: "${item.text.substring(0, 50)}..."`;
+                case 'task':
+                    return `Added new task: "${item.text}"`;
+                case 'task_completion':
+                    return item.text;
+                case 'note':
+                    return `Created note: "${item.text.substring(0, 50)}..."`;
+                case 'goal':
+                    return `Set new goal: "${item.text}"`;
+                default:
+                    return item.text;
+            }
+        }
+
+        function getActivityIcon(type) {
+            const icons = {
+                'capture': 'fa-brain',
+                'task': 'fa-tasks',
+                'task_completion': 'fa-check',
+                'note': 'fa-sticky-note',
+                'goal': 'fa-bullseye',
+                'knowledge': 'fa-book'
+            };
+            return icons[type] || 'fa-circle';
+        }
+
+        function getActivityColor(type) {
+            const colors = {
+                'capture': 'var(--neural-blue), var(--neural-purple)',
+                'task': 'var(--neural-orange), var(--neural-coral)',
+                'task_completion': 'var(--neural-green), var(--neural-blue)',
+                'note': 'var(--neural-purple), var(--neural-pink)',
+                'goal': 'var(--neural-coral), var(--neural-orange)',
+                'knowledge': 'var(--primary-blue), var(--neural-indigo)'
+            };
+            return colors[type] || 'var(--text-muted), var(--text-muted)';
+        }
+
+        function renderActivityFeed() {
+            const activityContent = document.querySelector('.activity-content');
+            if (!activityContent || intelligenceData.activityFeed.length === 0) return;
+            
+            activityContent.innerHTML = intelligenceData.activityFeed.map(activity => `
+                <div class="activity-item">
+                    <div class="activity-icon" style="background: linear-gradient(135deg, ${activity.color});">
+                        <i class="fas ${activity.icon}"></i>
+                    </div>
+                    <div class="activity-content-text">
+                        <div class="activity-text">${activity.text}</div>
+                        <div class="activity-meta">
+                            <span>${getTimeAgo(activity.timestamp)}</span>
+                            <span class="activity-tag">${activity.type.replace('_', '-')}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function extractTags(text) {
+            const tagRegex = /#(\w+)/g;
+            const tags = [];
+            let match;
+            while ((match = tagRegex.exec(text)) !== null) {
+                tags.push(match[1]);
+            }
+            return tags;
+        }
+
+        function getTimeAgo(timestamp) {
+            const now = Date.now();
+            const diff = now - timestamp.getTime();
+            
+            if (diff < 60000) return 'Just now';
+            if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+            if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+            return `${Math.floor(diff / 86400000)}d ago`;
+        }
+
+        function updateDashboard() {
+            // Update life intelligence metrics
+            updateLifeMetrics();
+            console.log('Dashboard updated');
+        }
+
+        function updateLifeMetrics() {
+            const completedTasks = intelligenceData.tasks.filter(task => task.completed).length;
+            const totalTasks = intelligenceData.tasks.length;
+            const productivity = Math.round((completedTasks / totalTasks) * 100);
+            
+            // Update productivity score
+            const productivityElement = document.querySelector('.life-metric-value');
+            if (productivityElement) {
+                productivityElement.textContent = productivity;
+            }
+        }
+
+        // Quick Actions functionality
+        document.querySelectorAll('.sidebar-widget .btn-primary').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const actionText = this.textContent.trim();
+                
+                // Visual feedback
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+                
+                console.log('Action clicked:', actionText);
+            });
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            // Enter to process capture
+            if (e.key === 'Enter' && e.ctrlKey && e.target.classList.contains('capture-input')) {
+                e.preventDefault();
+                processCapture();
+            }
+            
+            // Task input Enter key handler
+            if (e.key === 'Enter' && e.target.id === 'taskInput') {
+                e.preventDefault();
+                addTask();
+            }
+        });
+
+        console.log('MemPod Intelligence System initialized successfully');
+    </script>
+</body>
+</html>

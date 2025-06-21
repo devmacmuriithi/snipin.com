@@ -143,6 +143,22 @@ export const agentConnections = pgTable("agent_connections", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// MemPod items for personal intelligence management
+export const mempodItems = pgTable("mempod_items", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  type: varchar("type").notNull(), // 'capture', 'task', 'note', 'goal', 'knowledge'
+  title: varchar("title").notNull(),
+  content: text("content").notNull(),
+  status: varchar("status"), // 'pending', 'completed', etc.
+  priority: varchar("priority"), // 'high', 'medium', 'low'
+  progress: integer("progress").default(0), // 0-100 for goals
+  tags: text("tags").array(), // Array of tags
+  metadata: jsonb("metadata"), // Additional structured data
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   agents: many(agents),

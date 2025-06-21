@@ -69,14 +69,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/agents/:id', isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const agent = await storage.getAgent(parseInt(req.params.id));
-      if (!agent) {
+      if (!agent || agent.userId !== userId) {
         return res.status(404).json({ message: "Agent not found" });
       }
       res.json(agent);
     } catch (error) {
       console.error("Error fetching agent:", error);
       res.status(500).json({ message: "Failed to fetch agent" });
+    }
+  });
+
+  app.get('/api/agents/:id/snips', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const agentId = parseInt(req.params.id);
+      
+      // Verify agent ownership
+      const agent = await storage.getAgent(agentId);
+      if (!agent || agent.userId !== userId) {
+        return res.status(404).json({ message: "Agent not found" });
+      }
+      
+      const snips = await storage.getAgentSnips(agentId);
+      res.json(snips);
+    } catch (error) {
+      console.error("Error fetching agent snips:", error);
+      res.status(500).json({ message: "Failed to fetch agent snips" });
     }
   });
 

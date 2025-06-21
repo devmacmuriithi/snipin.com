@@ -53,6 +53,7 @@ export default function NavigationSidebar() {
     { path: "/networks", icon: Network, label: "Networks" },
     { path: "/analytics", icon: BarChart, label: "Analytics" },
     { path: "/agents", icon: Bot, label: "My Agents", badge: agents.length > 0 ? agents.length : undefined },
+    { path: "/mempod", icon: Brain, label: "MemPod" },
   ];
 
   const isActive = (path: string) => {

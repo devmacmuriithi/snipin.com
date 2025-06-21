@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
 import GlassCard from "@/components/ui/glass-card";
 import AgentCreationWizard from "@/components/agents/agent-creation-wizard";
@@ -16,7 +17,14 @@ import {
   MessageSquare, 
   FileText,
   Trash2,
-  Edit
+  Edit,
+  Heart,
+  Users,
+  Scissors,
+  Activity,
+  Sparkles,
+  Eye,
+  Zap
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -187,82 +195,96 @@ export default function Agents() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {agents.map((agent: Agent) => (
-                <GlassCard key={agent.id} className="p-6 hover:shadow-xl transition-all duration-300 agent-node">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className={`w-16 h-16 bg-gradient-to-br ${getAvatarGradient(agent.avatar)} rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg`}>
-                      {agent.name.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => deleteAgentMutation.mutate(agent.id)}
-                        disabled={deleteAgentMutation.isPending}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
+                <GlassCard key={agent.id} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0 overflow-hidden">
+                  {/* Agent Card Header with Gradient Background */}
+                  <div className="p-6 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20 border-b border-slate-200/50 dark:border-slate-700/50">
+                    <div className="flex items-center gap-4">
+                      <div className="relative">
+                        <div 
+                          className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg bg-gradient-to-br ${getAvatarGradient(agent.avatar)}`}
+                        >
+                          {agent.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-3 border-white shadow-sm ${
+                          agent.isActive ? 'bg-green-500' : 'bg-orange-500'
+                        }`} />
+                      </div>
+                      <div className="flex-1">
+                        <Link href={`/agents/${agent.id}`}>
+                          <h3 className="font-bold text-xl text-slate-800 dark:text-slate-200 mb-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
+                            {agent.name}
+                          </h3>
+                        </Link>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">
+                          @{agent.name.toLowerCase().replace(' ', '_')}
+                        </p>
+                        {/* Enhanced Stats Row */}
+                        <div className="flex items-center gap-4 mt-3 text-xs text-slate-500 dark:text-slate-400">
+                          <div className="flex items-center gap-1">
+                            <Scissors className="w-3 h-3" />
+                            <span>{agent.totalSnips} snips</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Heart className="w-3 h-3" />
+                            <span>{agent.totalEngagement} likes</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Users className="w-3 h-3" />
+                            <span>12 connections</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-xl font-bold text-slate-800">{agent.name}</h3>
-                      <Badge className={getExpertiseColor(agent.expertise)}>
-                        {agent.expertise}
-                      </Badge>
-                    </div>
-                    <p className="text-slate-600 text-sm leading-relaxed line-clamp-2">
+                  {/* Agent Card Content */}
+                  <div className="p-6">
+                    {/* Agent Description */}
+                    <p className="text-slate-600 dark:text-slate-300 text-sm mb-4 line-clamp-2">
                       {agent.description}
                     </p>
-                  </div>
 
-                  {/* Performance Stats */}
-                  <div className="grid grid-cols-3 gap-3 mb-4">
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-slate-800">{agent.totalSnips}</div>
-                      <div className="text-xs text-slate-500">Snips</div>
+                    {/* Expertise Tags */}
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {agent.expertise.split(',').slice(0, 4).map((tag, index) => (
+                        <Badge 
+                          key={index} 
+                          variant="secondary" 
+                          className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold uppercase tracking-wide px-2 py-1"
+                        >
+                          {tag.trim()}
+                        </Badge>
+                      ))}
                     </div>
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-slate-800">{agent.totalEngagement}</div>
-                      <div className="text-xs text-slate-500">Engagement</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-green-600">
-                        {Math.round(agent.performanceScore * 100)}%
-                      </div>
-                      <div className="text-xs text-slate-500">Score</div>
-                    </div>
-                  </div>
 
-                  {/* Actions */}
-                  <div className="flex space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
+                    {/* Enhanced Actions */}
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="default" 
+                        size="sm" 
+                        className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 font-semibold"
+                      >
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        Whisper
+                      </Button>
+                      <Link href={`/agents/${agent.id}`}>
+                        <Button variant="outline" size="sm" className="flex-1 font-semibold border-2 hover:bg-blue-50 dark:hover:bg-blue-950/30">
+                          <Eye className="w-4 h-4 mr-2" />
+                          View
+                        </Button>
+                      </Link>
+                    </div>
+
+                    {/* Delete Button */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                      onClick={() => deleteAgentMutation.mutate(agent.id)}
+                      disabled={deleteAgentMutation.isPending}
                     >
-                      <MessageSquare className="h-4 w-4 mr-1" />
-                      Chat
+                      <Trash2 className="w-4 h-4" />
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1"
-                    >
-                      <TrendingUp className="h-4 w-4 mr-1" />
-                      Stats
-                    </Button>
-                  </div>
-
-                  {/* Status Indicator */}
-                  <div className="flex items-center justify-center mt-4 pt-4 border-t border-slate-200">
-                    <div className={`w-2 h-2 rounded-full mr-2 ${agent.isActive ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                    <span className={`text-sm font-medium ${agent.isActive ? 'text-green-600' : 'text-gray-500'}`}>
-                      {agent.isActive ? 'Active' : 'Inactive'}
-                    </span>
                   </div>
                 </GlassCard>
               ))}

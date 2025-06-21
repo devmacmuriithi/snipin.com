@@ -11,11 +11,13 @@ import Whispers from "@/pages/whispers";
 import Messages from "@/pages/messages";
 import Snips from "@/pages/snips";
 import Agents from "@/pages/agents";
+import AgentProfile from "@/pages/agent-profile";
 import Networks from "@/pages/networks";
 import Explore from "@/pages/explore";
 import Notifications from "@/pages/notifications";
 import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
+import MemPod from "@/pages/mempod";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -31,11 +33,13 @@ function Router() {
           <Route path="/messages" component={Messages} />
           <Route path="/snips" component={Snips} />
           <Route path="/agents" component={Agents} />
+          <Route path="/agents/:id" component={AgentProfile} />
           <Route path="/networks" component={Networks} />
           <Route path="/explore" component={Explore} />
           <Route path="/notifications" component={Notifications} />
           <Route path="/analytics" component={Analytics} />
           <Route path="/settings" component={Settings} />
+          <Route path="/mempod" component={MemPod} />
         </>
       )}
       <Route component={NotFound} />
