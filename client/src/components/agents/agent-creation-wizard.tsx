@@ -52,35 +52,40 @@ interface AgentData {
 }
 
 const focusAreaOptions = [
-  // General & Communication
+  // General & Communication (Row 1)
   { value: "communication", label: "Communication", icon: Users, color: "from-blue-500 to-blue-600" },
   { value: "education", label: "Education", icon: Brain, color: "from-green-500 to-green-600" },
   { value: "counseling", label: "Counseling", icon: Sparkles, color: "from-purple-500 to-purple-600" },
   { value: "entertainment", label: "Entertainment", icon: Sparkles, color: "from-yellow-500 to-yellow-600" },
+  
+  // Personal & Lifestyle (Row 2)
   { value: "motivation", label: "Motivation", icon: Sparkles, color: "from-orange-500 to-orange-600" },
   { value: "wellness", label: "Wellness", icon: Sparkles, color: "from-red-500 to-red-600" },
+  { value: "relationships", label: "Relationships", icon: Users, color: "from-pink-600 to-pink-700" },
+  { value: "lifestyle", label: "Lifestyle", icon: Sparkles, color: "from-teal-500 to-teal-600" },
   
-  // Creative & Arts
+  // Creative & Arts (Row 3)
   { value: "writing", label: "Writing", icon: PenTool, color: "from-indigo-500 to-indigo-600" },
   { value: "storytelling", label: "Storytelling", icon: Brain, color: "from-pink-500 to-pink-600" },
   { value: "comedy", label: "Comedy", icon: Sparkles, color: "from-amber-500 to-amber-600" },
   { value: "roleplay", label: "Roleplay", icon: Users, color: "from-rose-500 to-rose-600" },
-  { value: "design", label: "Design", icon: Palette, color: "from-cyan-500 to-cyan-600" },
-  { value: "gaming", label: "Gaming", icon: Bot, color: "from-violet-500 to-violet-600" },
   
-  // Knowledge & Business
+  // Knowledge & Wisdom (Row 4)
   { value: "philosophy", label: "Philosophy", icon: Brain, color: "from-slate-500 to-slate-600" },
   { value: "history", label: "History", icon: Brain, color: "from-emerald-500 to-emerald-600" },
-  { value: "science", label: "Science", icon: Brain, color: "from-teal-500 to-teal-600" },
-  { value: "research", label: "Research", icon: Brain, color: "from-blue-600 to-blue-700" },
-  { value: "business", label: "Business", icon: Users, color: "from-orange-600 to-orange-700" },
-  { value: "marketing", label: "Marketing", icon: Users, color: "from-pink-600 to-pink-700" },
+  { value: "science", label: "Science", icon: Brain, color: "from-cyan-600 to-cyan-700" },
+  { value: "religious", label: "Religious", icon: Sparkles, color: "from-amber-600 to-amber-700" },
   
-  // Lifestyle & Specific Skills
-  { value: "relationships", label: "Relationships", icon: Users, color: "from-green-600 to-green-700" },
-  { value: "lifestyle", label: "Lifestyle", icon: Sparkles, color: "from-yellow-600 to-yellow-700" },
+  // Professional & Business (Row 5)
+  { value: "business", label: "Business", icon: Users, color: "from-orange-600 to-orange-700" },
+  { value: "marketing", label: "Marketing", icon: Users, color: "from-purple-600 to-purple-700" },
+  { value: "research", label: "Research", icon: Brain, color: "from-blue-600 to-blue-700" },
   { value: "language", label: "Languages", icon: Brain, color: "from-indigo-600 to-indigo-700" },
-  { value: "productivity", label: "Productivity", icon: Bot, color: "from-teal-600 to-teal-700" },
+  
+  // Skills & Technical (Row 6)
+  { value: "design", label: "Design", icon: Palette, color: "from-cyan-500 to-cyan-600" },
+  { value: "gaming", label: "Gaming", icon: Bot, color: "from-violet-500 to-violet-600" },
+  { value: "productivity", label: "Productivity", icon: Bot, color: "from-emerald-600 to-emerald-700" },
   { value: "analytics", label: "Analytics", icon: BarChart, color: "from-slate-600 to-slate-700" },
   { value: "development", label: "Development", icon: Code, color: "from-gray-500 to-gray-600" }
 ];
@@ -319,7 +324,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
             <div>
               <Label className="text-base font-semibold mb-4 block">Select Focus Areas (Choose 2-3) *</Label>
               <p className="text-sm text-slate-600 mb-4">Pick the main areas where your agent will excel</p>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-4 gap-3">
                 {focusAreaOptions.map((option) => {
                   const IconComponent = option.icon;
                   const isSelected = selectedFocusAreas.includes(option.value);
