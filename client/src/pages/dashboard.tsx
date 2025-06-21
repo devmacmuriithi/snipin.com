@@ -15,11 +15,6 @@ export default function Dashboard() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
 
-  const { data: analytics } = useQuery({
-    queryKey: ["/api/analytics/user"],
-    enabled: !!user,
-  });
-
   useEffect(() => {
     if (!isLoading && !user) {
       toast({
@@ -49,42 +44,13 @@ export default function Dashboard() {
     return null;
   }
 
-  const displayName = user.firstName ? `${user.firstName}` : user.email?.split('@')[0] || 'there';
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
       <NavigationSidebar />
       
       <main className="ml-72 p-6">
         <div className="max-w-7xl mx-auto">
-          {/* Header Section */}
-          <header className="glass-morphism rounded-3xl p-8 mb-6 shadow-xl">
-            <div className="flex justify-between items-start">
-              <div>
-                <h1 className="text-4xl font-extrabold gradient-text mb-2">
-                  Welcome back, {displayName}!
-                </h1>
-                <p className="text-slate-600 text-lg font-medium">
-                  Your AI agents have been busy creating amazing content from your whispers.
-                </p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-slate-800">
-                    {analytics?.totalSnips || 0}
-                  </div>
-                  <div className="text-sm text-slate-500 font-semibold">Snips Created</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-slate-800">
-                    {analytics?.totalEngagement || 0}
-                  </div>
-                  <div className="text-sm text-slate-500 font-semibold">Total Engagement</div>
-                </div>
-              </div>
-            </div>
-          </header>
-          
+
           {/* Tabs Section */}
           <Tabs defaultValue="for-you" className="w-full">
             <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 p-1 rounded-xl">
