@@ -13,7 +13,8 @@ import {
   BarChart, 
   Settings,
   Plus,
-  LogOut
+  LogOut,
+  Mail
 } from "lucide-react";
 
 export default function NavigationSidebar() {
@@ -23,6 +24,7 @@ export default function NavigationSidebar() {
   const navigationItems = [
     { path: "/", icon: Home, label: "Home" },
     { path: "/whispers", icon: MessageSquare, label: "Whispers", badge: 3 },
+    { path: "/messages", icon: Mail, label: "Messages" },
     { path: "/explore", icon: Compass, label: "Explore" },
     { path: "/notifications", icon: Bell, label: "Notifications", badge: 12 },
     { path: "/networks", icon: Network, label: "Networks" },

@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import Whispers from "@/pages/whispers";
+import Messages from "@/pages/messages";
 import Snips from "@/pages/snips";
 import Agents from "@/pages/agents";
 import Networks from "@/pages/networks";
@@ -27,6 +28,7 @@ function Router() {
         <>
           <Route path="/" component={Dashboard} />
           <Route path="/whispers" component={Whispers} />
+          <Route path="/messages" component={Messages} />
           <Route path="/snips" component={Snips} />
           <Route path="/agents" component={Agents} />
           <Route path="/networks" component={Networks} />

@@ -2,11 +2,12 @@ import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
 import QuickWhisperComposer from "@/components/dashboard/quick-whisper-composer";
-import ActiveConversations from "@/components/dashboard/active-conversations";
 import RecentSnipsFeed from "@/components/dashboard/recent-snips-feed";
 import LiveActivity from "@/components/dashboard/live-activity";
 import TrendingTopics from "@/components/dashboard/trending-topics";
 import QuickActions from "@/components/dashboard/quick-actions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TrendingUp, User, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 
@@ -84,22 +85,83 @@ export default function Dashboard() {
             </div>
           </header>
           
-          {/* Main Dashboard Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column - Main Feed */}
-            <div className="lg:col-span-2 space-y-6">
-              <QuickWhisperComposer />
-              <ActiveConversations />
-              <RecentSnipsFeed />
-            </div>
-            
-            {/* Right Column - Sidebar */}
-            <div className="space-y-6">
-              <LiveActivity />
-              <TrendingTopics />
-              <QuickActions />
-            </div>
-          </div>
+          {/* Tabs Section */}
+          <Tabs defaultValue="for-you" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 p-1 rounded-xl">
+              <TabsTrigger 
+                value="for-you" 
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+              >
+                <User className="w-4 h-4" />
+                For You
+              </TabsTrigger>
+              <TabsTrigger 
+                value="trending" 
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+              >
+                <TrendingUp className="w-4 h-4" />
+                Trending
+              </TabsTrigger>
+              <TabsTrigger 
+                value="whispers" 
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+              >
+                <MessageSquare className="w-4 h-4" />
+                Whispers
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="for-you">
+              {/* Main Dashboard Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Column - Main Feed */}
+                <div className="lg:col-span-2 space-y-6">
+                  <QuickWhisperComposer />
+                  <RecentSnipsFeed />
+                </div>
+                
+                {/* Right Column - Sidebar */}
+                <div className="space-y-6">
+                  <LiveActivity />
+                  <TrendingTopics />
+                  <QuickActions />
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="trending">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-6">
+                  <TrendingTopics />
+                  <RecentSnipsFeed />
+                </div>
+                <div className="space-y-6">
+                  <LiveActivity />
+                  <QuickActions />
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="whispers">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-6">
+                  <QuickWhisperComposer />
+                  <div className="glass-morphism rounded-3xl p-6 shadow-xl">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-4">Recent Whispers</h2>
+                    <p className="text-slate-600 mb-4">Your latest thoughts shared with AI agents</p>
+                    <div className="text-center py-8">
+                      <MessageSquare className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                      <p className="text-slate-500">Visit the Whispers page to see your complete whisper history</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-6">
+                  <LiveActivity />
+                  <QuickActions />
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
 
