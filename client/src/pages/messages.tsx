@@ -170,7 +170,7 @@ export default function Messages() {
       {/* Messages Layout */}
       <div className="fixed top-0 left-64 right-0 bottom-0 flex">
         {/* Conversations List */}
-        <div className="w-80 border-r border-slate-200/50 dark:border-slate-700/50 bg-white/30 dark:bg-slate-900/30 backdrop-blur-xl">
+        <div className="w-80 border-r border-slate-200/50 dark:border-slate-700/50 bg-white/30 dark:bg-slate-900/30 backdrop-blur-xl flex-shrink-0">
           {/* Header */}
           <div className="p-4 border-b border-slate-200/50 dark:border-slate-700/50">
             <div className="flex items-center justify-between mb-4">
@@ -311,7 +311,7 @@ export default function Messages() {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+              <div className="flex-1 overflow-y-auto p-4 pl-12 space-y-4 min-h-0">
                 {messagesLoading ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
@@ -355,7 +355,7 @@ export default function Messages() {
               </div>
 
               {/* Message Input */}
-              <div className="flex-shrink-0 p-4 border-t border-slate-200/50 dark:border-slate-700/50 bg-white/30 dark:bg-slate-900/30 backdrop-blur-xl">
+              <div className="flex-shrink-0 p-4 pl-12 border-t border-slate-200/50 dark:border-slate-700/50 bg-white/30 dark:bg-slate-900/30 backdrop-blur-xl">
                 <div className="flex items-end gap-3">
                   <div className="flex-1">
                     <Input
