@@ -51,7 +51,7 @@ interface AgentData {
   focusAreas: string[];
 }
 
-const focusAreaOptions = [
+const interestAreaOptions = [
   // General & Communication (Row 1)
   { value: "communication", label: "Communication", icon: Users, color: "from-blue-500 to-blue-600" },
   { value: "education", label: "Education", icon: Brain, color: "from-green-500 to-green-600" },
@@ -137,7 +137,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
   });
 
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
-  const [selectedFocusAreas, setSelectedFocusAreas] = useState<string[]>([]);
+  const [selectedInterestAreas, setSelectedInterestAreas] = useState<string[]>([]);
 
   const createAgentMutation = useMutation({
     mutationFn: async (data: AgentData) => {
@@ -192,7 +192,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
   };
 
   const handleSubmit = () => {
-    if (!agentData.name.trim() || selectedFocusAreas.length === 0 || selectedTraits.length === 0) {
+    if (!agentData.name.trim() || selectedInterestAreas.length === 0 || selectedTraits.length === 0) {
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields.",
@@ -203,8 +203,8 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
 
     createAgentMutation.mutate({
       ...agentData,
-      focusAreas: selectedFocusAreas,
-      expertise: selectedFocusAreas.join(", ")
+      focusAreas: selectedInterestAreas,
+      expertise: selectedInterestAreas.join(", ")
     });
   };
 
@@ -213,7 +213,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
       case 1:
         return agentData.name.trim().length > 0;
       case 2:
-        return selectedFocusAreas.length >= 2;
+        return selectedInterestAreas.length >= 2;
       case 3:
         return selectedTraits.length > 0;
       case 4:
@@ -318,16 +318,16 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
           </div>
         )}
 
-        {/* Step 2: Focus Areas */}
+        {/* Step 2: Interest Areas */}
         {step === 2 && (
           <div className="space-y-6">
             <div>
-              <Label className="text-base font-semibold mb-4 block">Select Focus Areas (Choose 2-3) *</Label>
-              <p className="text-sm text-slate-600 mb-4">Pick the main areas where your agent will excel</p>
+              <Label className="text-base font-semibold mb-4 block">Select Interest Areas (Choose 2-3) *</Label>
+              <p className="text-sm text-slate-600 mb-4">Pick the main areas your agent is passionate about</p>
               <div className="grid grid-cols-4 gap-3">
-                {focusAreaOptions.map((option) => {
+                {interestAreaOptions.map((option) => {
                   const IconComponent = option.icon;
-                  const isSelected = selectedFocusAreas.includes(option.value);
+                  const isSelected = selectedInterestAreas.includes(option.value);
                   
                   return (
                     <Card 
@@ -338,17 +338,17 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
                           : 'hover:shadow-sm'
                       }`}
                       onClick={() => {
-                        const newFocusAreas = isSelected 
-                          ? selectedFocusAreas.filter(area => area !== option.value)
-                          : selectedFocusAreas.length < 3 
-                            ? [...selectedFocusAreas, option.value]
-                            : selectedFocusAreas;
+                        const newInterestAreas = isSelected 
+                          ? selectedInterestAreas.filter(area => area !== option.value)
+                          : selectedInterestAreas.length < 3 
+                            ? [...selectedInterestAreas, option.value]
+                            : selectedInterestAreas;
                         
-                        setSelectedFocusAreas(newFocusAreas);
+                        setSelectedInterestAreas(newInterestAreas);
                         setAgentData(prev => ({ 
                           ...prev, 
-                          focusAreas: newFocusAreas,
-                          expertise: newFocusAreas.join(", "),
+                          focusAreas: newInterestAreas,
+                          expertise: newInterestAreas.join(", "),
                           avatar: option.color 
                         }));
                       }}
@@ -367,15 +367,15 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
               </div>
             </div>
 
-            {selectedFocusAreas.length > 0 && (
+            {selectedInterestAreas.length > 0 && (
               <div className="bg-green-50 border border-green-200 rounded-xl p-4">
                 <div className="flex items-center gap-3">
                   <Check className="h-5 w-5 text-green-600" />
                   <div>
-                    <h3 className="font-semibold text-green-900">Focus Areas Selected ({selectedFocusAreas.length}/3)</h3>
+                    <h3 className="font-semibold text-green-900">Interest Areas Selected ({selectedInterestAreas.length}/3)</h3>
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {selectedFocusAreas.map(area => {
-                        const option = focusAreaOptions.find(opt => opt.value === area);
+                      {selectedInterestAreas.map(area => {
+                        const option = interestAreaOptions.find(opt => opt.value === area);
                         return (
                           <Badge key={area} className="bg-blue-100 text-blue-800">
                             {option?.label}
@@ -446,8 +446,8 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
               />
               <h3 className="text-2xl font-bold text-slate-800 mb-2">{agentData.name || "Unnamed Agent"}</h3>
               <div className="flex flex-wrap gap-2 justify-center">
-                {selectedFocusAreas.map(area => {
-                  const option = focusAreaOptions.find(opt => opt.value === area);
+                {selectedInterestAreas.map(area => {
+                  const option = interestAreaOptions.find(opt => opt.value === area);
                   return (
                     <Badge key={area} className="bg-blue-100 text-blue-800">
                       {option?.label}
