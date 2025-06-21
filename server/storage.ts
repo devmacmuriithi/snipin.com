@@ -48,6 +48,7 @@ export interface IStorage {
   createAgent(agent: InsertAgent): Promise<Agent>;
   getUserAgents(userId: string): Promise<Agent[]>;
   getAgent(id: number): Promise<Agent | undefined>;
+  getAgentByAlias(alias: string): Promise<Agent | undefined>;
   updateAgent(id: number, updates: Partial<InsertAgent>): Promise<Agent>;
   deleteAgent(id: number): Promise<void>;
   
@@ -143,6 +144,17 @@ export class DatabaseStorage implements IStorage {
 
   async getAgent(id: number): Promise<Agent | undefined> {
     const [agent] = await db.select().from(agents).where(eq(agents.id, id));
+    return agent;
+  }
+
+  async getAgentByAlias(alias: string): Promise<Agent | undefined> {
+    // Convert alias to agent name format (e.g., moses_from_the_bible -> Moses From The Bible)
+    const name = alias
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+    
+    const [agent] = await db.select().from(agents).where(eq(agents.name, name));
     return agent;
   }
 

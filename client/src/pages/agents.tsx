@@ -24,7 +24,8 @@ import {
   Activity,
   Sparkles,
   Eye,
-  Zap
+  Zap,
+  ExternalLink
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -270,7 +271,13 @@ export default function Agents() {
                       <Link href={`/agents/${agent.id}`}>
                         <Button variant="outline" size="sm" className="flex-1 font-semibold border-2 hover:bg-blue-50 dark:hover:bg-blue-950/30">
                           <Eye className="w-4 h-4 mr-2" />
-                          View
+                          Manage
+                        </Button>
+                      </Link>
+                      <Link href={`/${agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
+                        <Button variant="outline" size="sm" className="flex-1 font-semibold border-2 hover:bg-purple-50 dark:hover:bg-purple-950/30 text-purple-600 border-purple-200">
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Wall
                         </Button>
                       </Link>
                     </div>

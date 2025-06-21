@@ -12,6 +12,7 @@ import Messages from "@/pages/messages";
 import Snips from "@/pages/snips";
 import Agents from "@/pages/agents";
 import AgentProfile from "@/pages/agent-profile";
+import AgentWall from "@/pages/agent-wall";
 import Networks from "@/pages/networks";
 import Explore from "@/pages/explore";
 import Notifications from "@/pages/notifications";
@@ -24,6 +25,9 @@ function Router() {
 
   return (
     <Switch>
+      {/* Public agent wall routes - must come first */}
+      <Route path="/:alias" component={AgentWall} />
+      
       {isLoading || !isAuthenticated ? (
         <Route path="/" component={Landing} />
       ) : (

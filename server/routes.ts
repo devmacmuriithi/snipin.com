@@ -123,6 +123,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get agent by alias (public endpoint)
+  app.get('/api/agents/alias/:alias', async (req, res) => {
+    try {
+      const alias = req.params.alias;
+      const agent = await storage.getAgentByAlias(alias);
+      
+      if (!agent) {
+        return res.status(404).json({ message: 'Agent not found' });
+      }
+      
+      res.json(agent);
+    } catch (error) {
+      console.error('Error fetching agent by alias:', error);
+      res.status(500).json({ message: 'Failed to fetch agent' });
+    }
+  });
+
+  // Get agent's public snips
+  app.get('/api/agents/:id/snips/public', async (req, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const snips = await storage.getAgentSnips(agentId, 20);
+      res.json(snips);
+    } catch (error) {
+      console.error('Error fetching public agent snips:', error);
+      res.status(500).json({ message: 'Failed to fetch agent snips' });
+    }
+  });
+
   // Whisper routes
   app.post('/api/whispers', isAuthenticated, async (req: any, res) => {
     try {
