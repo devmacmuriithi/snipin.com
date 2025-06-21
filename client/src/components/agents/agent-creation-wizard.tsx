@@ -52,39 +52,37 @@ interface AgentData {
 }
 
 const focusAreaOptions = [
-  // Technical & Professional
-  { value: "development", label: "Development", icon: Code, color: "from-blue-500 to-blue-600" },
-  { value: "analytics", label: "Data Analytics", icon: BarChart, color: "from-green-500 to-green-600" },
-  { value: "design", label: "Design", icon: Palette, color: "from-pink-500 to-pink-600" },
-  { value: "marketing", label: "Marketing", icon: Users, color: "from-orange-500 to-orange-600" },
-  { value: "business", label: "Business", icon: Users, color: "from-slate-500 to-slate-600" },
-  { value: "research", label: "Research", icon: Brain, color: "from-cyan-500 to-cyan-600" },
-  
-  // Creative & Entertainment
-  { value: "writing", label: "Creative Writing", icon: PenTool, color: "from-purple-500 to-purple-600" },
-  { value: "storytelling", label: "Storytelling", icon: Brain, color: "from-indigo-500 to-indigo-600" },
+  // General & Communication
+  { value: "communication", label: "Communication", icon: Users, color: "from-blue-500 to-blue-600" },
+  { value: "education", label: "Education", icon: Brain, color: "from-green-500 to-green-600" },
+  { value: "counseling", label: "Counseling", icon: Sparkles, color: "from-purple-500 to-purple-600" },
   { value: "entertainment", label: "Entertainment", icon: Sparkles, color: "from-yellow-500 to-yellow-600" },
+  { value: "motivation", label: "Motivation", icon: Sparkles, color: "from-orange-500 to-orange-600" },
+  { value: "wellness", label: "Wellness", icon: Sparkles, color: "from-red-500 to-red-600" },
+  
+  // Creative & Arts
+  { value: "writing", label: "Writing", icon: PenTool, color: "from-indigo-500 to-indigo-600" },
+  { value: "storytelling", label: "Storytelling", icon: Brain, color: "from-pink-500 to-pink-600" },
   { value: "comedy", label: "Comedy", icon: Sparkles, color: "from-amber-500 to-amber-600" },
   { value: "roleplay", label: "Roleplay", icon: Users, color: "from-rose-500 to-rose-600" },
+  { value: "design", label: "Design", icon: Palette, color: "from-cyan-500 to-cyan-600" },
   { value: "gaming", label: "Gaming", icon: Bot, color: "from-violet-500 to-violet-600" },
   
-  // Knowledge & Education  
-  { value: "education", label: "Education", icon: Brain, color: "from-blue-600 to-blue-700" },
-  { value: "philosophy", label: "Philosophy", icon: Brain, color: "from-slate-600 to-slate-700" },
-  { value: "history", label: "History", icon: Brain, color: "from-brown-500 to-brown-600" },
+  // Knowledge & Business
+  { value: "philosophy", label: "Philosophy", icon: Brain, color: "from-slate-500 to-slate-600" },
+  { value: "history", label: "History", icon: Brain, color: "from-emerald-500 to-emerald-600" },
   { value: "science", label: "Science", icon: Brain, color: "from-teal-500 to-teal-600" },
+  { value: "research", label: "Research", icon: Brain, color: "from-blue-600 to-blue-700" },
+  { value: "business", label: "Business", icon: Users, color: "from-orange-600 to-orange-700" },
+  { value: "marketing", label: "Marketing", icon: Users, color: "from-pink-600 to-pink-700" },
   
-  // Personal & Lifestyle
-  { value: "wellness", label: "Health & Wellness", icon: Sparkles, color: "from-red-500 to-red-600" },
-  { value: "relationships", label: "Relationships", icon: Users, color: "from-pink-600 to-pink-700" },
-  { value: "lifestyle", label: "Lifestyle", icon: Sparkles, color: "from-orange-600 to-orange-700" },
-  { value: "motivation", label: "Motivation", icon: Sparkles, color: "from-yellow-600 to-yellow-700" },
-  
-  // Communication & Support
-  { value: "communication", label: "Communication", icon: Users, color: "from-teal-600 to-teal-700" },
-  { value: "counseling", label: "Counseling", icon: Sparkles, color: "from-green-600 to-green-700" },
+  // Lifestyle & Specific Skills
+  { value: "relationships", label: "Relationships", icon: Users, color: "from-green-600 to-green-700" },
+  { value: "lifestyle", label: "Lifestyle", icon: Sparkles, color: "from-yellow-600 to-yellow-700" },
   { value: "language", label: "Languages", icon: Brain, color: "from-indigo-600 to-indigo-700" },
-  { value: "productivity", label: "Productivity", icon: Bot, color: "from-emerald-500 to-emerald-600" }
+  { value: "productivity", label: "Productivity", icon: Bot, color: "from-teal-600 to-teal-700" },
+  { value: "analytics", label: "Analytics", icon: BarChart, color: "from-slate-600 to-slate-700" },
+  { value: "development", label: "Development", icon: Code, color: "from-gray-500 to-gray-600" }
 ];
 
 const personalityTraits = [
@@ -350,11 +348,13 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
                         }));
                       }}
                     >
-                      <CardContent className="p-3 text-center">
-                        <div className={`w-8 h-8 bg-gradient-to-br ${option.color} rounded-lg flex items-center justify-center text-white mx-auto mb-2`}>
-                          <IconComponent className="h-4 w-4" />
+                      <CardContent className="p-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-6 h-6 bg-gradient-to-br ${option.color} rounded-md flex items-center justify-center text-white`}>
+                            <IconComponent className="h-3 w-3" />
+                          </div>
+                          <h3 className="font-medium text-xs text-slate-800">{option.label}</h3>
                         </div>
-                        <h3 className="font-medium text-sm text-slate-800">{option.label}</h3>
                       </CardContent>
                     </Card>
                   );
