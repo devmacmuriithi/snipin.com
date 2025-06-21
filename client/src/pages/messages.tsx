@@ -25,6 +25,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import StartConversationModal from "@/components/messages/start-conversation-modal";
 
 interface Conversation {
   id: number;
@@ -167,7 +168,7 @@ export default function Messages() {
       <NavigationSidebar />
       
       {/* Messages Layout */}
-      <div className="flex-1 ml-64 flex">
+      <div className="flex-1 flex" style={{ marginLeft: '256px' }}>
         {/* Conversations List */}
         <div className="w-80 border-r border-slate-200/50 dark:border-slate-700/50 bg-white/30 dark:bg-slate-900/30 backdrop-blur-xl">
           {/* Header */}
@@ -178,9 +179,7 @@ export default function Messages() {
                 <Button variant="ghost" size="sm">
                   <Settings className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="sm">
-                  <Plus className="h-4 w-4" />
-                </Button>
+                <StartConversationModal variant="icon" />
               </div>
             </div>
             
@@ -265,9 +264,10 @@ export default function Messages() {
               <div className="text-center py-12">
                 <MessageCircle className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">No conversations yet</h3>
-                <p className="text-slate-600 dark:text-slate-400 text-sm">
+                <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
                   Start a conversation with one of your agents to see it here.
                 </p>
+                <StartConversationModal />
               </div>
             )}
           </div>

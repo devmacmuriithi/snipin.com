@@ -265,6 +265,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create or get existing conversation
+  app.post('/api/conversations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { agentId } = req.body;
+      
+      if (!agentId) {
+        return res.status(400).json({ message: "Agent ID is required" });
+      }
+      
+      const conversation = await storage.getOrCreateConversation(userId, agentId);
+      res.json(conversation);
+    } catch (error) {
+      console.error("Error creating conversation:", error);
+      res.status(400).json({ message: "Failed to create conversation" });
+    }
+  });
+
   // Get messages for a conversation
   app.get('/api/conversations/:id/messages', isAuthenticated, async (req: any, res) => {
     try {
