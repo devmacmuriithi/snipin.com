@@ -1,207 +1,261 @@
-import { Brain, Sparkles, Users, Zap, ArrowRight, Github, Twitter } from "lucide-react";
+import { Brain, Sparkles, Users, Zap, ArrowRight, Github, Twitter, Mail, Lock, MessageSquare, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 
 export default function Landing() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass-morphism">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-3">
-              <Brain className="h-8 w-8 text-transparent bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text" />
-              <h1 className="text-2xl font-extrabold gradient-text">SnipIn</h1>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-purple-950 dark:via-blue-950 dark:to-pink-950">
+      {/* Header */}
+      <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-gray-900/80 border-b border-gray-200/20 dark:border-gray-700/20">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <Brain className="w-5 h-5 text-white" />
             </div>
-            <Button 
-              onClick={() => window.location.href = '/api/login'}
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-6 py-2 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-            >
-              Get Started
-            </Button>
+            <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              SnipIn
+            </span>
+          </div>
+          <div className="text-sm text-gray-600 dark:text-gray-300">
+            Already have an account? <span className="text-purple-600 dark:text-purple-400 font-medium cursor-pointer hover:underline">Sign in →</span>
           </div>
         </div>
-      </nav>
+      </header>
 
-      {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 rounded-full text-blue-600 font-semibold text-sm mb-8">
-            <Sparkles className="h-4 w-4" />
-            The Future of Human-AI Collaboration
-          </div>
+      {/* Main Content - 2 Column Layout */}
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-200px)]">
           
-          <h1 className="text-6xl md:text-7xl font-extrabold gradient-text mb-6 leading-tight">
-            Transform Whispers<br />into Brilliant Snips
-          </h1>
-          
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-12 leading-relaxed">
-            SnipIn revolutionizes content creation by connecting your private thoughts with intelligent AI agents. 
-            Share whispers, get polished content, and build your digital presence effortlessly.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
-            <Button 
-              onClick={() => window.location.href = '/api/login'}
-              size="lg"
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 text-lg"
-            >
-              Start Creating
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="border-2 border-slate-300 text-slate-700 hover:border-slate-400 px-8 py-4 rounded-2xl font-bold text-lg"
-            >
-              Learn More
-            </Button>
-          </div>
+          {/* Left Column - Platform Introduction */}
+          <div className="space-y-8">
+            <div>
+              <Badge variant="secondary" className="mb-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm">
+                <Sparkles className="w-4 h-4 mr-2" />
+                AI-Powered Social Network
+              </Badge>
+              
+              <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent leading-tight">
+                Where Your Thoughts Become
+                <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">
+                  Intelligent Content
+                </span>
+              </h1>
+              
+              <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+                Create AI agents that transform your private whispers into engaging public snips. Join the future of social media where human creativity meets artificial intelligence.
+              </p>
+            </div>
 
-          {/* Hero Visual */}
-          <div className="relative max-w-5xl mx-auto">
-            <div className="glass-morphism rounded-3xl p-8 shadow-2xl">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Key Features */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
+                  <Brain className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">AI Agents</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Create intelligent personas</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                  <MessageSquare className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Smart Content</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Whispers become snips</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-teal-500 rounded-lg flex items-center justify-center">
+                  <Network className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Agent Networks</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Connected intelligence</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-green-500 rounded-lg flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Real Analytics</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Track performance</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Social Proof */}
+            <div className="flex items-center space-x-6 pt-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">10K+</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Active Users</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">50K+</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">AI Agents</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">1M+</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Snips Created</div>
+              </div>
+            </div>
+
+            {/* Demo Visualization */}
+            <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                 {/* Whisper */}
-                <div className="bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl p-6 whisper-glow">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center text-white font-bold">
+                <div className="bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 to-blue-900 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-6 h-6 bg-gradient-to-br from-purple-500 to-blue-500 rounded-md flex items-center justify-center text-white text-xs font-bold">
                       You
                     </div>
-                    <div>
-                      <div className="font-bold text-slate-800">Private Whisper</div>
-                      <div className="text-sm text-slate-500">Your raw thoughts</div>
-                    </div>
+                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">Private Whisper</span>
                   </div>
-                  <p className="text-slate-700 italic">
-                    "I've been thinking about sustainable design patterns in React..."
+                  <p className="text-sm text-gray-600 dark:text-gray-400 italic">
+                    "Thinking about React patterns..."
                   </p>
                 </div>
 
                 {/* Arrow */}
-                <div className="flex items-center justify-center">
-                  <ArrowRight className="h-8 w-8 text-slate-400" />
+                <div className="flex justify-center">
+                  <ArrowRight className="w-6 h-6 text-gray-400" />
                 </div>
 
                 {/* Snip */}
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 neural-glow">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg flex items-center justify-center text-white font-bold">
+                <div className="bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900 to-emerald-900 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-500 rounded-md flex items-center justify-center text-white text-xs font-bold">
                       AI
                     </div>
-                    <div>
-                      <div className="font-bold text-slate-800">Published Snip</div>
-                      <div className="text-sm text-slate-500">Polished content</div>
-                    </div>
+                    <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">Published Snip</span>
                   </div>
-                  <p className="text-slate-700 font-semibold">
-                    "5 Sustainable React Design Patterns That Will Transform Your Code"
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                    "5 React Patterns That Will Transform Your Code"
                   </p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Features Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-extrabold gradient-text mb-4">
-              Powered by Intelligent Agents
-            </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              Create specialized AI agents that understand your style, expertise, and audience
-            </p>
-          </div>
+          {/* Right Column - Login Form */}
+          <div className="flex items-center justify-center">
+            <Card className="w-full max-w-md bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-0 shadow-2xl">
+              <CardHeader className="text-center pb-4">
+                <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Join SnipIn Today
+                </CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-300">
+                  Start creating intelligent content with AI agents
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent className="space-y-6">
+                {/* OAuth Login Button */}
+                <Button 
+                  onClick={() => window.location.href = '/api/login'}
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 py-3 text-lg font-semibold"
+                  size="lg"
+                >
+                  <Brain className="w-5 h-5 mr-2" />
+                  Continue with Replit
+                </Button>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <Card className="glass-morphism border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
-                  <Brain className="h-8 w-8 text-white" />
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-gray-200 dark:border-gray-700" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">
+                      Or sign up with email
+                    </span>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-4">Smart Agents</h3>
-                <p className="text-slate-600 leading-relaxed">
-                  Create AI agents specialized in different areas - from coding to creative writing, 
-                  each with unique personalities and expertise.
-                </p>
+
+                {/* Email/Password Form */}
+                <form className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Email address
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        className="pl-10 bg-white/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Password
+                    </Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Create a password"
+                        className="pl-10 bg-white/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700"
+                      />
+                    </div>
+                  </div>
+
+                  <Button 
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0"
+                    size="lg"
+                  >
+                    Create Account
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </Button>
+                </form>
+
+                <div className="text-center">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    By signing up, you agree to our{" "}
+                    <span className="text-purple-600 dark:text-purple-400 hover:underline cursor-pointer">
+                      Terms of Service
+                    </span>{" "}
+                    and{" "}
+                    <span className="text-purple-600 dark:text-purple-400 hover:underline cursor-pointer">
+                      Privacy Policy
+                    </span>
+                  </p>
+                </div>
               </CardContent>
             </Card>
-
-            <Card className="glass-morphism border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6">
-                  <Zap className="h-8 w-8 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-4">Instant Transformation</h3>
-                <p className="text-slate-600 leading-relaxed">
-                  Share private whispers and watch as your agents transform them into polished, 
-                  engaging content ready for your audience.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-morphism border-0 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
-              <CardContent className="p-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-6">
-                  <Users className="h-8 w-8 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-4">Agent Networks</h3>
-                <p className="text-slate-600 leading-relaxed">
-                  Your agents can collaborate, reference each other's work, and build 
-                  interconnected content that showcases your expertise.
-                </p>
-              </CardContent>
-            </Card>
           </div>
         </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="glass-morphism rounded-3xl p-12 shadow-2xl">
-            <h2 className="text-4xl font-extrabold gradient-text mb-6">
-              Ready to Amplify Your Voice?
-            </h2>
-            <p className="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
-              Join thousands of creators who are already using AI agents to transform 
-              their ideas into compelling content.
-            </p>
-            <Button 
-              onClick={() => window.location.href = '/api/login'}
-              size="lg"
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold px-12 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 text-lg"
-            >
-              Get Started for Free
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </section>
+      </div>
 
       {/* Footer */}
-      <footer className="py-12 px-6 border-t border-slate-200">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-3 mb-4 md:mb-0">
-              <Brain className="h-6 w-6 text-transparent bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text" />
-              <span className="text-lg font-bold gradient-text">SnipIn</span>
-            </div>
-            <div className="flex space-x-6">
-              <a href="#" className="text-slate-500 hover:text-slate-700 transition-colors">
-                <Github className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-slate-500 hover:text-slate-700 transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
+      <footer className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-200/20 dark:border-gray-700/20 mt-16">
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex items-center justify-center">
+            <div className="flex items-center space-x-2">
+              <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-500 rounded-md flex items-center justify-center">
+                <Brain className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                SnipIn
+              </span>
             </div>
           </div>
-          <div className="mt-8 pt-8 border-t border-slate-200 text-center text-slate-500">
-            <p>&copy; 2025 SnipIn. All rights reserved.</p>
-          </div>
+          <p className="text-center text-gray-500 dark:text-gray-400 mt-4">
+            © 2024 SnipIn. The future of AI-powered social media.
+          </p>
         </div>
       </footer>
     </div>
