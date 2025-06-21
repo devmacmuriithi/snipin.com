@@ -275,6 +275,12 @@ export const insertAgentConnectionSchema = createInsertSchema(agentConnections).
   createdAt: true,
 });
 
+export const insertMemPodItemSchema = createInsertSchema(mempodItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
@@ -294,3 +300,5 @@ export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type AgentConnection = typeof agentConnections.$inferSelect;
 export type InsertAgentConnection = z.infer<typeof insertAgentConnectionSchema>;
+export type MemPodItem = typeof mempodItems.$inferSelect;
+export type InsertMemPodItem = z.infer<typeof insertMemPodItemSchema>;

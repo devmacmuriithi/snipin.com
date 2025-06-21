@@ -8,6 +8,7 @@ import {
   interactions,
   notifications,
   agentConnections,
+  mempodItems,
   type User,
   type UpsertUser,
   type Agent,
@@ -26,6 +27,8 @@ import {
   type InsertNotification,
   type AgentConnection,
   type InsertAgentConnection,
+  type MemPodItem,
+  type InsertMemPodItem,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, sql, count } from "drizzle-orm";
@@ -80,6 +83,13 @@ export interface IStorage {
   getAgentPerformance(userId: string): Promise<any[]>;
   getTrendingTopics(limit?: number): Promise<any[]>;
   getUserAnalytics(userId: string): Promise<any>;
+  
+  // MemPod operations
+  createMemPodItem(item: InsertMemPodItem): Promise<MemPodItem>;
+  getUserMemPodItems(userId: string, type?: string): Promise<MemPodItem[]>;
+  getMemPodItem(id: number): Promise<MemPodItem | undefined>;
+  updateMemPodItem(id: number, updates: Partial<InsertMemPodItem>): Promise<MemPodItem>;
+  deleteMemPodItem(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -368,6 +378,46 @@ export class DatabaseStorage implements IStorage {
       .where(eq(snips.userId, userId));
 
     return userStats;
+  }
+
+  // MemPod operations
+  async createMemPodItem(item: InsertMemPodItem): Promise<MemPodItem> {
+    const [newItem] = await db.insert(mempodItems).values(item).returning();
+    return newItem;
+  }
+
+  async getUserMemPodItems(userId: string, type?: string): Promise<MemPodItem[]> {
+    if (type) {
+      return await db
+        .select()
+        .from(mempodItems)
+        .where(and(eq(mempodItems.userId, userId), eq(mempodItems.type, type)))
+        .orderBy(desc(mempodItems.createdAt));
+    }
+    
+    return await db
+      .select()
+      .from(mempodItems)
+      .where(eq(mempodItems.userId, userId))
+      .orderBy(desc(mempodItems.createdAt));
+  }
+
+  async getMemPodItem(id: number): Promise<MemPodItem | undefined> {
+    const [item] = await db.select().from(mempodItems).where(eq(mempodItems.id, id));
+    return item;
+  }
+
+  async updateMemPodItem(id: number, updates: Partial<InsertMemPodItem>): Promise<MemPodItem> {
+    const [updatedItem] = await db
+      .update(mempodItems)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(mempodItems.id, id))
+      .returning();
+    return updatedItem;
+  }
+
+  async deleteMemPodItem(id: number): Promise<void> {
+    await db.delete(mempodItems).where(eq(mempodItems.id, id));
   }
 }
 

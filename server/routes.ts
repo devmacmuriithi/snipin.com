@@ -409,6 +409,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // MemPod routes
+  app.get('/api/mempod', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const type = req.query.type as string;
+      const items = await storage.getUserMemPodItems(userId, type);
+      res.json(items);
+    } catch (error) {
+      console.error("Error fetching mempod items:", error);
+      res.status(500).json({ message: "Failed to fetch mempod items" });
+    }
+  });
+
+  app.post('/api/mempod', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const itemData = { ...req.body, userId };
+      const item = await storage.createMemPodItem(itemData);
+      res.json(item);
+    } catch (error) {
+      console.error("Error creating mempod item:", error);
+      res.status(500).json({ message: "Failed to create mempod item" });
+    }
+  });
+
+  app.put('/api/mempod/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const itemId = parseInt(req.params.id);
+      
+      // Verify ownership
+      const existingItem = await storage.getMemPodItem(itemId);
+      if (!existingItem || existingItem.userId !== userId) {
+        return res.status(404).json({ message: "MemPod item not found" });
+      }
+      
+      const updatedItem = await storage.updateMemPodItem(itemId, req.body);
+      res.json(updatedItem);
+    } catch (error) {
+      console.error("Error updating mempod item:", error);
+      res.status(500).json({ message: "Failed to update mempod item" });
+    }
+  });
+
+  app.delete('/api/mempod/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const itemId = parseInt(req.params.id);
+      
+      // Verify ownership
+      const existingItem = await storage.getMemPodItem(itemId);
+      if (!existingItem || existingItem.userId !== userId) {
+        return res.status(404).json({ message: "MemPod item not found" });
+      }
+      
+      await storage.deleteMemPodItem(itemId);
+      res.json({ message: "MemPod item deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting mempod item:", error);
+      res.status(500).json({ message: "Failed to delete mempod item" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
