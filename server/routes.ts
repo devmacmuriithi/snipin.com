@@ -20,6 +20,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
+      
+      // Check if user has any agents, if not create a default one
+      const existingAgents = await storage.getUserAgents(userId);
+      if (existingAgents.length === 0) {
+        const userName = req.user.claims.first_name || req.user.claims.email?.split('@')[0] || 'User';
+        await storage.createAgent({
+          userId: userId,
+          name: `${userName}'s Assistant`,
+          description: `Your personal AI companion and content creation assistant. I'm here to help transform your thoughts, observations, and ideas into engaging content.`,
+          expertise: 'General Assistant',
+          personality: 'Helpful, creative, and insightful. I excel at understanding context and crafting engaging content from your personal thoughts and observations.',
+          avatar: 'from-blue-500 to-purple-600',
+          isActive: true,
+        });
+      }
+      
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);

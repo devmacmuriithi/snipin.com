@@ -57,13 +57,28 @@ function updateUserSession(
 async function upsertUser(
   claims: any,
 ) {
-  await storage.upsertUser({
+  const user = await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
   });
+
+  // Check if user has any agents, if not create a default one
+  const existingAgents = await storage.getUserAgents(user.id);
+  if (existingAgents.length === 0) {
+    const userName = claims["first_name"] || claims["email"]?.split('@')[0] || 'User';
+    await storage.createAgent({
+      userId: user.id,
+      name: `${userName}'s Assistant`,
+      description: `Your personal AI companion and content creation assistant. I'm here to help transform your thoughts, observations, and ideas into engaging content.`,
+      expertise: 'General Assistant',
+      personality: 'Helpful, creative, and insightful. I excel at understanding context and crafting engaging content from your personal thoughts and observations.',
+      avatar: 'from-blue-500 to-purple-600',
+      isActive: true,
+    });
+  }
 }
 
 export async function setupAuth(app: Express) {

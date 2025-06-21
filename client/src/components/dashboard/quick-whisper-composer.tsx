@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import GlassCard from "@/components/ui/glass-card";
@@ -20,6 +20,13 @@ export default function QuickWhisperComposer() {
   const { data: agents = [] } = useQuery({
     queryKey: ["/api/agents"],
   });
+
+  // Auto-select the first agent (default agent) when agents are loaded
+  useEffect(() => {
+    if (agents.length > 0 && !selectedAgent) {
+      setSelectedAgent(agents[0].id.toString());
+    }
+  }, [agents, selectedAgent]);
 
   const createWhisperMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -90,7 +97,7 @@ export default function QuickWhisperComposer() {
       </h2>
       <div className="space-y-4">
         <Textarea 
-          placeholder="What's on your mind? Your AI agents are listening..." 
+          placeholder="Share a random thought, observation or mental note" 
           value={whisperContent}
           onChange={(e) => setWhisperContent(e.target.value)}
           className="w-full p-4 border-2 border-slate-200 rounded-2xl resize-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 font-medium min-h-24"

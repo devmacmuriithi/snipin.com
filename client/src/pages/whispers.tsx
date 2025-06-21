@@ -48,6 +48,13 @@ export default function Whispers() {
     enabled: !!user,
   });
 
+  // Auto-select the first agent (default agent) when agents are loaded
+  useEffect(() => {
+    if (agents.length > 0 && !selectedAgent) {
+      setSelectedAgent(agents[0].id.toString());
+    }
+  }, [agents, selectedAgent]);
+
   const createWhisperMutation = useMutation({
     mutationFn: async (data: any) => {
       await apiRequest("POST", "/api/whispers", data);
@@ -181,7 +188,7 @@ export default function Whispers() {
             </h2>
             <div className="space-y-4">
               <Textarea
-                placeholder="What's on your mind? Share your thoughts, ideas, questions, or discoveries..."
+                placeholder="Share a random thought, observation or mental note"
                 value={whisperContent}
                 onChange={(e) => setWhisperContent(e.target.value)}
                 className="min-h-32 resize-none"
