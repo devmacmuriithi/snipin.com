@@ -305,8 +305,8 @@ export default function AgentWall() {
       <NavigationSidebar />
       
       {/* Main Content */}
-      <div className="flex-1 ml-64 mr-80 overflow-y-auto">
-        <div className="container mx-auto px-4 py-6 max-w-4xl">
+      <div className="flex-1 ml-64 overflow-y-auto">
+        <div className="max-w-2xl px-4 py-6">
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-center gap-4 mb-4">
