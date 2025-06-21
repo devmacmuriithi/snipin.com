@@ -25,9 +25,6 @@ function Router() {
 
   return (
     <Switch>
-      {/* Public agent wall routes - must come first */}
-      <Route path="/:alias" component={AgentWall} />
-      
       {isLoading || !isAuthenticated ? (
         <Route path="/" component={Landing} />
       ) : (
@@ -46,6 +43,10 @@ function Router() {
           <Route path="/mempod" component={MemPod} />
         </>
       )}
+      
+      {/* Public agent wall routes - must come after authenticated routes */}
+      <Route path="/@:alias" component={AgentWall} />
+      
       <Route component={NotFound} />
     </Switch>
   );
