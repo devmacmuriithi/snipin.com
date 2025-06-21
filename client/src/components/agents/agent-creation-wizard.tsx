@@ -23,7 +23,17 @@ import {
   ArrowRight,
   ArrowLeft,
   Check,
-  X
+  X,
+  TrendingUp,
+  Search,
+  Music,
+  Zap,
+  Users2,
+  Target,
+  GraduationCap,
+  Lightbulb,
+  Heart,
+  MessageCircle
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -42,21 +52,53 @@ interface AgentData {
 }
 
 const focusAreaOptions = [
-  { value: "development", label: "Software Development", icon: Code, color: "from-blue-500 to-purple-600" },
-  { value: "writing", label: "Creative Writing", icon: PenTool, color: "from-green-500 to-emerald-600" },
-  { value: "analytics", label: "Data Analysis", icon: BarChart, color: "from-purple-500 to-pink-600" },
-  { value: "design", label: "Visual Design", icon: Palette, color: "from-orange-500 to-red-600" },
-  { value: "marketing", label: "Marketing & Strategy", icon: Users, color: "from-indigo-500 to-blue-600" },
-  { value: "research", label: "Research & Analysis", icon: Brain, color: "from-teal-500 to-cyan-600" },
-  { value: "business", label: "Business Strategy", icon: Users, color: "from-slate-500 to-gray-600" },
-  { value: "education", label: "Teaching & Training", icon: Brain, color: "from-amber-500 to-yellow-600" },
-  { value: "communication", label: "Communication", icon: PenTool, color: "from-rose-500 to-pink-600" },
-  { value: "problem-solving", label: "Problem Solving", icon: Brain, color: "from-emerald-500 to-teal-600" },
+  // Technical & Professional
+  { value: "development", label: "Development", icon: Code, color: "from-blue-500 to-blue-600" },
+  { value: "analytics", label: "Data Analytics", icon: BarChart, color: "from-green-500 to-green-600" },
+  { value: "design", label: "Design", icon: Palette, color: "from-pink-500 to-pink-600" },
+  { value: "marketing", label: "Marketing", icon: Users, color: "from-orange-500 to-orange-600" },
+  { value: "business", label: "Business", icon: Users, color: "from-slate-500 to-slate-600" },
+  { value: "research", label: "Research", icon: Brain, color: "from-cyan-500 to-cyan-600" },
+  
+  // Creative & Entertainment
+  { value: "writing", label: "Creative Writing", icon: PenTool, color: "from-purple-500 to-purple-600" },
+  { value: "storytelling", label: "Storytelling", icon: Brain, color: "from-indigo-500 to-indigo-600" },
+  { value: "entertainment", label: "Entertainment", icon: Sparkles, color: "from-yellow-500 to-yellow-600" },
+  { value: "comedy", label: "Comedy", icon: Sparkles, color: "from-amber-500 to-amber-600" },
+  { value: "roleplay", label: "Roleplay", icon: Users, color: "from-rose-500 to-rose-600" },
+  { value: "gaming", label: "Gaming", icon: Bot, color: "from-violet-500 to-violet-600" },
+  
+  // Knowledge & Education  
+  { value: "education", label: "Education", icon: Brain, color: "from-blue-600 to-blue-700" },
+  { value: "philosophy", label: "Philosophy", icon: Brain, color: "from-slate-600 to-slate-700" },
+  { value: "history", label: "History", icon: Brain, color: "from-brown-500 to-brown-600" },
+  { value: "science", label: "Science", icon: Brain, color: "from-teal-500 to-teal-600" },
+  
+  // Personal & Lifestyle
+  { value: "wellness", label: "Health & Wellness", icon: Sparkles, color: "from-red-500 to-red-600" },
+  { value: "relationships", label: "Relationships", icon: Users, color: "from-pink-600 to-pink-700" },
+  { value: "lifestyle", label: "Lifestyle", icon: Sparkles, color: "from-orange-600 to-orange-700" },
+  { value: "motivation", label: "Motivation", icon: Sparkles, color: "from-yellow-600 to-yellow-700" },
+  
+  // Communication & Support
+  { value: "communication", label: "Communication", icon: Users, color: "from-teal-600 to-teal-700" },
+  { value: "counseling", label: "Counseling", icon: Sparkles, color: "from-green-600 to-green-700" },
+  { value: "language", label: "Languages", icon: Brain, color: "from-indigo-600 to-indigo-700" },
+  { value: "productivity", label: "Productivity", icon: Bot, color: "from-emerald-500 to-emerald-600" }
 ];
 
 const personalityTraits = [
-  "Professional", "Creative", "Analytical", "Friendly", "Detail-oriented",
-  "Innovative", "Methodical", "Enthusiastic", "Precise", "Collaborative"
+  // Core Personality
+  "Friendly", "Witty", "Wise", "Energetic", "Calm", "Mysterious",
+  "Optimistic", "Playful", "Serious", "Caring", "Confident", "Humble",
+  
+  // Character Types
+  "Mentor", "Companion", "Helper", "Entertainer", "Teacher", "Advisor",
+  "Storyteller", "Comedian", "Philosopher", "Explorer", "Artist", "Scientist",
+  
+  // Communication Style
+  "Casual", "Formal", "Poetic", "Direct", "Encouraging", "Thoughtful",
+  "Dramatic", "Sarcastic", "Gentle", "Bold", "Patient", "Passionate"
 ];
 
 const avatarOptions = [
