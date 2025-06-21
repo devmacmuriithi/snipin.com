@@ -1,20 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
-import GlassCard from "@/components/ui/glass-card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import QuickWhisperComposer from "@/components/dashboard/quick-whisper-composer";
 import RecentSnipsFeed from "@/components/dashboard/recent-snips-feed";
 import LiveActivity from "@/components/dashboard/live-activity";
 import TrendingTopics from "@/components/dashboard/trending-topics";
 import QuickActions from "@/components/dashboard/quick-actions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TrendingUp, User, MessageSquare } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Dashboard() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
 
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!isLoading && !user) {
       toast({
@@ -46,84 +46,80 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
-      <div className="max-w-7xl mx-auto relative">
-        <NavigationSidebar />
-        
-        <main className="ml-72 p-6">
-          <div className="max-w-4xl mx-auto">
-            {/* Dashboard Tabs */}
-            <GlassCard className="p-6 mb-6">
-              <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 mb-6">
-                  <TabsTrigger value="overview" className="font-semibold">Overview</TabsTrigger>
-                  <TabsTrigger value="activity" className="font-semibold">Activity</TabsTrigger>
-                  <TabsTrigger value="analytics" className="font-semibold">Analytics</TabsTrigger>
-                  <TabsTrigger value="settings" className="font-semibold">Settings</TabsTrigger>
+      <NavigationSidebar />
+      
+      <main className="ml-72 p-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Main Dashboard Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column - Main Feed with Tabs */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Tabs Section - Only spans middle column */}
+              <Tabs defaultValue="for-you" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 p-1 rounded-xl">
+                  <TabsTrigger 
+                    value="for-you" 
+                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                  >
+                    <User className="w-4 h-4" />
+                    For You
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="trending" 
+                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                    Trending
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="whispers" 
+                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    Whispers
+                  </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="overview" className="space-y-6">
-                  {/* Main Dashboard Grid */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Left Column - Main Content */}
-                    <div className="lg:col-span-2 space-y-6">
-                      <QuickWhisperComposer />
-                      <RecentSnipsFeed />
-                    </div>
-                    
-                    {/* Right Column - Sidebar Content */}
-                    <div className="space-y-6">
-                      <LiveActivity />
-                      <TrendingTopics />
-                      <QuickActions />
-                    </div>
-                  </div>
+                <TabsContent value="for-you" className="space-y-6">
+                  <QuickWhisperComposer />
+                  <RecentSnipsFeed />
                 </TabsContent>
 
-                <TabsContent value="activity" className="space-y-6">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <LiveActivity />
-                    <div className="space-y-6">
-                      <TrendingTopics />
-                    </div>
-                  </div>
+                <TabsContent value="trending" className="space-y-6">
+                  <TrendingTopics />
+                  <RecentSnipsFeed />
                 </TabsContent>
 
-                <TabsContent value="analytics" className="space-y-6">
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
+                <TabsContent value="whispers" className="space-y-6">
+                  <QuickWhisperComposer />
+                  <div className="glass-morphism rounded-3xl p-6 shadow-xl">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-4">Recent Whispers</h2>
+                    <p className="text-slate-600 mb-4">Your latest thoughts shared with AI agents</p>
+                    <div className="text-center py-8">
+                      <MessageSquare className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                      <p className="text-slate-500">Visit the Whispers page to see your complete whisper history</p>
                     </div>
-                    <h4 className="text-xl font-semibold text-slate-600 mb-2">Analytics Coming Soon</h4>
-                    <p className="text-slate-500">Detailed performance analytics and insights will be available here.</p>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="settings" className="space-y-6">
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                    </div>
-                    <h4 className="text-xl font-semibold text-slate-600 mb-2">Dashboard Settings</h4>
-                    <p className="text-slate-500">Customize your dashboard experience and preferences.</p>
                   </div>
                 </TabsContent>
               </Tabs>
-            </GlassCard>
+            </div>
+            
+            {/* Right Column - Sidebar */}
+            <div className="space-y-6">
+              <LiveActivity />
+              <TrendingTopics />
+              <QuickActions />
+            </div>
           </div>
-        </main>
-        
-        {/* Floating Action Button for Mobile */}
-        <button className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-300 flex items-center justify-center lg:hidden z-50">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
-      </div>
+        </div>
+      </main>
+
+      {/* Floating Action Button for Mobile */}
+      <button className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-300 flex items-center justify-center lg:hidden z-50">
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+      </button>
     </div>
   );
 }
