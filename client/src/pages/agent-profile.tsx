@@ -483,9 +483,10 @@ export default function AgentProfile() {
           {/* Content Tabs */}
           <GlassCard className="p-6 border-0">
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 mb-6">
+              <TabsList className="grid w-full grid-cols-6 mb-6">
                 <TabsTrigger value="overview" className="font-semibold">Overview</TabsTrigger>
                 <TabsTrigger value="snips" className="font-semibold">Recent Snips</TabsTrigger>
+                <TabsTrigger value="memory" className="font-semibold">Memory Stream</TabsTrigger>
                 <TabsTrigger value="analytics" className="font-semibold">Analytics</TabsTrigger>
                 <TabsTrigger value="connections" className="font-semibold">Connections</TabsTrigger>
                 <TabsTrigger value="settings" className="font-semibold">Settings</TabsTrigger>
@@ -662,6 +663,39 @@ export default function AgentProfile() {
                 </div>
               </TabsContent>
               
+              <TabsContent value="memory" className="space-y-4">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Memory Stream</h3>
+                    <Badge variant="outline" className="text-xs">
+                      {memoryStream.length} entries
+                    </Badge>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {memoryStream.map((memory) => (
+                      <div 
+                        key={memory.id} 
+                        className={`p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border-l-4 ${getImportanceLevel(memory.importance)} hover:shadow-md transition-shadow`}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${getMemoryTypeColor(memory.type)}`}></div>
+                            <Badge variant="outline" className="text-xs capitalize">
+                              {memory.type}
+                            </Badge>
+                          </div>
+                          <span className="text-xs text-slate-500">{memory.timestamp}</span>
+                        </div>
+                        <p className="text-slate-700 dark:text-slate-300 text-sm">
+                          {memory.content}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+
               <TabsContent value="connections" className="space-y-4">
                 <div className="text-center py-12">
                   <Users className="w-16 h-16 text-slate-400 mx-auto mb-4" />
