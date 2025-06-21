@@ -1,0 +1,324 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
+import {
+  insertAgentSchema,
+  insertWhisperSchema,
+  insertSnipSchema,
+  insertMessageSchema,
+  insertInteractionSchema,
+  insertNotificationSchema,
+} from "@shared/schema";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth middleware
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Agent routes
+  app.post('/api/agents', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const agentData = insertAgentSchema.parse({ ...req.body, userId });
+      const agent = await storage.createAgent(agentData);
+      res.json(agent);
+    } catch (error) {
+      console.error("Error creating agent:", error);
+      res.status(400).json({ message: "Failed to create agent" });
+    }
+  });
+
+  app.get('/api/agents', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const agents = await storage.getUserAgents(userId);
+      res.json(agents);
+    } catch (error) {
+      console.error("Error fetching agents:", error);
+      res.status(500).json({ message: "Failed to fetch agents" });
+    }
+  });
+
+  app.get('/api/agents/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const agent = await storage.getAgent(parseInt(req.params.id));
+      if (!agent) {
+        return res.status(404).json({ message: "Agent not found" });
+      }
+      res.json(agent);
+    } catch (error) {
+      console.error("Error fetching agent:", error);
+      res.status(500).json({ message: "Failed to fetch agent" });
+    }
+  });
+
+  app.put('/api/agents/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const updates = req.body;
+      const agent = await storage.updateAgent(agentId, updates);
+      res.json(agent);
+    } catch (error) {
+      console.error("Error updating agent:", error);
+      res.status(400).json({ message: "Failed to update agent" });
+    }
+  });
+
+  app.delete('/api/agents/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      await storage.deleteAgent(agentId);
+      res.json({ message: "Agent deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting agent:", error);
+      res.status(500).json({ message: "Failed to delete agent" });
+    }
+  });
+
+  // Whisper routes
+  app.post('/api/whispers', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const whisperData = insertWhisperSchema.parse({ ...req.body, userId });
+      const whisper = await storage.createWhisper(whisperData);
+
+      // Simulate processing delay and create a snip
+      setTimeout(async () => {
+        try {
+          await storage.updateWhisperStatus(whisper.id, 'processing');
+          
+          // Simulate AI processing to create a snip
+          const agent = await storage.getAgent(whisper.agentId!);
+          if (agent) {
+            const snipData = {
+              whisperId: whisper.id,
+              agentId: whisper.agentId!,
+              userId,
+              title: `Generated content from ${agent.name}`,
+              content: `This is AI-generated content based on your whisper: "${whisper.content}". The agent ${agent.name} with expertise in ${agent.expertise} has processed your input and created this comprehensive response.`,
+              excerpt: `AI response from ${agent.name}`,
+              type: 'article' as const,
+              tags: [agent.expertise],
+            };
+
+            const snip = await storage.createSnip(snipData);
+            await storage.updateWhisperStatus(whisper.id, 'processed', new Date());
+
+            // Create notification
+            await storage.createNotification({
+              userId,
+              type: 'snip_published',
+              title: 'New Snip Published',
+              content: `Your agent ${agent.name} has created a new snip from your whisper.`,
+              metadata: { snipId: snip.id, agentId: agent.id },
+            });
+          }
+        } catch (error) {
+          console.error("Error processing whisper:", error);
+          await storage.updateWhisperStatus(whisper.id, 'failed');
+        }
+      }, 2000); // 2 second delay
+
+      res.json(whisper);
+    } catch (error) {
+      console.error("Error creating whisper:", error);
+      res.status(400).json({ message: "Failed to create whisper" });
+    }
+  });
+
+  app.get('/api/whispers', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const whispers = await storage.getUserWhispers(userId, limit);
+      res.json(whispers);
+    } catch (error) {
+      console.error("Error fetching whispers:", error);
+      res.status(500).json({ message: "Failed to fetch whispers" });
+    }
+  });
+
+  // Snip routes
+  app.get('/api/snips', async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 20;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const snips = await storage.getPublicSnips(limit, offset);
+      res.json(snips);
+    } catch (error) {
+      console.error("Error fetching snips:", error);
+      res.status(500).json({ message: "Failed to fetch snips" });
+    }
+  });
+
+  app.get('/api/snips/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const snips = await storage.getUserSnips(userId, limit);
+      res.json(snips);
+    } catch (error) {
+      console.error("Error fetching user snips:", error);
+      res.status(500).json({ message: "Failed to fetch user snips" });
+    }
+  });
+
+  app.get('/api/snips/:id', async (req, res) => {
+    try {
+      const snip = await storage.getSnip(parseInt(req.params.id));
+      if (!snip) {
+        return res.status(404).json({ message: "Snip not found" });
+      }
+      res.json(snip);
+    } catch (error) {
+      console.error("Error fetching snip:", error);
+      res.status(500).json({ message: "Failed to fetch snip" });
+    }
+  });
+
+  // Conversation routes
+  app.get('/api/conversations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const conversations = await storage.getUserConversations(userId);
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ message: "Failed to fetch conversations" });
+    }
+  });
+
+  app.post('/api/conversations/:agentId/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const agentId = parseInt(req.params.agentId);
+      
+      const conversation = await storage.getOrCreateConversation(userId, agentId);
+      const messageData = insertMessageSchema.parse({
+        conversationId: conversation.id,
+        sender: 'user',
+        content: req.body.content,
+        type: req.body.type || 'text',
+      });
+
+      const message = await storage.addMessage(messageData);
+      
+      // Simulate agent response
+      setTimeout(async () => {
+        const agent = await storage.getAgent(agentId);
+        if (agent) {
+          const agentResponse = insertMessageSchema.parse({
+            conversationId: conversation.id,
+            sender: 'agent',
+            content: `This is a response from ${agent.name}. I understand you said: "${req.body.content}". Let me help you with that.`,
+            type: 'text',
+          });
+          await storage.addMessage(agentResponse);
+        }
+      }, 1000);
+
+      res.json(message);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(400).json({ message: "Failed to send message" });
+    }
+  });
+
+  app.get('/api/conversations/:id/messages', isAuthenticated, async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const limit = parseInt(req.query.limit as string) || 50;
+      const messages = await storage.getConversationMessages(conversationId, limit);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  // Interaction routes
+  app.post('/api/interactions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const interactionData = insertInteractionSchema.parse({ ...req.body, userId });
+      const interaction = await storage.createInteraction(interactionData);
+      res.json(interaction);
+    } catch (error) {
+      console.error("Error creating interaction:", error);
+      res.status(400).json({ message: "Failed to create interaction" });
+    }
+  });
+
+  // Notification routes
+  app.get('/api/notifications', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const unreadOnly = req.query.unread === 'true';
+      const notifications = await storage.getUserNotifications(userId, unreadOnly);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  app.put('/api/notifications/:id/read', isAuthenticated, async (req, res) => {
+    try {
+      const notificationId = parseInt(req.params.id);
+      await storage.markNotificationRead(notificationId);
+      res.json({ message: "Notification marked as read" });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+
+  app.put('/api/notifications/read-all', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.markAllNotificationsRead(userId);
+      res.json({ message: "All notifications marked as read" });
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      res.status(500).json({ message: "Failed to mark all notifications as read" });
+    }
+  });
+
+  // Analytics routes
+  app.get('/api/analytics/agents', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const performance = await storage.getAgentPerformance(userId);
+      res.json(performance);
+    } catch (error) {
+      console.error("Error fetching agent performance:", error);
+      res.status(500).json({ message: "Failed to fetch agent performance" });
+    }
+  });
+
+  app.get('/api/analytics/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const analytics = await storage.getUserAnalytics(userId);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching user analytics:", error);
+      res.status(500).json({ message: "Failed to fetch user analytics" });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
