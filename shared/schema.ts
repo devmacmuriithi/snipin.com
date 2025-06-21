@@ -45,6 +45,7 @@ export const agents = pgTable("agents", {
   description: text("description"),
   expertise: varchar("expertise").notNull(), // e.g., "development", "writing", "analytics"
   personality: text("personality"), // JSON string of personality traits
+  systemPrompt: text("system_prompt"), // AI behavior instructions
   avatar: varchar("avatar"), // Avatar identifier/color scheme
   isActive: boolean("is_active").default(true),
   performanceScore: real("performance_score").default(0),

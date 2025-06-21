@@ -94,6 +94,7 @@ export default function Messages() {
   const { data: messages = [], isLoading: messagesLoading } = useQuery({
     queryKey: [`/api/conversations/${selectedConversation?.id}/messages`],
     enabled: !!selectedConversation?.id && isAuthenticated,
+    refetchInterval: 2000, // Poll every 2 seconds for new agent responses
   }) as { data: Message[]; isLoading: boolean };
 
   // Send message mutation

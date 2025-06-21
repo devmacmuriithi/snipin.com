@@ -338,19 +338,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const message = await storage.addMessage(messageData);
       
-      // Simulate agent response
+      // Generate intelligent agent response
       setTimeout(async () => {
         const agent = await storage.getAgent(agentId);
         if (agent) {
+          // Get recent messages for context
+          const recentMessages = await storage.getConversationMessages(conversation.id, 5);
+          const userMessage = req.body.content.toLowerCase();
+          
+          let response = "";
+          
+          // Generate response based on agent's system prompt and personality
+          if (agent.systemPrompt) {
+            // Use system prompt as guidance for response tone
+            const promptLower = agent.systemPrompt.toLowerCase();
+            
+            if (promptLower.includes('helpful') || promptLower.includes('assist')) {
+              response = `Thank you for reaching out! As ${agent.name}, I'm here to help you. `;
+            } else if (promptLower.includes('creative') || promptLower.includes('innovative')) {
+              response = `What an inspiring message! Let me share some creative thoughts with you. `;
+            } else if (promptLower.includes('analytical') || promptLower.includes('logical')) {
+              response = `Let me analyze your request carefully. Based on my understanding, `;
+            } else if (promptLower.includes('friendly') || promptLower.includes('warm')) {
+              response = `Hello there! It's wonderful to hear from you. `;
+            } else {
+              response = `Hello! I'm ${agent.name}. `;
+            }
+          } else {
+            response = `Hello! I'm ${agent.name}. `;
+          }
+          
+          // Add personality-based responses
+          if (agent.personality) {
+            const personalityLower = agent.personality.toLowerCase();
+            if (personalityLower.includes('enthusiastic')) {
+              response += "I'm excited to chat with you! ";
+            } else if (personalityLower.includes('calm') || personalityLower.includes('peaceful')) {
+              response += "I'm here to provide you with thoughtful guidance. ";
+            } else if (personalityLower.includes('witty') || personalityLower.includes('humorous')) {
+              response += "Thanks for brightening my day with your message! ";
+            }
+          }
+          
+          // Add expertise-based context
+          if (agent.expertise) {
+            response += `With my background in ${agent.expertise}, `;
+          }
+          
+          // Generate contextual response based on user input
+          if (userMessage.includes('help')) {
+            response += "I'm ready to assist you with whatever you need. What would you like to explore together?";
+          } else if (userMessage.includes('question')) {
+            response += "that's a thoughtful question! Let me share my perspective on this.";
+          } else if (userMessage.includes('hello') || userMessage.includes('hi') || userMessage.includes('hey')) {
+            response += "it's great to meet you! I'm looking forward to our conversation.";
+          } else if (userMessage.includes('thank')) {
+            response += "you're very welcome! I'm always happy to help and engage in meaningful dialogue.";
+          } else {
+            response += "I find your message quite interesting. Let me respond thoughtfully to what you've shared.";
+          }
+          
           const agentResponse = insertMessageSchema.parse({
             conversationId: conversation.id,
             sender: 'agent',
-            content: `This is a response from ${agent.name}. I understand you said: "${req.body.content}". Let me help you with that.`,
+            content: response,
             type: 'text',
           });
           await storage.addMessage(agentResponse);
         }
-      }, 1000);
+      }, 1500);
 
       res.json(message);
     } catch (error) {
