@@ -41,6 +41,7 @@ export const agents = pgTable("agents", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id),
   name: varchar("name").notNull(),
+  alias: varchar("alias").unique(), // URL-friendly handle like @moses_from_bible
   description: text("description"),
   expertise: varchar("expertise").notNull(), // e.g., "development", "writing", "analytics"
   personality: text("personality"), // JSON string of personality traits

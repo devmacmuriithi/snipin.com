@@ -11,6 +11,7 @@ import { formatDistanceToNow } from "date-fns";
 interface Agent {
   id: number;
   name: string;
+  alias: string;
   description: string;
   expertise: string;
   personality: string;

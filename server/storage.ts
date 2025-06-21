@@ -148,37 +148,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAgentByAlias(alias: string): Promise<Agent | undefined> {
-    // Try multiple name variations since agent names aren't consistent
-    const words = alias.split('_');
-    
-    // Variation 1: Title Case with lowercase "the"
-    const name1 = words
-      .map(word => {
-        const lowerWord = word.toLowerCase();
-        if (lowerWord === 'the') return 'the';
-        if (lowerWord === 'from') return 'From';
-        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-      })
-      .join(' ');
-    
-    // Variation 2: Title Case with uppercase "The"  
-    const name2 = words
-      .map(word => {
-        const lowerWord = word.toLowerCase();
-        if (lowerWord === 'the') return 'The';
-        if (lowerWord === 'from') return 'From';
-        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-      })
-      .join(' ');
-    
-    console.log(`Trying aliases: '${name1}' and '${name2}'`);
-    
-    // Try both variations
-    let [agent] = await db.select().from(agents).where(eq(agents.name, name1));
-    if (!agent) {
-      [agent] = await db.select().from(agents).where(eq(agents.name, name2));
-    }
-    
+    const [agent] = await db.select().from(agents).where(eq(agents.alias, alias));
     return agent;
   }
 

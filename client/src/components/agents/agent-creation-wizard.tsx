@@ -63,6 +63,16 @@ const avatarOptions = [
   "from-teal-500 to-cyan-600"
 ];
 
+// Generate URL-friendly alias from agent name
+const generateAlias = (name: string): string => {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+    .replace(/\s+/g, '_') // Replace spaces with underscores
+    .replace(/_{2,}/g, '_') // Replace multiple underscores with single
+    .replace(/^_|_$/g, ''); // Remove leading/trailing underscores
+};
+
 export default function AgentCreationWizard({ onClose }: AgentCreationWizardProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -81,6 +91,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
     mutationFn: async (data: AgentData) => {
       await apiRequest("POST", "/api/agents", {
         ...data,
+        alias: generateAlias(data.name),
         personality: JSON.stringify(selectedTraits),
       });
     },

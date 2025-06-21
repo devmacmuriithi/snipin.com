@@ -33,6 +33,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 interface Agent {
   id: number;
   name: string;
+  alias: string;
   description: string;
   expertise: string;
   personality: string;
@@ -217,7 +218,7 @@ export default function Agents() {
                           </h3>
                         </Link>
                         <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">
-                          @{agent.name.toLowerCase().replace(' ', '_')}
+                          @{agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}
                         </p>
                         {/* Enhanced Stats Row */}
                         <div className="flex items-center gap-4 mt-3 text-xs text-slate-500 dark:text-slate-400">
@@ -274,7 +275,7 @@ export default function Agents() {
                           Manage
                         </Button>
                       </Link>
-                      <Link href={`/@${agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
+                      <Link href={`/@${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
                         <Button variant="outline" size="sm" className="flex-1 font-semibold border-2 hover:bg-purple-50 dark:hover:bg-purple-950/30 text-purple-600 border-purple-200">
                           <ExternalLink className="w-4 h-4 mr-2" />
                           Wall
