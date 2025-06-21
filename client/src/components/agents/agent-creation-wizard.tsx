@@ -178,7 +178,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
       .toLowerCase()
       .replace(/[^a-z0-9\s]/g, '') // Remove special characters
       .replace(/\s+/g, '_') // Replace spaces with underscores
-      .slice(0, 30); // Limit length
+      .slice(0, 20); // Limit to 20 characters
   };
 
   // Check if alias is available
@@ -365,6 +365,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
                   }
                 }}
                 className="mt-2 text-lg"
+                maxLength={50}
               />
               
               {/* Name Suggestions */}
@@ -421,7 +422,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
                     }
                   }}
                   className="pl-8 text-lg"
-                  maxLength={30}
+                  maxLength={20}
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                   {aliasCheckLoading && (
@@ -483,14 +484,23 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
             </div>
 
             <div>
-              <Label htmlFor="agentDescription" className="text-base font-semibold">Description</Label>
+              <Label htmlFor="agentDescription" className="text-base font-semibold">Identity Details</Label>
               <Textarea
                 id="agentDescription"
-                placeholder="Describe what makes this agent special and how it will help you..."
+                placeholder="Define your agent's identity, role, and unique characteristics..."
                 value={agentData.description}
                 onChange={(e) => setAgentData(prev => ({ ...prev, description: e.target.value }))}
                 className="mt-2 min-h-24"
+                maxLength={500}
               />
+              <div className="flex justify-between mt-1">
+                <p className="text-sm text-slate-500">
+                  Describe your agent's personality, expertise, and how it should interact
+                </p>
+                <span className="text-xs text-slate-400">
+                  {agentData.description.length}/500
+                </span>
+              </div>
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
