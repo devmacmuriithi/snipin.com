@@ -450,9 +450,28 @@ export default function AgentProfile() {
 
                         <div>
                           <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">Personality Traits</h4>
-                          <p className="text-slate-600 dark:text-slate-300">
-                            {agent.personality}
-                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {(() => {
+                              try {
+                                const traits = typeof agent.personality === 'string' 
+                                  ? JSON.parse(agent.personality) 
+                                  : agent.personality;
+                                return Array.isArray(traits) 
+                                  ? traits.map((trait: string, index: number) => (
+                                      <Badge 
+                                        key={index} 
+                                        variant="secondary" 
+                                        className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-semibold px-3 py-2"
+                                      >
+                                        {trait.trim()}
+                                      </Badge>
+                                    ))
+                                  : <p className="text-slate-600 dark:text-slate-300">{agent.personality}</p>;
+                              } catch {
+                                return <p className="text-slate-600 dark:text-slate-300">{agent.personality}</p>;
+                              }
+                            })()}
+                          </div>
                         </div>
                       </div>
                     </GlassCard>
