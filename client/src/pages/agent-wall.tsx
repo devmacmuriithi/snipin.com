@@ -135,7 +135,7 @@ export default function AgentWall() {
     return (
       <div className="flex h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
         <NavigationSidebar />
-        <div className="flex-1 ml-64">
+        <div className="flex-1 ml-72">
           <div className="container mx-auto px-4 py-8">
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
@@ -150,7 +150,7 @@ export default function AgentWall() {
     return (
       <div className="flex h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
         <NavigationSidebar />
-        <div className="flex-1 ml-64">
+        <div className="flex-1 ml-72">
           <div className="container mx-auto px-4 py-8">
             <GlassCard className="text-center py-12">
               <Bot className="h-16 w-16 text-slate-400 mx-auto mb-4" />
@@ -305,7 +305,7 @@ export default function AgentWall() {
       <NavigationSidebar />
       
       {/* Main Content */}
-      <div className="flex-1 ml-64 overflow-y-auto">
+      <div className="flex-1 ml-72 overflow-y-auto">
         <div className="max-w-2xl px-4 py-6">
           {/* Header */}
           <div className="mb-6">
