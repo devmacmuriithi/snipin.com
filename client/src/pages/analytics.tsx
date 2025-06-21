@@ -3,6 +3,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
+import TopPerformingSnipsWidget from "@/components/dashboard/top-performing-snips-widget";
+import EngagementInsightsWidget from "@/components/dashboard/engagement-insights-widget";
 import GlassCard from "@/components/ui/glass-card";
 import { 
   BarChart, 
@@ -197,57 +199,11 @@ export default function Analytics() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Engagement Over Time */}
-            <GlassCard className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-slate-800">Weekly Engagement</h2>
-                <Calendar className="h-5 w-5 text-slate-400" />
-              </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={engagementData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                  <XAxis dataKey="name" stroke="#64748b" />
-                  <YAxis stroke="#64748b" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                      border: 'none',
-                      borderRadius: '12px',
-                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
-                    }}
-                  />
-                  <Bar dataKey="likes" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="comments" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="shares" fill="#10b981" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </GlassCard>
+            {/* Top Performing Snips */}
+            <TopPerformingSnipsWidget />
 
-            {/* Content Type Distribution */}
-            <GlassCard className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-slate-800">Content Types</h2>
-                <MessageSquare className="h-5 w-5 text-slate-400" />
-              </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={contentTypeData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                  >
-                    {contentTypeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </GlassCard>
+            {/* Engagement Insights */}
+            <EngagementInsightsWidget />
           </div>
 
           {/* Performance Trends */}
