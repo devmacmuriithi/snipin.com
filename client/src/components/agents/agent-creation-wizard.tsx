@@ -33,7 +33,8 @@ import {
   GraduationCap,
   Lightbulb,
   Heart,
-  MessageCircle
+  MessageCircle,
+  Shuffle
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -138,6 +139,34 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
 
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
   const [selectedInterestAreas, setSelectedInterestAreas] = useState<string[]>([]);
+
+  // Enhanced name suggestions based on different categories
+  const getNameSuggestions = () => {
+    const suggestions = [
+      // Creative & Artistic
+      "Aurora", "Muse", "Prism", "Canvas", "Lyric", "Verse", "Palette", "Echo",
+      // Professional & Business
+      "Nexus", "Pinnacle", "Catalyst", "Summit", "Forge", "Apex", "Vanguard", "Quantum",
+      // Friendly & Social
+      "Harmony", "Sage", "Compass", "Bridge", "Haven", "Spark", "Beacon", "Pulse",
+      // Tech & Innovation
+      "Cipher", "Matrix", "Phoenix", "Nova", "Zenith", "Flux", "Vector", "Synapse",
+      // Wisdom & Knowledge
+      "Oracle", "Scholar", "Athena", "Edison", "Newton", "Tesla", "Aristotle", "Minerva",
+      // Nature & Organic
+      "River", "Willow", "Forest", "Storm", "Dawn", "Coral", "Jade", "Sky",
+      // Modern & Trendy
+      "Zara", "Kai", "Luna", "Felix", "Aria", "Rex", "Nova", "Iris",
+      // Character-inspired
+      "Gandalf", "Yoda", "Merlin", "Holmes", "Einstein", "Curie", "da Vinci", "Socrates"
+    ];
+    
+    // Shuffle and return 6 random suggestions
+    const shuffled = suggestions.sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 6);
+  };
+
+  const [nameSuggestions, setNameSuggestions] = useState(getNameSuggestions());
 
   const createAgentMutation = useMutation({
     mutationFn: async (data: AgentData) => {
@@ -284,12 +313,44 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
               <Label htmlFor="agentName" className="text-base font-semibold">Agent Name *</Label>
               <Input
                 id="agentName"
-                placeholder="e.g., CodeSage, CreativeWriter, DataAnalyst"
+                placeholder="Enter a name or pick from suggestions below"
                 value={agentData.name}
                 onChange={(e) => setAgentData(prev => ({ ...prev, name: e.target.value }))}
                 className="mt-2 text-lg"
               />
-              <p className="text-sm text-slate-500 mt-2">Choose a memorable name that reflects your agent's purpose</p>
+              
+              {/* Name Suggestions */}
+              <div className="mt-3">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium text-slate-600">Quick suggestions:</p>
+                  <Button
+                    type="button" 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setNameSuggestions(getNameSuggestions())}
+                    className="text-xs h-7"
+                  >
+                    <Zap className="h-3 w-3 mr-1" />
+                    More
+                  </Button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {nameSuggestions.map((name) => (
+                    <Button
+                      key={name}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAgentData(prev => ({ ...prev, name }))}
+                      className="text-sm h-8 hover:bg-blue-50 hover:border-blue-300"
+                    >
+                      {name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
+              <p className="text-sm text-slate-500 mt-2">Choose a memorable name that reflects your agent's personality</p>
             </div>
 
             <div>
