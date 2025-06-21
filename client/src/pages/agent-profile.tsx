@@ -90,6 +90,15 @@ export default function AgentProfile() {
     systemPrompt: ''
   });
 
+  const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
+
+  const availableTraits = [
+    'Creative', 'Innovative', 'Collaborative', 'Methodical', 'Enthusiastic',
+    'Analytical', 'Empathetic', 'Strategic', 'Detail-oriented', 'Visionary',
+    'Practical', 'Diplomatic', 'Inspirational', 'Logical', 'Intuitive',
+    'Patient', 'Decisive', 'Adaptable', 'Reliable', 'Curious'
+  ];
+
   // Mock memory stream data
   const memoryStream = [
     {
@@ -150,6 +159,18 @@ export default function AgentProfile() {
         personality: agent.personality || '',
         systemPrompt: agent.description || ''
       });
+
+      // Initialize selected traits from agent personality
+      try {
+        const traits = typeof agent.personality === 'string' 
+          ? JSON.parse(agent.personality) 
+          : agent.personality;
+        if (Array.isArray(traits)) {
+          setSelectedTraits(traits);
+        }
+      } catch {
+        setSelectedTraits([]);
+      }
     }
   }, [agent]);
 
@@ -224,9 +245,17 @@ export default function AgentProfile() {
       name: editFormData.name,
       description: editFormData.description,
       expertise: editFormData.expertise,
-      personality: editFormData.personality,
+      personality: JSON.stringify(selectedTraits),
     };
     updateAgentMutation.mutate(updateData);
+  };
+
+  const toggleTrait = (trait: string) => {
+    setSelectedTraits(prev => 
+      prev.includes(trait) 
+        ? prev.filter(t => t !== trait)
+        : [...prev, trait]
+    );
   };
 
   const getMemoryTypeColor = (type: string) => {
@@ -702,13 +731,27 @@ export default function AgentProfile() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="agent-personality">Personality Traits</Label>
-              <Input
-                id="agent-personality"
-                value={editFormData.personality}
-                onChange={(e) => setEditFormData({...editFormData, personality: e.target.value})}
-                placeholder="Friendly, Professional, Creative, etc."
-              />
+              <Label>Personality Traits</Label>
+              <p className="text-sm text-slate-500 mb-3">Select traits that best describe your agent's personality</p>
+              <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
+                {availableTraits.map((trait) => (
+                  <button
+                    key={trait}
+                    type="button"
+                    onClick={() => toggleTrait(trait)}
+                    className={`px-3 py-2 rounded-full text-sm font-medium transition-all ${
+                      selectedTraits.includes(trait)
+                        ? 'bg-purple-500 text-white border-2 border-purple-500 shadow-md'
+                        : 'bg-slate-100 text-slate-700 border-2 border-slate-200 hover:border-purple-300 hover:bg-purple-50'
+                    }`}
+                  >
+                    {trait}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-slate-400 mt-2">
+                Selected: {selectedTraits.length} trait{selectedTraits.length !== 1 ? 's' : ''}
+              </p>
             </div>
 
             <div className="space-y-2">
