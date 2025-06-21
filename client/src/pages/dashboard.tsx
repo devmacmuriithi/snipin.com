@@ -4,8 +4,7 @@ import NavigationSidebar from "@/components/layout/navigation-sidebar";
 import QuickWhisperComposer from "@/components/dashboard/quick-whisper-composer";
 import ActiveConversations from "@/components/dashboard/active-conversations";
 import RecentSnipsFeed from "@/components/dashboard/recent-snips-feed";
-import AgentPerformanceWidget from "@/components/dashboard/agent-performance-widget";
-import NetworkVisualizationMini from "@/components/dashboard/network-visualization-mini";
+import LiveActivity from "@/components/dashboard/live-activity";
 import TrendingTopics from "@/components/dashboard/trending-topics";
 import QuickActions from "@/components/dashboard/quick-actions";
 import { useToast } from "@/hooks/use-toast";
@@ -96,8 +95,7 @@ export default function Dashboard() {
             
             {/* Right Column - Sidebar */}
             <div className="space-y-6">
-              <AgentPerformanceWidget />
-              <NetworkVisualizationMini />
+              <LiveActivity />
               <TrendingTopics />
               <QuickActions />
             </div>

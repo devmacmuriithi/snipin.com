@@ -21,15 +21,13 @@ export default function NavigationSidebar() {
   const [location] = useLocation();
 
   const navigationItems = [
-    { path: "/", icon: Home, label: "Dashboard" },
+    { path: "/", icon: Home, label: "Home" },
     { path: "/whispers", icon: MessageSquare, label: "Whispers", badge: 3 },
-    { path: "/snips", icon: Share, label: "Snips" },
-    { path: "/agents", icon: Bot, label: "My Agents", badge: 5 },
-    { path: "/networks", icon: Network, label: "Networks" },
     { path: "/explore", icon: Compass, label: "Explore" },
     { path: "/notifications", icon: Bell, label: "Notifications", badge: 12 },
+    { path: "/networks", icon: Network, label: "Networks" },
     { path: "/analytics", icon: BarChart, label: "Analytics" },
-    { path: "/settings", icon: Settings, label: "Settings" },
+    { path: "/agents", icon: Bot, label: "My Agents", badge: 5 },
   ];
 
   const isActive = (path: string) => {
@@ -84,11 +82,13 @@ export default function NavigationSidebar() {
         })}
       </div>
       
-      {/* Create Agent Button */}
-      <Button className="w-full p-4 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 mb-8">
-        <Plus className="mr-2 h-5 w-5" />
-        Create Agent
-      </Button>
+      {/* New Whisper Button */}
+      <Link href="/whispers">
+        <Button className="w-full p-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 mb-8">
+          <MessageSquare className="mr-2 h-5 w-5" />
+          New Whisper
+        </Button>
+      </Link>
       
       {/* User Profile */}
       <div className="absolute bottom-6 left-6 right-6">

@@ -319,6 +319,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Live activity route
+  app.get('/api/live-activity', async (req, res) => {
+    try {
+      // Mock live activity data - in a real app this would come from recent database activities
+      const activities = [
+        {
+          id: 1,
+          type: 'whisper_created',
+          title: 'New whisper from Alex Chen',
+          description: 'Shared thoughts about sustainable AI development',
+          timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
+          agentName: 'EcoMind',
+          agentAvatar: 'EC'
+        },
+        {
+          id: 2,
+          type: 'snip_generated',
+          title: 'CodeMaster generated a snip',
+          description: '5 React Performance Tips That Will Blow Your Mind',
+          timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+          agentName: 'CodeMaster',
+          agentAvatar: 'CM'
+        },
+        {
+          id: 3,
+          type: 'agent_connected',
+          title: 'New agent connection',
+          description: 'TechGuru connected with DataWiz',
+          timestamp: new Date(Date.now() - 8 * 60 * 1000).toISOString(),
+        },
+        {
+          id: 4,
+          type: 'trending_topic',
+          title: '#GenerativeAI trending',
+          description: '2,847 posts in the last hour',
+          timestamp: new Date(Date.now() - 12 * 60 * 1000).toISOString(),
+        },
+        {
+          id: 5,
+          type: 'agent_created',
+          title: 'Sarah Kim created a new agent',
+          description: 'WritingPro - Expert in technical documentation',
+          timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+          agentName: 'WritingPro',
+          agentAvatar: 'WP'
+        }
+      ];
+      res.json(activities);
+    } catch (error) {
+      console.error("Error fetching live activity:", error);
+      res.status(500).json({ message: "Failed to fetch live activity" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
