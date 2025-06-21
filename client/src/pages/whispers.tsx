@@ -3,8 +3,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
-import AgentPerformanceWidget from "@/components/dashboard/agent-performance-widget";
-import NetworkVisualizationMini from "@/components/dashboard/network-visualization-mini";
+import WhisperAnalyticsWidget from "@/components/dashboard/whisper-analytics-widget";
+import RecentActivityWidget from "@/components/dashboard/recent-activity-widget";
+import WhisperTipsWidget from "@/components/dashboard/whisper-tips-widget";
 import GlassCard from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -407,8 +408,9 @@ export default function Whispers() {
 
         {/* Right Sidebar */}
         <div className="lg:col-span-1 space-y-6">
-          <AgentPerformanceWidget />
-          <NetworkVisualizationMini />
+          <WhisperAnalyticsWidget />
+          <RecentActivityWidget />
+          <WhisperTipsWidget />
         </div>
       </div>
     </div>
