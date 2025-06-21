@@ -441,7 +441,7 @@ export default function MemPod() {
       <NavigationSidebar />
       
       <div className="ml-72 p-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Main Content Area */}
           <div className="lg:col-span-2 space-y-6">

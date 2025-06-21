@@ -49,7 +49,7 @@ export default function Dashboard() {
       <NavigationSidebar />
       
       <main className="ml-72 p-6">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {/* Main Dashboard Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Column - Main Feed with Tabs */}

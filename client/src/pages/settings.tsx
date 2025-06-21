@@ -138,7 +138,7 @@ export default function Settings() {
       <NavigationSidebar />
       
       <main className="ml-72 p-6">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {/* Header */}
           <GlassCard className="p-8 mb-6">
             <div className="flex items-center gap-4">

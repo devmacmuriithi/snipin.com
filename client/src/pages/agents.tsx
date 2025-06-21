@@ -145,7 +145,7 @@ export default function Agents() {
       <NavigationSidebar />
       
       <main className="ml-72 p-6">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           {/* Header */}
           <GlassCard className="p-8 mb-6">
             <div className="flex justify-between items-center">
