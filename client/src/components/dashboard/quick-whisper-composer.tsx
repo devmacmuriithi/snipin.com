@@ -156,22 +156,7 @@ export default function QuickWhisperComposer() {
               </SelectContent>
             </Select>
 
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="text-slate-600 hover:text-purple-600"
-            >
-              <Image className="h-4 w-4 mr-2" />
-              Media
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="text-slate-600 hover:text-purple-600"
-            >
-              <Lock className="h-4 w-4 mr-2" />
-              Private
-            </Button>
+
           </div>
           <Button 
             onClick={handleSubmitWhisper}
