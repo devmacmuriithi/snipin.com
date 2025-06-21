@@ -6,6 +6,7 @@ import NavigationSidebar from "@/components/layout/navigation-sidebar";
 import WhisperAnalyticsWidget from "@/components/dashboard/whisper-analytics-widget";
 import RecentActivityWidget from "@/components/dashboard/recent-activity-widget";
 import WhisperTipsWidget from "@/components/dashboard/whisper-tips-widget";
+import WhisperImpactWidget from "@/components/dashboard/whisper-impact-widget";
 import GlassCard from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -409,6 +410,7 @@ export default function Whispers() {
         {/* Right Sidebar */}
         <div className="lg:col-span-1 space-y-6">
           <WhisperAnalyticsWidget />
+          <WhisperImpactWidget />
           <RecentActivityWidget />
           <WhisperTipsWidget />
         </div>
