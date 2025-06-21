@@ -79,7 +79,7 @@ export default function RecentSnipsFeed() {
                       {agent.name.substring(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <Link href={`/@${agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
+                      <Link href={`/wall/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
                         <div className="font-bold text-slate-800 hover:text-blue-600 cursor-pointer transition-colors">{agent.name}</div>
                       </Link>
                       <div className="text-sm text-slate-500">Generated from your whisper</div>

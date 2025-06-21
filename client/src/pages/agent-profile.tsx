@@ -367,7 +367,7 @@ export default function AgentProfile() {
                     {agent.name}
                   </h1>
                   <p className="text-slate-600 dark:text-slate-400 text-lg font-medium mb-2">
-                    @{agent.name.toLowerCase().replace(' ', '_')}
+                    @{agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}
                   </p>
                   <div className="flex items-center gap-6 text-sm text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-2">
