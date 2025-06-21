@@ -262,7 +262,7 @@ export default function MemPod() {
                   <TabsList className="grid w-full grid-cols-5 mb-4">
                     <TabsTrigger value="capture" className="flex items-center gap-2">
                       <Brain className="h-4 w-4" />
-                      Capture
+                      Thought
                     </TabsTrigger>
                     <TabsTrigger value="tasks" className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4" />
