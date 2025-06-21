@@ -97,6 +97,7 @@ export const conversations = pgTable("conversations", {
   lastMessageAt: timestamp("last_message_at"),
   status: varchar("status").default("active"), // "active", "archived", "paused"
   messageCount: integer("message_count").default(0),
+  unreadCount: integer("unread_count").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

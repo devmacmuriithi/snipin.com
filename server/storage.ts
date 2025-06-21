@@ -259,11 +259,66 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserConversations(userId: string): Promise<Conversation[]> {
-    return await db
-      .select()
+    const results = await db
+      .select({
+        id: conversations.id,
+        userId: conversations.userId,
+        agentId: conversations.agentId,
+        lastMessageAt: conversations.lastMessageAt,
+        unreadCount: conversations.unreadCount,
+        agent: {
+          id: agents.id,
+          name: agents.name,
+          alias: agents.alias,
+          avatar: agents.avatar,
+          isActive: agents.isActive,
+        },
+        lastMessage: {
+          id: messages.id,
+          content: messages.content,
+          sender: messages.sender,
+          createdAt: messages.createdAt,
+        }
+      })
       .from(conversations)
+      .leftJoin(agents, eq(conversations.agentId, agents.id))
+      .leftJoin(messages, eq(conversations.id, messages.conversationId))
       .where(eq(conversations.userId, userId))
       .orderBy(desc(conversations.lastMessageAt));
+
+    // Group by conversation and get the latest message for each
+    const conversationMap = new Map();
+    
+    for (const row of results) {
+      const convId = row.id;
+      if (!conversationMap.has(convId)) {
+        const lastMessage = row.lastMessage ? {
+          ...row.lastMessage,
+          isFromUser: row.lastMessage.sender === "user"
+        } : null;
+        
+        conversationMap.set(convId, {
+          id: row.id,
+          userId: row.userId,
+          agentId: row.agentId,
+          lastMessageAt: row.lastMessageAt,
+          unreadCount: row.unreadCount,
+          agent: row.agent,
+          lastMessage
+        });
+      } else {
+        // Update with more recent message if found
+        const existing = conversationMap.get(convId);
+        if (row.lastMessage && row.lastMessage.createdAt > existing.lastMessage?.createdAt) {
+          existing.lastMessage = {
+            ...row.lastMessage,
+            isFromUser: row.lastMessage.sender === "user"
+          };
+        }
+      }
+    }
+
+    return Array.from(conversationMap.values());
   }
 
   async addMessage(message: InsertMessage): Promise<Message> {
@@ -284,12 +339,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getConversationMessages(conversationId: number, limit = 50): Promise<Message[]> {
-    return await db
+    const rawMessages = await db
       .select()
       .from(messages)
       .where(eq(messages.conversationId, conversationId))
       .orderBy(desc(messages.createdAt))
       .limit(limit);
+
+    // Convert sender field to isFromUser for frontend compatibility
+    return rawMessages.map(msg => ({
+      ...msg,
+      isFromUser: msg.sender === "user"
+    }));
   }
 
   // Interaction operations

@@ -265,6 +265,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get messages for a conversation
+  app.get('/api/conversations/:id/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const limit = parseInt(req.query.limit as string) || 50;
+      const messages = await storage.getConversationMessages(conversationId, limit);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching conversation messages:", error);
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  // Send a message in a conversation
+  app.post('/api/conversations/:id/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      const { content, isFromUser } = req.body;
+      
+      const message = await storage.addMessage({
+        conversationId,
+        content,
+        sender: isFromUser !== false ? "user" : "agent",
+        type: "text"
+      });
+      
+      // Convert to frontend format
+      const responseMessage = {
+        ...message,
+        isFromUser: message.sender === "user"
+      };
+      
+      res.json(responseMessage);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(400).json({ message: "Failed to send message" });
+    }
+  });
+
   app.post('/api/conversations/:agentId/messages', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
