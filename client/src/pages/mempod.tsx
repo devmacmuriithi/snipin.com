@@ -438,13 +438,15 @@ export default function MemPod() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
-      <NavigationSidebar />
-      
-      <div className="ml-72 p-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="container mx-auto max-w-7xl px-4 py-6">
+        <div className="grid grid-cols-12 gap-6">
+          {/* Left Sidebar */}
+          <div className="col-span-3">
+            <NavigationSidebar />
+          </div>
           
           {/* Main Content Area */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="col-span-6 space-y-6">
             
             {/* Header */}
             <GlassCard className="p-8">
@@ -638,7 +640,7 @@ export default function MemPod() {
           </div>
 
           {/* Right Sidebar */}
-          <div className="space-y-6">
+          <div className="col-span-3 space-y-6">
             
             {/* Life Overview */}
             <GlassCard>

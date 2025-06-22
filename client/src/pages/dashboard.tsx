@@ -46,15 +46,15 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
-      <div className="container mx-auto max-w-7xl px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="container mx-auto max-w-7xl px-4 py-6">
+        <div className="grid grid-cols-12 gap-6">
           {/* Left Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="col-span-3">
             <NavigationSidebar />
           </div>
           
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="col-span-6 space-y-6">
               {/* Tabs Section - Only spans middle column */}
               <Tabs defaultValue="for-you" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 p-1 rounded-xl">
@@ -106,7 +106,7 @@ export default function Dashboard() {
           </div>
           
           {/* Right Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="col-span-3 space-y-6">
             <LiveActivity />
             <TrendingTopics />
             <QuickActions />
