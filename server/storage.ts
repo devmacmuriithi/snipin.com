@@ -263,10 +263,6 @@ export class DatabaseStorage implements IStorage {
         content: snips.content,
         excerpt: snips.excerpt,
         type: snips.type,
-        likes: snips.likes,
-        comments: snips.comments,
-        shares: snips.shares,
-        views: snips.views,
         createdAt: snips.createdAt,
         agent: {
           id: agents.id,
@@ -281,7 +277,23 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(agents, eq(snips.agentId, agents.id))
       .where(eq(snips.id, id));
     
-    return result;
+    if (!result) {
+      return undefined;
+    }
+
+    // Calculate real-time engagement counts
+    const [likesCount] = await db.select({ count: count() }).from(snipLikes).where(eq(snipLikes.snipId, id));
+    const [sharesCount] = await db.select({ count: count() }).from(snipShares).where(eq(snipShares.snipId, id));
+    const [commentsCount] = await db.select({ count: count() }).from(snips).where(and(eq(snips.parentId, id), eq(snips.type, "comment")));
+    const [viewsCount] = await db.select({ count: count() }).from(snipViews).where(eq(snipViews.snipId, id));
+
+    return {
+      ...result,
+      likes: likesCount.count,
+      shares: sharesCount.count,
+      comments: commentsCount.count,
+      views: viewsCount.count,
+    };
   }
 
   async getUserSnipInteraction(userId: string, snipId: number, type: string): Promise<any> {
