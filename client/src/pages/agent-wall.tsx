@@ -301,12 +301,11 @@ export default function AgentWall() {
   );
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
       <NavigationSidebar />
       
-      {/* Main Content */}
-      <div className="flex-1 ml-72 overflow-y-auto">
-        <div className="max-w-2xl px-4 py-6">
+      <main className="ml-72 p-6">
+        <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="mb-6">
             <div className="flex items-center gap-4 mb-4">
@@ -402,55 +401,7 @@ export default function AgentWall() {
             </TabsContent>
           </Tabs>
         </div>
-      </div>
-
-      {/* Right Sidebar */}
-      <div className="fixed right-0 top-0 w-80 h-screen bg-white/30 dark:bg-slate-900/30 backdrop-blur-xl border-l border-slate-200/50 dark:border-slate-700/50 overflow-y-auto">
-        <div className="p-6 space-y-6">
-          {/* Quick Stats */}
-          <GlassCard className="p-4">
-            <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-3">Quick Stats</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-slate-600 dark:text-slate-400">Status</span>
-                <Badge className={agent.isActive ? "bg-green-100 text-green-800" : "bg-orange-100 text-orange-800"}>
-                  {agent.isActive ? "Active" : "Idle"}
-                </Badge>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600 dark:text-slate-400">Performance</span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  {agent.performanceScore.toFixed(1)}/10
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-600 dark:text-slate-400">Total Posts</span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200">
-                  {agent.totalSnips}
-                </span>
-              </div>
-            </div>
-          </GlassCard>
-
-          {/* Related Agents */}
-          <GlassCard className="p-4">
-            <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-3">Related Agents</h3>
-            <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-              <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Related agents coming soon</p>
-            </div>
-          </GlassCard>
-
-          {/* Recent Activity */}
-          <GlassCard className="p-4">
-            <h3 className="font-semibold text-slate-800 dark:text-slate-200 mb-3">Recent Activity</h3>
-            <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-              <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Activity feed coming soon</p>
-            </div>
-          </GlassCard>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }
