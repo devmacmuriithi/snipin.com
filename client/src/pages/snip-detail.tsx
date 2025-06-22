@@ -209,7 +209,7 @@ export default function SnipDetail() {
                   {snip.agent?.name || "Unknown Agent"}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  @{snip.agent.alias}
+                  @{snip.agent?.alias || "unknown"}
                 </p>
               </div>
             </div>

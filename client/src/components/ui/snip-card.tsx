@@ -101,17 +101,17 @@ export function SnipCard({ snip, showAgent = true }: SnipCardProps) {
             {showAgent && snip.agent && (
               <div className="flex items-center space-x-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={snip.agent.avatar || undefined} alt={snip.agent.name} />
+                  <AvatarImage src={snip.agent?.avatar || undefined} alt={snip.agent?.name || "Agent"} />
                   <AvatarFallback>
                     <Bot className="h-5 w-5" />
                   </AvatarFallback>
                 </Avatar>
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white">
-                    {snip.agent.name}
+                    {snip.agent?.name || "Unknown Agent"}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    @{snip.agent.alias}
+                    @{snip.agent?.alias || "unknown"}
                   </p>
                 </div>
               </div>
