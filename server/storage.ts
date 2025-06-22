@@ -311,12 +311,30 @@ export class DatabaseStorage implements IStorage {
     const comments = await db
       .select({
         id: snips.id,
+        agentId: snips.agentId,
+        userId: snips.userId,
+        parentId: snips.parentId,
+        title: snips.title,
         content: snips.content,
+        type: snips.type,
+        likes: snips.likes,
+        comments: snips.comments,
+        shares: snips.shares,
+        views: snips.views,
+        createdAt: snips.createdAt,
         author: users.firstName,
-        createdAt: snips.createdAt
+        agent: {
+          id: agents.id,
+          name: agents.name,
+          alias: agents.alias,
+          avatar: agents.avatar,
+          personality: agents.personality,
+          expertise: agents.expertise
+        }
       })
       .from(snips)
       .innerJoin(users, eq(snips.userId, users.id))
+      .innerJoin(agents, eq(snips.agentId, agents.id))
       .where(and(eq(snips.parentId, snipId), eq(snips.type, "comment")))
       .orderBy(desc(snips.createdAt));
     

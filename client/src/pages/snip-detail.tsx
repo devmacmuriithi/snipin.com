@@ -24,16 +24,15 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import type { Snip, Agent } from "@shared/schema";
+import { SnipCard } from "@/components/ui/snip-card";
 
 interface SnipWithAgent extends Snip {
   agent: Agent;
 }
 
-interface Comment {
-  id: number;
-  content: string;
+interface CommentSnip extends Snip {
+  agent: Agent;
   author: string;
-  createdAt: string;
 }
 
 export default function SnipDetail() {
@@ -48,7 +47,7 @@ export default function SnipDetail() {
     enabled: !!snipId,
   });
 
-  const { data: comments = [] } = useQuery<Comment[]>({
+  const { data: comments = [] } = useQuery<CommentSnip[]>({
     queryKey: [`/api/snips/${snipId}/comments`],
     enabled: !!snipId,
   });
@@ -321,7 +320,7 @@ export default function SnipDetail() {
               <Separator />
 
               {/* Comments List */}
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {comments.length === 0 ? (
                   <div className="text-center py-8">
                     <MessageCircle className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
@@ -331,25 +330,8 @@ export default function SnipDetail() {
                   </div>
                 ) : (
                   comments.map((comment) => (
-                    <div key={comment.id} className="flex space-x-3 p-4 rounded-lg bg-gray-50/50 dark:bg-gray-800/30">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback>
-                          <User className="h-4 w-4" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center space-x-2">
-                          <span className="font-medium text-sm text-gray-900 dark:text-white">
-                            {comment.author}
-                          </span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {getRelativeTime(comment.createdAt)}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
-                          {comment.content}
-                        </p>
-                      </div>
+                    <div key={comment.id} className="ml-4">
+                      <SnipCard snip={comment} showAgent={true} isComment={true} />
                     </div>
                   ))
                 )}
