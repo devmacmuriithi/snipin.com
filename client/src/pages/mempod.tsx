@@ -7,11 +7,8 @@ import GlassCard from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest } from "@/lib/queryClient";
 import { 
   Brain, 
@@ -25,15 +22,18 @@ import {
   CheckCircle,
   Clock,
   TrendingUp,
-  Filter
+  Mic,
+  Camera,
+  FileText,
+  Lightbulb,
+  Users,
+  Activity
 } from "lucide-react";
-
-type MemPodItemType = 'memory' | 'goal' | 'knowledge' | 'favorite';
 
 interface MemPodItem {
   id: number;
   userId: string;
-  type: MemPodItemType;
+  type: 'capture' | 'note' | 'task' | 'goal' | 'knowledge';
   title: string;
   content: string;
   tags?: string[];
@@ -45,23 +45,14 @@ interface MemPodItem {
   updatedAt: string;
 }
 
-interface GoalMetric {
-  id: number;
-  goalId: number;
-  name: string;
-  targetValue: number;
-  currentValue: number;
-  unit: string;
-  createdAt: string;
-}
-
 export default function MemPod() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [selectedType, setSelectedType] = useState<MemPodItemType | 'all'>('all');
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<MemPodItem | null>(null);
+  const [activeSection, setActiveSection] = useState('dashboard');
+  const [quickCapture, setQuickCapture] = useState('');
+  const [newTask, setNewTask] = useState('');
+  const [newNote, setNewNote] = useState('');
 
   const { data: memPodItems = [] } = useQuery<MemPodItem[]>({
     queryKey: ["/api/mempod"],
@@ -74,7 +65,6 @@ export default function MemPod() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/mempod"] });
-      setIsCreateDialogOpen(false);
       toast({ title: "Item created successfully" });
     },
     onError: () => {
@@ -88,24 +78,7 @@ export default function MemPod() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/mempod"] });
-      setEditingItem(null);
       toast({ title: "Item updated successfully" });
-    },
-    onError: () => {
-      toast({ title: "Failed to update item", variant: "destructive" });
-    },
-  });
-
-  const deleteItemMutation = useMutation({
-    mutationFn: async (id: number) => {
-      return await apiRequest(`/api/mempod/${id}`, "DELETE");
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/mempod"] });
-      toast({ title: "Item deleted successfully" });
-    },
-    onError: () => {
-      toast({ title: "Failed to delete item", variant: "destructive" });
     },
   });
 
@@ -124,52 +97,69 @@ export default function MemPod() {
     return null;
   }
 
-  const filteredItems = selectedType === 'all' 
-    ? memPodItems 
-    : memPodItems.filter((item) => item.type === selectedType);
+  const captures = memPodItems.filter(item => item.type === 'capture');
+  const notes = memPodItems.filter(item => item.type === 'note');
+  const tasks = memPodItems.filter(item => item.type === 'task');
+  const goals = memPodItems.filter(item => item.type === 'goal');
+  const knowledge = memPodItems.filter(item => item.type === 'knowledge');
 
-  const itemCounts = {
-    all: memPodItems.length,
-    memory: memPodItems.filter((item: MemPodItem) => item.type === 'memory').length,
-    goal: memPodItems.filter((item: MemPodItem) => item.type === 'goal').length,
-    knowledge: memPodItems.filter((item: MemPodItem) => item.type === 'knowledge').length,
-    favorite: memPodItems.filter((item: MemPodItem) => item.type === 'favorite').length,
+  const completedTasks = tasks.filter(task => task.status === 'completed').length;
+  const activeTasks = tasks.filter(task => task.status === 'active').length;
+  const completedGoals = goals.filter(goal => goal.status === 'completed').length;
+
+  const handleQuickCapture = async () => {
+    if (!quickCapture.trim()) return;
+    
+    await createItemMutation.mutateAsync({
+      type: 'capture',
+      title: quickCapture.slice(0, 50),
+      content: quickCapture,
+      status: 'active'
+    });
+    setQuickCapture('');
   };
 
-  const completedGoals = memPodItems.filter((item: MemPodItem) => 
-    item.type === 'goal' && item.status === 'completed'
-  ).length;
-
-  const activeGoals = memPodItems.filter((item: MemPodItem) => 
-    item.type === 'goal' && item.status === 'active'
-  ).length;
-
-  const getTypeIcon = (type: MemPodItemType) => {
-    switch (type) {
-      case 'memory': return Brain;
-      case 'goal': return Target;
-      case 'knowledge': return Book;
-      case 'favorite': return Star;
-    }
+  const handleQuickTask = async () => {
+    if (!newTask.trim()) return;
+    
+    await createItemMutation.mutateAsync({
+      type: 'task',
+      title: newTask,
+      content: newTask,
+      status: 'active',
+      priority: 'medium'
+    });
+    setNewTask('');
   };
 
-  const getTypeColor = (type: MemPodItemType) => {
-    switch (type) {
-      case 'memory': return 'from-blue-500 to-cyan-600';
-      case 'goal': return 'from-green-500 to-emerald-600';
-      case 'knowledge': return 'from-purple-500 to-indigo-600';
-      case 'favorite': return 'from-orange-500 to-red-600';
-    }
+  const handleQuickNote = async () => {
+    if (!newNote.trim()) return;
+    
+    await createItemMutation.mutateAsync({
+      type: 'note',
+      title: newNote.slice(0, 50),
+      content: newNote,
+      status: 'active'
+    });
+    setNewNote('');
   };
 
-  const getPriorityColor = (priority?: string) => {
-    switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-green-100 text-green-800';
-      default: return 'bg-slate-100 text-slate-800';
-    }
+  const toggleTaskComplete = async (task: MemPodItem) => {
+    const newStatus = task.status === 'completed' ? 'active' : 'completed';
+    await updateItemMutation.mutateAsync({
+      id: task.id,
+      updates: { status: newStatus, progress: newStatus === 'completed' ? 100 : 0 }
+    });
   };
+
+  const navigationItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: Activity },
+    { id: 'capture', label: 'Quick Capture', icon: Mic },
+    { id: 'notes', label: 'Notes', icon: FileText },
+    { id: 'tasks', label: 'Tasks', icon: CheckCircle },
+    { id: 'goals', label: 'Goals', icon: Target },
+    { id: 'knowledge', label: 'Knowledge', icon: Lightbulb },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-100/20">
@@ -181,359 +171,341 @@ export default function MemPod() {
           </div>
 
           {/* Main Content */}
-          <div className="col-span-9">
+          <div className="col-span-6">
             <div className="space-y-6">
               {/* Header */}
               <GlassCard className="p-8">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h1 className="text-4xl font-extrabold gradient-text mb-2">MemPod</h1>
-                    <p className="text-slate-600 text-lg">Your AI-powered memory and goal tracking system</p>
+                <div className="text-center">
+                  <h1 className="text-4xl font-extrabold gradient-text mb-2">MemPod</h1>
+                  <p className="text-slate-600 text-lg">Personal Intelligence Watchtower</p>
+                </div>
+              </GlassCard>
+
+              {/* Quick Capture */}
+              <GlassCard className="p-6">
+                <div className="flex items-center mb-4">
+                  <Mic className="h-5 w-5 text-blue-600 mr-2" />
+                  <h2 className="text-lg font-bold text-slate-800">Quick Capture</h2>
+                </div>
+                <div className="flex gap-3">
+                  <Input
+                    placeholder="Capture a thought, idea, or observation..."
+                    value={quickCapture}
+                    onChange={(e) => setQuickCapture(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleQuickCapture()}
+                    className="flex-1"
+                  />
+                  <Button onClick={handleQuickCapture} disabled={!quickCapture.trim()}>
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </GlassCard>
+
+              {/* Section Navigation */}
+              <GlassCard className="p-4">
+                <div className="flex flex-wrap gap-2">
+                  {navigationItems.map((item) => {
+                    const IconComponent = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveSection(item.id)}
+                        className={`flex items-center px-4 py-2 rounded-xl font-medium transition-all ${
+                          activeSection === item.id
+                            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg'
+                            : 'bg-white/50 text-slate-700 hover:bg-white/70'
+                        }`}
+                      >
+                        <IconComponent className="h-4 w-4 mr-2" />
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </GlassCard>
+
+              {/* Content Sections */}
+              {activeSection === 'dashboard' && (
+                <div className="space-y-6">
+                  {/* Stats Cards */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-white/50 rounded-xl p-4 text-center">
+                      <div className="text-2xl font-bold text-blue-600">{captures.length}</div>
+                      <div className="text-sm text-slate-600">Captures</div>
+                    </div>
+                    <div className="bg-white/50 rounded-xl p-4 text-center">
+                      <div className="text-2xl font-bold text-green-600">{completedTasks}</div>
+                      <div className="text-sm text-slate-600">Tasks Done</div>
+                    </div>
+                    <div className="bg-white/50 rounded-xl p-4 text-center">
+                      <div className="text-2xl font-bold text-purple-600">{notes.length}</div>
+                      <div className="text-sm text-slate-600">Notes</div>
+                    </div>
+                    <div className="bg-white/50 rounded-xl p-4 text-center">
+                      <div className="text-2xl font-bold text-orange-600">{completedGoals}</div>
+                      <div className="text-sm text-slate-600">Goals</div>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-6">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-slate-800">{itemCounts.all}</div>
-                      <div className="text-sm text-slate-500 font-semibold">Total Items</div>
+
+                  {/* Recent Activity */}
+                  <GlassCard className="p-6">
+                    <h3 className="text-lg font-bold text-slate-800 mb-4">Recent Activity</h3>
+                    <div className="space-y-3">
+                      {memPodItems.slice(0, 5).map((item) => (
+                        <div key={item.id} className="flex items-center gap-3 p-3 bg-white/30 rounded-lg">
+                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">
+                            {item.type.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium text-slate-800">{item.title}</div>
+                            <div className="text-sm text-slate-500">{new Date(item.createdAt).toLocaleDateString()}</div>
+                          </div>
+                          <Badge variant="outline" className="capitalize">{item.type}</Badge>
+                        </div>
+                      ))}
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">{completedGoals}</div>
-                      <div className="text-sm text-slate-500 font-semibold">Goals Completed</div>
+                  </GlassCard>
+                </div>
+              )}
+
+              {activeSection === 'capture' && (
+                <GlassCard className="p-6">
+                  <h3 className="text-lg font-bold text-slate-800 mb-4">Quick Captures</h3>
+                  <div className="space-y-3">
+                    {captures.map((capture) => (
+                      <div key={capture.id} className="p-4 bg-white/50 rounded-lg">
+                        <div className="font-medium text-slate-800 mb-1">{capture.title}</div>
+                        <div className="text-slate-600 text-sm">{capture.content}</div>
+                        <div className="text-xs text-slate-500 mt-2">
+                          {new Date(capture.createdAt).toLocaleString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </GlassCard>
+              )}
+
+              {activeSection === 'tasks' && (
+                <div className="space-y-4">
+                  <GlassCard className="p-4">
+                    <div className="flex gap-3">
+                      <Input
+                        placeholder="Add a new task..."
+                        value={newTask}
+                        onChange={(e) => setNewTask(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleQuickTask()}
+                        className="flex-1"
+                      />
+                      <Button onClick={handleQuickTask} disabled={!newTask.trim()}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">{activeGoals}</div>
-                      <div className="text-sm text-slate-500 font-semibold">Active Goals</div>
+                  </GlassCard>
+
+                  <GlassCard className="p-6">
+                    <h3 className="text-lg font-bold text-slate-800 mb-4">Tasks ({activeTasks} active)</h3>
+                    <div className="space-y-3">
+                      {tasks.map((task) => (
+                        <div key={task.id} className="flex items-center gap-3 p-3 bg-white/30 rounded-lg">
+                          <button
+                            onClick={() => toggleTaskComplete(task)}
+                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                              task.status === 'completed'
+                                ? 'bg-green-500 border-green-500 text-white'
+                                : 'border-slate-300 hover:border-green-500'
+                            }`}
+                          >
+                            {task.status === 'completed' && <CheckCircle className="w-4 h-4" />}
+                          </button>
+                          <div className="flex-1">
+                            <div className={`font-medium ${task.status === 'completed' ? 'line-through text-slate-500' : 'text-slate-800'}`}>
+                              {task.title}
+                            </div>
+                            {task.dueDate && (
+                              <div className="text-sm text-slate-500">
+                                Due: {new Date(task.dueDate).toLocaleDateString()}
+                              </div>
+                            )}
+                          </div>
+                          {task.priority && (
+                            <Badge className={
+                              task.priority === 'high' ? 'bg-red-100 text-red-800' :
+                              task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-green-100 text-green-800'
+                            }>
+                              {task.priority}
+                            </Badge>
+                          )}
+                        </div>
+                      ))}
                     </div>
+                  </GlassCard>
+                </div>
+              )}
+
+              {activeSection === 'notes' && (
+                <div className="space-y-4">
+                  <GlassCard className="p-4">
+                    <div className="flex gap-3">
+                      <Textarea
+                        placeholder="Write a note..."
+                        value={newNote}
+                        onChange={(e) => setNewNote(e.target.value)}
+                        rows={3}
+                        className="flex-1"
+                      />
+                      <Button onClick={handleQuickNote} disabled={!newNote.trim()}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </GlassCard>
+
+                  <GlassCard className="p-6">
+                    <h3 className="text-lg font-bold text-slate-800 mb-4">Notes ({notes.length})</h3>
+                    <div className="space-y-4">
+                      {notes.map((note) => (
+                        <div key={note.id} className="p-4 bg-white/50 rounded-lg">
+                          <div className="font-medium text-slate-800 mb-2">{note.title}</div>
+                          <div className="text-slate-600 mb-3">{note.content}</div>
+                          <div className="text-xs text-slate-500">
+                            {new Date(note.createdAt).toLocaleString()}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </GlassCard>
+                </div>
+              )}
+
+              {activeSection === 'goals' && (
+                <GlassCard className="p-6">
+                  <h3 className="text-lg font-bold text-slate-800 mb-4">Goals ({goals.length})</h3>
+                  <div className="space-y-4">
+                    {goals.map((goal) => (
+                      <div key={goal.id} className="p-4 bg-white/50 rounded-lg">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <div className="font-medium text-slate-800">{goal.title}</div>
+                            <div className="text-slate-600 text-sm mt-1">{goal.content}</div>
+                          </div>
+                          <Badge variant={goal.status === 'completed' ? 'default' : 'secondary'}>
+                            {goal.status}
+                          </Badge>
+                        </div>
+                        {typeof goal.progress === 'number' && (
+                          <div className="mt-3">
+                            <div className="flex justify-between text-sm text-slate-600 mb-1">
+                              <span>Progress</span>
+                              <span>{goal.progress}%</span>
+                            </div>
+                            <Progress value={goal.progress} className="h-2" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </GlassCard>
+              )}
+
+              {activeSection === 'knowledge' && (
+                <GlassCard className="p-6">
+                  <h3 className="text-lg font-bold text-slate-800 mb-4">Knowledge Base ({knowledge.length})</h3>
+                  <div className="space-y-4">
+                    {knowledge.map((item) => (
+                      <div key={item.id} className="p-4 bg-white/50 rounded-lg">
+                        <div className="font-medium text-slate-800 mb-2">{item.title}</div>
+                        <div className="text-slate-600 mb-3">{item.content}</div>
+                        {item.tags && item.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {item.tags.map((tag, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        <div className="text-xs text-slate-500">
+                          {new Date(item.createdAt).toLocaleString()}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </GlassCard>
+              )}
+            </div>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="col-span-3">
+            <div className="space-y-6">
+              {/* Quick Actions */}
+              <GlassCard className="p-6">
+                <h3 className="text-lg font-bold text-slate-800 mb-4">Quick Actions</h3>
+                <div className="space-y-3">
+                  <Button className="w-full justify-start" variant="outline">
+                    <Camera className="h-4 w-4 mr-2" />
+                    Visual Capture
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline">
+                    <Mic className="h-4 w-4 mr-2" />
+                    Voice Note
+                  </Button>
+                  <Button className="w-full justify-start" variant="outline">
+                    <Brain className="h-4 w-4 mr-2" />
+                    AI Insight
+                  </Button>
+                </div>
+              </GlassCard>
+
+              {/* Intelligence Metrics */}
+              <GlassCard className="p-6">
+                <h3 className="text-lg font-bold text-slate-800 mb-4">Intelligence Metrics</h3>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-sm text-slate-600 mb-1">
+                      <span>Productivity Score</span>
+                      <span>87%</span>
+                    </div>
+                    <Progress value={87} className="h-2" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm text-slate-600 mb-1">
+                      <span>Knowledge Growth</span>
+                      <span>92%</span>
+                    </div>
+                    <Progress value={92} className="h-2" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm text-slate-600 mb-1">
+                      <span>Goal Achievement</span>
+                      <span>74%</span>
+                    </div>
+                    <Progress value={74} className="h-2" />
                   </div>
                 </div>
               </GlassCard>
 
-              {/* Quick Stats & Actions */}
-              <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                <button
-                  onClick={() => setSelectedType('all')}
-                  className={`p-4 rounded-xl text-center transition-all ${
-                    selectedType === 'all' 
-                      ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg' 
-                      : 'bg-white/50 hover:bg-white/70 text-slate-700'
-                  }`}
-                >
-                  <Filter className="h-6 w-6 mx-auto mb-2" />
-                  <div className="font-semibold">All Items</div>
-                  <div className="text-sm opacity-80">{itemCounts.all}</div>
-                </button>
-
-                {(['memory', 'goal', 'knowledge', 'favorite'] as MemPodItemType[]).map((type) => {
-                  const IconComponent = getTypeIcon(type);
-                  return (
-                    <button
-                      key={type}
-                      onClick={() => setSelectedType(type)}
-                      className={`p-4 rounded-xl text-center transition-all ${
-                        selectedType === type 
-                          ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg' 
-                          : 'bg-white/50 hover:bg-white/70 text-slate-700'
-                      }`}
-                    >
-                      <IconComponent className="h-6 w-6 mx-auto mb-2" />
-                      <div className="font-semibold capitalize">{type}</div>
-                      <div className="text-sm opacity-80">{itemCounts[type]}</div>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Actions Bar */}
-              <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-4">
-                  <h2 className="text-xl font-bold text-slate-800">
-                    {selectedType === 'all' ? 'All Items' : `${selectedType.charAt(0).toUpperCase()}${selectedType.slice(1)}s`}
-                  </h2>
-                  <Badge variant="secondary">{filteredItems.length} items</Badge>
-                </div>
-                
-                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add New Item
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Create New MemPod Item</DialogTitle>
-                    </DialogHeader>
-                    <CreateItemForm 
-                      onSubmit={(data) => createItemMutation.mutate(data)}
-                      isLoading={createItemMutation.isPending}
-                    />
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              {/* Items Grid */}
-              <div className="space-y-4">
-                {filteredItems.length === 0 ? (
-                  <GlassCard className="p-12">
-                    <div className="text-center">
-                      <Brain className="h-16 w-16 text-slate-400 mx-auto mb-6" />
-                      <h3 className="text-2xl font-bold text-slate-600 mb-4">
-                        {selectedType === 'all' ? 'Your MemPod is Empty' : `No ${selectedType}s found`}
-                      </h3>
-                      <p className="text-slate-500 mb-6 max-w-md mx-auto">
-                        Start adding {selectedType === 'all' ? 'memories, goals, and knowledge' : selectedType + 's'} to build your personal AI-powered system.
-                      </p>
-                    </div>
-                  </GlassCard>
-                ) : (
-                  filteredItems.map((item: MemPodItem) => {
-                    const IconComponent = getTypeIcon(item.type);
-                    return (
-                      <GlassCard key={item.id} className="p-6 hover:shadow-lg transition-shadow">
-                        <div className="flex items-start gap-4">
-                          <div className={`w-12 h-12 bg-gradient-to-br ${getTypeColor(item.type)} rounded-xl flex items-center justify-center text-white flex-shrink-0`}>
-                            <IconComponent className="w-6 h-6" />
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between mb-2">
-                              <h3 className="text-lg font-semibold text-slate-800 truncate">{item.title}</h3>
-                              <div className="flex items-center space-x-2 ml-4">
-                                {item.priority && (
-                                  <Badge className={getPriorityColor(item.priority)}>
-                                    {item.priority}
-                                  </Badge>
-                                )}
-                                {item.status && (
-                                  <Badge variant={item.status === 'completed' ? 'default' : 'secondary'}>
-                                    {item.status === 'completed' && <CheckCircle className="w-3 h-3 mr-1" />}
-                                    {item.status}
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                            
-                            <p className="text-slate-600 mb-3 line-clamp-2">{item.content}</p>
-                            
-                            {item.type === 'goal' && typeof item.progress === 'number' && (
-                              <div className="mb-3">
-                                <div className="flex justify-between text-sm text-slate-600 mb-1">
-                                  <span>Progress</span>
-                                  <span>{item.progress}%</span>
-                                </div>
-                                <Progress value={item.progress} className="h-2" />
-                              </div>
-                            )}
-                            
-                            {item.dueDate && (
-                              <div className="flex items-center text-sm text-slate-500 mb-3">
-                                <Calendar className="w-4 h-4 mr-1" />
-                                Due: {new Date(item.dueDate).toLocaleDateString()}
-                              </div>
-                            )}
-                            
-                            {item.tags && item.tags.length > 0 && (
-                              <div className="flex flex-wrap gap-2 mb-3">
-                                {item.tags.map((tag, index) => (
-                                  <Badge key={index} variant="outline" className="text-xs">
-                                    {tag}
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-                            
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center text-xs text-slate-500">
-                                <Clock className="w-3 h-3 mr-1" />
-                                {new Date(item.createdAt).toLocaleDateString()}
-                              </div>
-                              
-                              <div className="flex items-center space-x-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setEditingItem(item)}
-                                >
-                                  <Edit2 className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => deleteItemMutation.mutate(item.id)}
-                                  className="text-red-600 hover:text-red-700"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
+              {/* Upcoming Items */}
+              <GlassCard className="p-6">
+                <h3 className="text-lg font-bold text-slate-800 mb-4">Upcoming</h3>
+                <div className="space-y-3">
+                  {tasks.filter(task => task.dueDate && task.status !== 'completed').slice(0, 3).map((task) => (
+                    <div key={task.id} className="flex items-center gap-3">
+                      <Clock className="h-4 w-4 text-slate-400" />
+                      <div className="flex-1">
+                        <div className="font-medium text-slate-800 text-sm">{task.title}</div>
+                        <div className="text-xs text-slate-500">
+                          {task.dueDate && new Date(task.dueDate).toLocaleDateString()}
                         </div>
-                      </GlassCard>
-                    );
-                  })
-                )}
-              </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </GlassCard>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Edit Dialog */}
-      {editingItem && (
-        <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Edit MemPod Item</DialogTitle>
-            </DialogHeader>
-            <CreateItemForm 
-              initialData={editingItem}
-              onSubmit={(data) => updateItemMutation.mutate({ id: editingItem.id, updates: data })}
-              isLoading={updateItemMutation.isPending}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
     </div>
-  );
-}
-
-function CreateItemForm({ 
-  initialData, 
-  onSubmit, 
-  isLoading 
-}: { 
-  initialData?: MemPodItem; 
-  onSubmit: (data: Partial<MemPodItem>) => void;
-  isLoading: boolean;
-}) {
-  const [formData, setFormData] = useState({
-    type: initialData?.type || 'memory' as MemPodItemType,
-    title: initialData?.title || '',
-    content: initialData?.content || '',
-    priority: initialData?.priority || 'medium',
-    status: initialData?.status || 'active',
-    dueDate: initialData?.dueDate || '',
-    progress: initialData?.progress || 0,
-    tags: initialData?.tags?.join(', ') || '',
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const tags = formData.tags.split(',').map(tag => tag.trim()).filter(Boolean);
-    onSubmit({
-      ...formData,
-      tags: tags.length > 0 ? tags : undefined,
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="type">Type</Label>
-          <Select value={formData.type} onValueChange={(value: MemPodItemType) => setFormData({ ...formData, type: value })}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="memory">Memory</SelectItem>
-              <SelectItem value="goal">Goal</SelectItem>
-              <SelectItem value="knowledge">Knowledge</SelectItem>
-              <SelectItem value="favorite">Favorite</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="priority">Priority</Label>
-          <Select value={formData.priority} onValueChange={(value: 'low' | 'medium' | 'high') => setFormData({ ...formData, priority: value })}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="low">Low</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="high">High</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div>
-        <Label htmlFor="title">Title</Label>
-        <Input
-          id="title"
-          value={formData.title}
-          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          required
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="content">Content</Label>
-        <Textarea
-          id="content"
-          value={formData.content}
-          onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-          rows={4}
-          required
-        />
-      </div>
-
-      {formData.type === 'goal' && (
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="status">Status</Label>
-            <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as 'active' | 'completed' | 'paused' })}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="paused">Paused</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label htmlFor="progress">Progress (%)</Label>
-            <Input
-              id="progress"
-              type="number"
-              min="0"
-              max="100"
-              value={formData.progress}
-              onChange={(e) => setFormData({ ...formData, progress: parseInt(e.target.value) || 0 })}
-            />
-          </div>
-        </div>
-      )}
-
-      <div>
-        <Label htmlFor="dueDate">Due Date (optional)</Label>
-        <Input
-          id="dueDate"
-          type="date"
-          value={formData.dueDate}
-          onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="tags">Tags (comma-separated)</Label>
-        <Input
-          id="tags"
-          value={formData.tags}
-          onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-          placeholder="productivity, personal, work"
-        />
-      </div>
-
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? 'Saving...' : initialData ? 'Update Item' : 'Create Item'}
-        </Button>
-      </div>
-    </form>
   );
 }
