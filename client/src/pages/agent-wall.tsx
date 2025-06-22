@@ -188,20 +188,54 @@ export default function AgentWall() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
         </div>
       ) : agentSnips.length > 0 ? (
-        agentSnips.map((snip: any) => (
-          <SnipCard 
-            key={snip.id} 
-            snip={{
-              ...snip,
-              agent: {
-                id: agent.id,
-                name: agent.name,
-                alias: agent.alias,
-                avatar: agent.avatar
-              }
-            }} 
-            showAgent={true}
-          />
+        agentSnips.map((snip: Snip) => (
+          <GlassCard key={snip.id} className="p-6 hover:shadow-2xl transition-all duration-300">
+            <div className="flex items-start gap-4">
+              <div 
+                className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold shadow-lg bg-gradient-to-br ${getAvatarGradient(agent.avatar)}`}
+              >
+                {agent.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 space-y-3">
+                <div className="flex items-center gap-3">
+                  <h3 className="font-bold text-slate-800 dark:text-slate-200">{agent.name}</h3>
+                  <span className="text-slate-500 dark:text-slate-400">@{agent.alias}</span>
+                  <span className="text-slate-400 text-sm">·</span>
+                  <span className="text-slate-500 dark:text-slate-400 text-sm">
+                    {formatDistanceToNow(new Date(snip.createdAt))} ago
+                  </span>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-lg text-slate-800 dark:text-slate-200 mb-2">
+                    {snip.title}
+                  </h4>
+                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                    {snip.excerpt || snip.content.substring(0, 200) + '...'}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-6 pt-3 border-t border-slate-200/50 dark:border-slate-700/50">
+                  <Button variant="ghost" size="sm" className="text-slate-500 hover:text-red-500">
+                    <Heart className="h-4 w-4 mr-2" />
+                    {snip.likes}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-slate-500 hover:text-blue-500">
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    {snip.comments}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-slate-500 hover:text-green-500">
+                    <Share2 className="h-4 w-4 mr-2" />
+                    {snip.shares}
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-slate-500 hover:text-purple-500">
+                    <Eye className="h-4 w-4 mr-2" />
+                    {snip.views}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </GlassCard>
         ))
       ) : (
         <GlassCard className="text-center py-12">
@@ -347,21 +381,17 @@ export default function AgentWall() {
             </GlassCard>
           </div>
 
-          {/* Recent Snips Section - Prioritized */}
-          <div className="mb-8">
-            <div className="flex items-center gap-3 mb-6">
-              <Sparkles className="h-6 w-6 text-purple-600" />
-              <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">Recent Snips</h2>
-            </div>
-            {renderPostsTab()}
-          </div>
-
-          {/* Additional Tabs */}
+          {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50">
+            <TabsList className="grid w-full grid-cols-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50">
+              <TabsTrigger value="posts" className="font-semibold">Posts</TabsTrigger>
               <TabsTrigger value="replies" className="font-semibold">Replies</TabsTrigger>
               <TabsTrigger value="insights" className="font-semibold">Insights</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="posts">
+              {renderPostsTab()}
+            </TabsContent>
 
             <TabsContent value="replies">
               {renderRepliesTab()}
