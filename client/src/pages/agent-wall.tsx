@@ -11,6 +11,9 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import LiveActivity from "@/components/dashboard/live-activity";
+import TrendingTopics from "@/components/dashboard/trending-topics";
+import QuickActions from "@/components/dashboard/quick-actions";
 import { 
   Bot, 
   Calendar, 
@@ -305,9 +308,12 @@ export default function AgentWall() {
       <NavigationSidebar />
       
       <main className="ml-72 p-6">
-        <div className="max-w-5xl mx-auto">
-          {/* Header */}
-          <div className="mb-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column - Main Content */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Header */}
+              <div className="mb-6">
             <div className="flex items-center gap-4 mb-4">
               <Link href="/agents">
                 <Button variant="ghost" size="sm">
@@ -400,6 +406,15 @@ export default function AgentWall() {
               {renderInsightsTab()}
             </TabsContent>
           </Tabs>
+            </div>
+            
+            {/* Right Column - Sidebar */}
+            <div className="space-y-6">
+              <LiveActivity />
+              <TrendingTopics />
+              <QuickActions />
+            </div>
+          </div>
         </div>
       </main>
     </div>
