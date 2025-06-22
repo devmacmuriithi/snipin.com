@@ -200,13 +200,14 @@ export default function AgentWall() {
         </div>
       ) : agentSnips.length > 0 ? (
         agentSnips.map((snip: Snip) => (
-          <SnipCard 
-            key={snip.id} 
-            snip={{
-              ...snip,
-              agent: agent
-            }} 
-          />
+          <div key={snip.id} className="mb-6">
+            <SnipCard 
+              snip={{
+                ...snip,
+                agent: agent
+              }} 
+            />
+          </div>
         ))
       ) : (
         <GlassCard className="text-center py-12">
@@ -293,61 +294,89 @@ export default function AgentWall() {
 
             {/* Agent Profile Header */}
             <GlassCard className="p-8 mb-6">
-              <div className="flex items-start gap-6">
-                <div className="relative">
+              <div className="flex items-start gap-8">
+                {/* Avatar Section */}
+                <div className="relative flex-shrink-0">
                   <div 
-                    className={`w-24 h-24 rounded-3xl flex items-center justify-center text-white font-bold text-3xl shadow-xl bg-gradient-to-br ${getAvatarGradient(agent.avatar)}`}
+                    className={`w-28 h-28 rounded-3xl flex items-center justify-center text-white font-bold text-3xl shadow-xl bg-gradient-to-br ${getAvatarGradient(agent.avatar)}`}
                   >
                     {agent.name.charAt(0).toUpperCase()}
                   </div>
-                  <div className={`absolute -bottom-2 -right-2 w-6 h-6 rounded-full border-4 border-white shadow-lg ${
+                  <div className={`absolute -bottom-2 -right-2 w-7 h-7 rounded-full border-4 border-white shadow-lg ${
                     agent.isActive ? 'bg-green-500' : 'bg-orange-500'
                   }`} />
                 </div>
 
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200">{agent.name}</h1>
-                    <Bot className="h-6 w-6 text-blue-500" />
+                {/* Main Info Section */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-3">
+                    <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-200 truncate">{agent.name}</h1>
+                    <Bot className="h-6 w-6 text-blue-500 flex-shrink-0" />
                   </div>
-                  <p className="text-lg text-slate-600 dark:text-slate-400 mb-1">@{agent.alias}</p>
-                  <p className="text-slate-700 dark:text-slate-300 mb-4">{agent.description}</p>
                   
-                  <div className="flex items-center gap-4 mb-4">
-                    <Badge className={getExpertiseColor(agent.expertise)}>
+                  <p className="text-xl text-slate-600 dark:text-slate-400 mb-4">@{agent.alias}</p>
+                  
+                  <p className="text-slate-700 dark:text-slate-300 mb-6 leading-relaxed">
+                    {agent.description}
+                  </p>
+                  
+                  <div className="flex flex-wrap items-center gap-6 mb-6">
+                    <Badge className={`${getExpertiseColor(agent.expertise)} px-3 py-1`}>
                       {agent.expertise}
                     </Badge>
                     <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                       <Calendar className="h-4 w-4" />
-                      Joined {formatDistanceToNow(new Date(agent.createdAt))} ago
+                      <span>Joined {formatDistanceToNow(new Date(agent.createdAt))} ago</span>
                     </div>
                   </div>
 
+                  {/* Personality Traits */}
                   {personalityTraits.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {personalityTraits.map((trait: string, index: number) => (
-                        <Badge key={index} variant="secondary" className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-                          {trait}
-                        </Badge>
-                      ))}
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
+                        Personality Traits
+                      </h3>
+                      <div className="flex flex-wrap gap-2">
+                        {personalityTraits.map((trait: string, index: number) => (
+                          <Badge 
+                            key={index} 
+                            variant="secondary" 
+                            className="bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 px-3 py-1"
+                          >
+                            {trait}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
 
-                <div className="text-right">
-                  <div className="flex gap-2 mb-4">
-                    <Button variant="outline" size="sm">
+                {/* Stats and Actions */}
+                <div className="flex flex-col items-end flex-shrink-0 space-y-6">
+                  <div className="flex gap-3">
+                    <Button variant="outline" size="sm" className="hover:bg-blue-50 dark:hover:bg-blue-900/20">
                       <MessageCircle className="h-4 w-4 mr-2" />
                       Whisper
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="hover:bg-green-50 dark:hover:bg-green-900/20">
                       <ExternalLink className="h-4 w-4 mr-2" />
                       Share
                     </Button>
                   </div>
-                  <div className="space-y-1 text-sm text-slate-600 dark:text-slate-400">
-                    <div><strong>{agent.totalSnips}</strong> posts</div>
-                    <div><strong>{agent.totalEngagement}</strong> engagement</div>
+                  
+                  <div className="text-right space-y-4">
+                    <div>
+                      <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">
+                        {agent.totalSnips || 0}
+                      </div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400">posts</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-slate-800 dark:text-slate-200">
+                        {agent.totalEngagement || 0}
+                      </div>
+                      <div className="text-sm text-slate-500 dark:text-slate-400">engagement</div>
+                    </div>
                   </div>
                 </div>
               </div>
