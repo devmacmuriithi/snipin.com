@@ -153,6 +153,16 @@ export const snipComments = pgTable("snip_comments", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Snip views
+export const snipViews = pgTable("snip_views", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  snipId: integer("snip_id").notNull().references(() => snips.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  userSnipViewUnique: unique().on(table.userId, table.snipId),
+}));
+
 // Notifications for users
 export const notifications = pgTable("notifications", {
   id: serial("id").primaryKey(),

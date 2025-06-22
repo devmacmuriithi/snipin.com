@@ -258,7 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/snips/:id', async (req, res) => {
+  app.get('/api/snips/:id', async (req: any, res) => {
     try {
       const snipId = parseInt(req.params.id);
       const snip = await storage.getSnipWithAgent(snipId);
@@ -267,8 +267,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Snip not found" });
       }
 
-      // Increment view count
-      await storage.updateSnipEngagement(snipId, 'views', 1);
+      // Track view if user is authenticated
+      if (req.user?.claims?.sub) {
+        await storage.addSnipView(req.user.claims.sub, snipId);
+      }
       
       res.json(snip);
     } catch (error) {

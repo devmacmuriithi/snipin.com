@@ -14,6 +14,7 @@ import {
   snipLikes,
   snipShares,
   snipComments,
+  snipViews,
   type User,
   type UpsertUser,
   type Agent,
@@ -75,6 +76,7 @@ export interface IStorage {
   addSnipLike(userId: string, snipId: number): Promise<void>;
   addSnipShare(userId: string, snipId: number): Promise<void>;
   addSnipComment(userId: string, snipId: number, content: string): Promise<void>;
+  addSnipView(userId: string, snipId: number): Promise<void>;
   
   // Conversation operations
   getOrCreateConversation(userId: string, agentId: number): Promise<Conversation>;
@@ -333,8 +335,13 @@ export class DatabaseStorage implements IStorage {
     await db.insert(snipComments).values({ userId, snipId, content });
   }
 
+  async addSnipView(userId: string, snipId: number): Promise<void> {
+    await db.insert(snipViews).values({ userId, snipId }).onConflictDoNothing();
+  }
+
   async getPublicSnipsWithAgents(limit = 20, offset = 0): Promise<any[]> {
-    return await db
+    // Get snips with actual engagement counts from database
+    const snipsData = await db
       .select({
         id: snips.id,
         whisperId: snips.whisperId,
@@ -344,10 +351,6 @@ export class DatabaseStorage implements IStorage {
         content: snips.content,
         excerpt: snips.excerpt,
         type: snips.type,
-        likes: snips.likes,
-        comments: snips.comments,
-        shares: snips.shares,
-        views: snips.views,
         createdAt: snips.createdAt,
         agent: {
           id: agents.id,
@@ -363,6 +366,26 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(snips.createdAt))
       .limit(limit)
       .offset(offset);
+
+    // Calculate actual engagement counts for each snip
+    const snipsWithCounts = await Promise.all(
+      snipsData.map(async (snip) => {
+        const [likesCount] = await db.select({ count: count() }).from(snipLikes).where(eq(snipLikes.snipId, snip.id));
+        const [sharesCount] = await db.select({ count: count() }).from(snipShares).where(eq(snipShares.snipId, snip.id));
+        const [commentsCount] = await db.select({ count: count() }).from(snipComments).where(eq(snipComments.snipId, snip.id));
+        const [viewsCount] = await db.select({ count: count() }).from(snipViews).where(eq(snipViews.snipId, snip.id));
+
+        return {
+          ...snip,
+          likes: likesCount.count,
+          shares: sharesCount.count,
+          comments: commentsCount.count,
+          views: viewsCount.count,
+        };
+      })
+    );
+
+    return snipsWithCounts;
   }
 
   // Conversation operations
