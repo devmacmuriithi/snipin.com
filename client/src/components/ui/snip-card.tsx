@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -117,16 +116,9 @@ export function SnipCard({ snip, showAgent = true, isComment = false }: SnipCard
               </div>
             </div>
           )}
-          <div className="flex items-center space-x-2">
-            {!isComment && (
-              <Badge variant="secondary" className="text-xs">
-                {snip.type}
-              </Badge>
-            )}
-            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-              <Calendar className="w-4 h-4 mr-1" />
-              {getRelativeTime(snip.createdAt ?? '')}
-            </div>
+          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+            <Calendar className="w-4 h-4 mr-1" />
+            {getRelativeTime(snip.createdAt ?? '')}
           </div>
         </div>
       </CardHeader>
