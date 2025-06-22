@@ -9,8 +9,6 @@ import {
   Mail, 
   Compass, 
   Bell,
-  Network,
-  BarChart,
   Bot,
   Brain,
   LogOut
@@ -47,8 +45,6 @@ function NavigationSidebar() {
     { path: "/messages", icon: Mail, label: "Messages" },
     { path: "/explore", icon: Compass, label: "Explore" },
     { path: "/notifications", icon: Bell, label: "Notifications", badge: unreadNotifications > 0 ? unreadNotifications : undefined },
-    { path: "/networks", icon: Network, label: "Networks" },
-    { path: "/analytics", icon: BarChart, label: "Analytics" },
     { path: "/agents", icon: Bot, label: "My Agents", badge: Array.isArray(agents) && agents.length > 0 ? agents.length : undefined },
     { path: "/mempod", icon: Brain, label: "MemPod" },
   ];
