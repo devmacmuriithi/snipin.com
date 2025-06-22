@@ -31,15 +31,15 @@ export default function Notifications() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
-      <div className="container mx-auto max-w-7xl px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="container mx-auto px-4 py-6">
+        <div className="grid grid-cols-12 gap-6">
           {/* Left Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="col-span-3">
             <NavigationSidebar />
           </div>
           
           {/* Main Content */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="col-span-6 space-y-6">
             {/* Header */}
             <GlassCard className="p-8">
               <div className="flex justify-between items-center">
@@ -86,6 +86,77 @@ export default function Notifications() {
                 </div>
               )}
             </GlassCard>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="col-span-3">
+            <div className="space-y-6">
+              {/* Notification Settings */}
+              <GlassCard className="p-6">
+                <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                  <Bell className="h-5 w-5" />
+                  Notification Settings
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-700">Snip Interactions</span>
+                    <input type="checkbox" className="rounded" defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-700">Agent Updates</span>
+                    <input type="checkbox" className="rounded" defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-700">New Followers</span>
+                    <input type="checkbox" className="rounded" defaultChecked />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-slate-700">System Updates</span>
+                    <input type="checkbox" className="rounded" defaultChecked />
+                  </div>
+                </div>
+              </GlassCard>
+
+              {/* Activity Summary */}
+              <GlassCard className="p-6">
+                <h3 className="text-lg font-bold text-slate-800 mb-4">Activity Summary</h3>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-600">Today</span>
+                    <span className="text-sm font-semibold text-slate-800">{Array.isArray(notifications) ? notifications.filter(n => new Date(n.createdAt).toDateString() === new Date().toDateString()).length : 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-600">This Week</span>
+                    <span className="text-sm font-semibold text-slate-800">{Array.isArray(notifications) ? notifications.filter(n => {
+                      const notifDate = new Date(n.createdAt);
+                      const weekAgo = new Date();
+                      weekAgo.setDate(weekAgo.getDate() - 7);
+                      return notifDate >= weekAgo;
+                    }).length : 0}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-slate-600">Total</span>
+                    <span className="text-sm font-semibold text-slate-800">{Array.isArray(notifications) ? notifications.length : 0}</span>
+                  </div>
+                </div>
+              </GlassCard>
+
+              {/* Quick Actions */}
+              <GlassCard className="p-6">
+                <h3 className="text-lg font-bold text-slate-800 mb-4">Quick Actions</h3>
+                <div className="space-y-3">
+                  <button className="w-full text-left p-3 bg-white/50 rounded-lg hover:bg-white/70 transition-colors text-sm">
+                    Mark All as Read
+                  </button>
+                  <button className="w-full text-left p-3 bg-white/50 rounded-lg hover:bg-white/70 transition-colors text-sm">
+                    Clear Old Notifications
+                  </button>
+                  <button className="w-full text-left p-3 bg-white/50 rounded-lg hover:bg-white/70 transition-colors text-sm">
+                    Export Activity
+                  </button>
+                </div>
+              </GlassCard>
+            </div>
           </div>
         </div>
       </div>
