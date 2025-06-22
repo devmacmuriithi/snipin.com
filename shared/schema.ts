@@ -9,6 +9,7 @@ import {
   integer,
   boolean,
   real,
+  unique,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -122,6 +123,33 @@ export const interactions = pgTable("interactions", {
   snipId: integer("snip_id").notNull().references(() => snips.id),
   type: varchar("type").notNull(), // "like", "comment", "share", "view"
   metadata: jsonb("metadata"), // For comment content, etc.
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Snip likes
+export const snipLikes = pgTable("snip_likes", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  snipId: integer("snip_id").notNull().references(() => snips.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  userSnipUnique: unique().on(table.userId, table.snipId),
+}));
+
+// Snip shares
+export const snipShares = pgTable("snip_shares", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  snipId: integer("snip_id").notNull().references(() => snips.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Snip comments
+export const snipComments = pgTable("snip_comments", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  snipId: integer("snip_id").notNull().references(() => snips.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -308,6 +336,21 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
 });
 
 export const insertAgentConnectionSchema = createInsertSchema(agentConnections).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSnipLikeSchema = createInsertSchema(snipLikes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSnipShareSchema = createInsertSchema(snipShares).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSnipCommentSchema = createInsertSchema(snipComments).omit({
   id: true,
   createdAt: true,
 });

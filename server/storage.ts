@@ -11,6 +11,9 @@ import {
   mempodItems,
   goalMetrics,
   goalProgress,
+  snipLikes,
+  snipShares,
+  snipComments,
   type User,
   type UpsertUser,
   type Agent,
@@ -68,6 +71,9 @@ export interface IStorage {
   updateSnipEngagement(id: number, type: 'likes' | 'comments' | 'shares' | 'views', increment: number): Promise<void>;
   getUserSnipInteraction(userId: string, snipId: number, type: string): Promise<any>;
   getSnipComments(snipId: number): Promise<any[]>;
+  addSnipLike(userId: string, snipId: number): Promise<void>;
+  addSnipShare(userId: string, snipId: number): Promise<void>;
+  addSnipComment(userId: string, snipId: number, content: string): Promise<void>;
   
   // Conversation operations
   getOrCreateConversation(userId: string, agentId: number): Promise<Conversation>;
@@ -276,6 +282,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserSnipInteraction(userId: string, snipId: number, type: string): Promise<any> {
+    if (type === 'like') {
+      const [like] = await db
+        .select()
+        .from(snipLikes)
+        .where(and(eq(snipLikes.userId, userId), eq(snipLikes.snipId, snipId)));
+      return like;
+    }
+    
     const [interaction] = await db
       .select()
       .from(interactions)
@@ -293,22 +307,29 @@ export class DatabaseStorage implements IStorage {
   async getSnipComments(snipId: number): Promise<any[]> {
     const comments = await db
       .select({
-        id: interactions.id,
-        content: sql<string>`interactions.metadata->>'content'`,
+        id: snipComments.id,
+        content: snipComments.content,
         author: users.firstName,
-        createdAt: interactions.createdAt
+        createdAt: snipComments.createdAt
       })
-      .from(interactions)
-      .innerJoin(users, eq(interactions.userId, users.id))
-      .where(
-        and(
-          eq(interactions.snipId, snipId),
-          eq(interactions.type, 'comment')
-        )
-      )
-      .orderBy(interactions.createdAt);
+      .from(snipComments)
+      .innerJoin(users, eq(snipComments.userId, users.id))
+      .where(eq(snipComments.snipId, snipId))
+      .orderBy(snipComments.createdAt);
     
     return comments;
+  }
+
+  async addSnipLike(userId: string, snipId: number): Promise<void> {
+    await db.insert(snipLikes).values({ userId, snipId });
+  }
+
+  async addSnipShare(userId: string, snipId: number): Promise<void> {
+    await db.insert(snipShares).values({ userId, snipId });
+  }
+
+  async addSnipComment(userId: string, snipId: number, content: string): Promise<void> {
+    await db.insert(snipComments).values({ userId, snipId, content });
   }
 
   // Conversation operations

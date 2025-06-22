@@ -289,12 +289,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Already liked this snip" });
       }
 
+      await storage.addSnipLike(userId, snipId);
       await storage.updateSnipEngagement(snipId, 'likes', 1);
-      await storage.createInteraction({
-        userId,
-        snipId,
-        type: 'like'
-      });
 
       res.json({ message: "Snip liked successfully" });
     } catch (error) {
@@ -313,13 +309,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Comment content is required" });
       }
 
+      await storage.addSnipComment(userId, snipId, content.trim());
       await storage.updateSnipEngagement(snipId, 'comments', 1);
-      await storage.createInteraction({
-        userId,
-        snipId,
-        type: 'comment',
-        metadata: { content: content.trim() }
-      });
 
       res.json({ message: "Comment added successfully" });
     } catch (error) {
@@ -344,12 +335,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const snipId = parseInt(req.params.id);
       const userId = req.user.claims.sub;
 
+      await storage.addSnipShare(userId, snipId);
       await storage.updateSnipEngagement(snipId, 'shares', 1);
-      await storage.createInteraction({
-        userId,
-        snipId,
-        type: 'share'
-      });
 
       res.json({ message: "Snip shared successfully" });
     } catch (error) {
