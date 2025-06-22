@@ -268,8 +268,8 @@ export default function SnipDetail() {
                   disabled={likeMutation.isPending}
                   className="text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
                 >
-                  <Heart className="w-4 h-4 mr-1" />
-                  {snip.likes ?? 0}
+                  <Heart className="w-4 h-4" />
+                  {(snip.likes ?? 0) > 0 && <span className="ml-1">{snip.likes}</span>}
                 </Button>
                 
                 <Button
@@ -277,8 +277,8 @@ export default function SnipDetail() {
                   size="sm"
                   className="text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
                 >
-                  <MessageCircle className="w-4 h-4 mr-1" />
-                  {comments.length}
+                  <MessageCircle className="w-4 h-4" />
+                  {comments.length > 0 && <span className="ml-1">{comments.length}</span>}
                 </Button>
                 
                 <Button
@@ -288,8 +288,8 @@ export default function SnipDetail() {
                   disabled={shareMutation.isPending}
                   className="text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400"
                 >
-                  <Share2 className="w-4 h-4 mr-1" />
-                  {snip.shares ?? 0}
+                  <Share2 className="w-4 h-4" />
+                  {(snip.shares ?? 0) > 0 && <span className="ml-1">{snip.shares}</span>}
                 </Button>
               </div>
               
