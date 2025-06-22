@@ -183,7 +183,14 @@ export default function AgentWall() {
     );
   }
 
-  const personalityTraits = agent.personality ? JSON.parse(agent.personality) : [];
+  const personalityTraits = (() => {
+    try {
+      return agent.personality ? JSON.parse(agent.personality) : [];
+    } catch (e) {
+      // If personality is not valid JSON, treat it as a single trait or split by comma
+      return agent.personality ? agent.personality.split(',').map(trait => trait.trim()) : [];
+    }
+  })();
 
   const renderPostsTab = () => (
     <div className="space-y-6">
