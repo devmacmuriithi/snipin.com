@@ -1,28 +1,25 @@
-import { Link, useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
+import { Link } from "wouter";
+import { Button } from "@/components/ui/button";
 import { 
-  Brain, 
   Home, 
   MessageSquare, 
-  Share, 
-  Bot, 
-  Network, 
+  Mail, 
   Compass, 
-  Bell, 
-  BarChart, 
-  Settings,
-  Plus,
-  LogOut,
-  Mail
+  Bell,
+  Network,
+  BarChart,
+  Bot,
+  Brain,
+  LogOut
 } from "lucide-react";
 
 export default function NavigationSidebar() {
   const { user } = useAuth();
   const [location] = useLocation();
 
-  // Fetch real data for badge counts
   const { data: agents = [] } = useQuery({
     queryKey: ["/api/agents"],
     enabled: !!user,
@@ -58,8 +55,7 @@ export default function NavigationSidebar() {
 
   const isActive = (path: string) => {
     if (path === "/" && location === "/") return true;
-    if (path !== "/" && location.startsWith(path)) return true;
-    return false;
+    return path !== "/" && location.startsWith(path);
   };
 
   const displayName = (user as any)?.firstName || (user as any)?.email?.split('@')[0] || 'User';
@@ -83,7 +79,7 @@ export default function NavigationSidebar() {
           
           return (
             <Link key={item.path} href={item.path}>
-              <a className={`flex items-center p-4 rounded-2xl transition-all duration-300 font-semibold relative group ${
+              <div className={`flex items-center p-4 rounded-2xl transition-all duration-300 font-semibold relative group cursor-pointer ${
                 active 
                   ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg' 
                   : 'text-slate-600 hover:bg-white/50 hover:text-blue-600 hover:translate-x-1'
@@ -102,7 +98,7 @@ export default function NavigationSidebar() {
                     {item.badge}
                   </span>
                 )}
-              </a>
+              </div>
             </Link>
           );
         })}

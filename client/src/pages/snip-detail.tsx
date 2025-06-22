@@ -243,7 +243,7 @@ export default function SnipDetail() {
                   {snip.title}
                 </h1>
                 <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                  {snip.content}
+                  {snip.content || snip.excerpt || "No content available"}
                 </div>
               </div>
             </CardContent>
@@ -267,7 +267,7 @@ export default function SnipDetail() {
                   className="text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
                 >
                   <MessageCircle className="w-4 h-4 mr-1" />
-                  {snip.comments ?? 0}
+                  {comments.length}
                 </Button>
                 
                 <Button
