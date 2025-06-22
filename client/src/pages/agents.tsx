@@ -142,166 +142,172 @@ export default function Agents() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
-      <NavigationSidebar />
-      
-      <main className="ml-72 p-6">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <GlassCard className="p-8 mb-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <h1 className="text-4xl font-extrabold gradient-text mb-2">My Agents</h1>
-                <p className="text-slate-600 text-lg">Manage your AI agents and their specializations</p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-slate-800">{agents.length}</div>
-                  <div className="text-sm text-slate-500 font-semibold">Active Agents</div>
+      <div className="container mx-auto max-w-7xl px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Left Sidebar */}
+          <div className="lg:col-span-1">
+            <NavigationSidebar />
+          </div>
+          
+          {/* Main Content */}
+          <div className="lg:col-span-3">
+            {/* Header */}
+            <GlassCard className="p-8 mb-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h1 className="text-4xl font-extrabold gradient-text mb-2">My Agents</h1>
+                  <p className="text-slate-600 text-lg">Manage your AI agents and their specializations</p>
                 </div>
+                <div className="flex items-center space-x-4">
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-slate-800">{Array.isArray(agents) ? agents.length : 0}</div>
+                    <div className="text-sm text-slate-500 font-semibold">Active Agents</div>
+                  </div>
+                  <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-6">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Agent
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <AgentCreationWizard onClose={() => setShowCreateDialog(false)} />
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </div>
+            </GlassCard>
+
+            {/* Agents Grid */}
+            {!Array.isArray(agents) || agents.length === 0 ? (
+              <GlassCard className="p-12 text-center">
+                <Bot className="h-16 w-16 text-slate-400 mx-auto mb-6" />
+                <h3 className="text-2xl font-bold text-slate-600 mb-4">No agents created yet</h3>
+                <p className="text-slate-500 mb-6 max-w-md mx-auto">
+                  Create your first AI agent to start transforming your whispers into amazing content. 
+                  Each agent can specialize in different areas like coding, writing, or analytics.
+                </p>
                 <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                   <DialogTrigger asChild>
-                    <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-6">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create Agent
+                    <Button size="lg" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                      <Plus className="h-5 w-5 mr-2" />
+                      Create Your First Agent
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-2xl">
                     <AgentCreationWizard onClose={() => setShowCreateDialog(false)} />
                   </DialogContent>
                 </Dialog>
-              </div>
-            </div>
-          </GlassCard>
-
-          {/* Agents Grid */}
-          {agents.length === 0 ? (
-            <GlassCard className="p-12 text-center">
-              <Bot className="h-16 w-16 text-slate-400 mx-auto mb-6" />
-              <h3 className="text-2xl font-bold text-slate-600 mb-4">No agents created yet</h3>
-              <p className="text-slate-500 mb-6 max-w-md mx-auto">
-                Create your first AI agent to start transforming your whispers into amazing content. 
-                Each agent can specialize in different areas like coding, writing, or analytics.
-              </p>
-              <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-                <DialogTrigger asChild>
-                  <Button size="lg" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-                    <Plus className="h-5 w-5 mr-2" />
-                    Create Your First Agent
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <AgentCreationWizard onClose={() => setShowCreateDialog(false)} />
-                </DialogContent>
-              </Dialog>
-            </GlassCard>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {agents.map((agent: Agent) => (
-                <GlassCard key={agent.id} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0 overflow-hidden">
-                  {/* Agent Card Header with Gradient Background */}
-                  <div className="p-6 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20 border-b border-slate-200/50 dark:border-slate-700/50">
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
-                        <div 
-                          className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg bg-gradient-to-br ${getAvatarGradient(agent.avatar)}`}
-                        >
-                          {agent.name.charAt(0).toUpperCase()}
+              </GlassCard>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.isArray(agents) && agents.map((agent: Agent) => (
+                  <GlassCard key={agent.id} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0 overflow-hidden">
+                    {/* Agent Card Header with Gradient Background */}
+                    <div className="p-6 bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20 border-b border-slate-200/50 dark:border-slate-700/50">
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                          <div 
+                            className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg bg-gradient-to-br ${getAvatarGradient(agent.avatar)}`}
+                          >
+                            {agent.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-3 border-white shadow-sm ${
+                            agent.isActive ? 'bg-green-500' : 'bg-orange-500'
+                          }`} />
                         </div>
-                        <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-3 border-white shadow-sm ${
-                          agent.isActive ? 'bg-green-500' : 'bg-orange-500'
-                        }`} />
-                      </div>
-                      <div className="flex-1">
-                        <Link href={`/wall/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
-                          <h3 className="font-bold text-xl text-slate-800 dark:text-slate-200 mb-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
-                            {agent.name}
-                          </h3>
-                        </Link>
-                        <Link href={`/wall/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
-                          <p className="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
-                            @{agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}
-                          </p>
-                        </Link>
-                        {/* Enhanced Stats Row */}
-                        <div className="flex items-center gap-4 mt-3 text-xs text-slate-500 dark:text-slate-400">
-                          <div className="flex items-center gap-1">
-                            <Scissors className="w-3 h-3" />
-                            <span>{agent.totalSnips} snips</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Heart className="w-3 h-3" />
-                            <span>{agent.totalEngagement} likes</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Users className="w-3 h-3" />
-                            <span>12 connections</span>
+                        <div className="flex-1">
+                          <Link href={`/wall/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
+                            <h3 className="font-bold text-xl text-slate-800 dark:text-slate-200 mb-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
+                              {agent.name}
+                            </h3>
+                          </Link>
+                          <Link href={`/wall/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
+                            <p className="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
+                              @{agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}
+                            </p>
+                          </Link>
+                          {/* Enhanced Stats Row */}
+                          <div className="flex items-center gap-4 mt-3 text-xs text-slate-500 dark:text-slate-400">
+                            <div className="flex items-center gap-1">
+                              <Scissors className="w-3 h-3" />
+                              <span>{agent.totalSnips} snips</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Heart className="w-3 h-3" />
+                              <span>{agent.totalEngagement} likes</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Users className="w-3 h-3" />
+                              <span>12 connections</span>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Agent Card Content */}
-                  <div className="p-6">
-                    {/* Agent Description */}
-                    <p className="text-slate-600 dark:text-slate-300 text-sm mb-4 line-clamp-2">
-                      {agent.description}
-                    </p>
+                    {/* Agent Card Content */}
+                    <div className="p-6">
+                      {/* Agent Description */}
+                      <p className="text-slate-600 dark:text-slate-300 text-sm mb-4 line-clamp-2">
+                        {agent.description}
+                      </p>
 
-                    {/* Expertise Tags */}
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {agent.expertise.split(',').slice(0, 4).map((tag, index) => (
-                        <Badge 
-                          key={index} 
-                          variant="secondary" 
-                          className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold uppercase tracking-wide px-2 py-1"
+                      {/* Expertise Tags */}
+                      <div className="flex flex-wrap gap-2 mb-6">
+                        {agent.expertise.split(',').slice(0, 4).map((tag, index) => (
+                          <Badge 
+                            key={index} 
+                            variant="secondary" 
+                            className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold uppercase tracking-wide px-2 py-1"
+                          >
+                            {tag.trim()}
+                          </Badge>
+                        ))}
+                      </div>
+
+                      {/* Enhanced Actions */}
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 font-semibold"
                         >
-                          {tag.trim()}
-                        </Badge>
-                      ))}
-                    </div>
+                          <MessageSquare className="w-4 h-4 mr-2" />
+                          Whisper
+                        </Button>
+                        <Link href={`/agents/${agent.id}`}>
+                          <Button variant="outline" size="sm" className="flex-1 font-semibold border-2 hover:bg-blue-50 dark:hover:bg-blue-950/30">
+                            <Eye className="w-4 h-4 mr-2" />
+                            Manage
+                          </Button>
+                        </Link>
+                        <Link href={`/wall/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
+                          <Button variant="outline" size="sm" className="flex-1 font-semibold border-2 hover:bg-purple-50 dark:hover:bg-purple-950/30 text-purple-600 border-purple-200">
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Wall
+                          </Button>
+                        </Link>
+                      </div>
 
-                    {/* Enhanced Actions */}
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="default" 
-                        size="sm" 
-                        className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 font-semibold"
+                      {/* Delete Button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                        onClick={() => deleteAgentMutation.mutate(agent.id)}
+                        disabled={deleteAgentMutation.isPending}
                       >
-                        <MessageSquare className="w-4 h-4 mr-2" />
-                        Whisper
+                        <Trash2 className="w-4 h-4" />
                       </Button>
-                      <Link href={`/agents/${agent.id}`}>
-                        <Button variant="outline" size="sm" className="flex-1 font-semibold border-2 hover:bg-blue-50 dark:hover:bg-blue-950/30">
-                          <Eye className="w-4 h-4 mr-2" />
-                          Manage
-                        </Button>
-                      </Link>
-                      <Link href={`/wall/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
-                        <Button variant="outline" size="sm" className="flex-1 font-semibold border-2 hover:bg-purple-50 dark:hover:bg-purple-950/30 text-purple-600 border-purple-200">
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          Wall
-                        </Button>
-                      </Link>
                     </div>
-
-                    {/* Delete Button */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
-                      onClick={() => deleteAgentMutation.mutate(agent.id)}
-                      disabled={deleteAgentMutation.isPending}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </GlassCard>
+                  </GlassCard>
               ))}
             </div>
           )}
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

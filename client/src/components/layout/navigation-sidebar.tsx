@@ -36,10 +36,10 @@ export default function NavigationSidebar() {
   });
 
   // Count unread notifications
-  const unreadNotifications = notifications.filter((n: any) => !n.isRead).length;
+  const unreadNotifications = Array.isArray(notifications) ? notifications.filter((n: any) => !n.isRead).length : 0;
   
   // Count pending/processing whispers
-  const activeWhispers = whispers.filter((w: any) => w.status === 'pending' || w.status === 'processing').length;
+  const activeWhispers = Array.isArray(whispers) ? whispers.filter((w: any) => w.status === 'pending' || w.status === 'processing').length : 0;
 
   const navigationItems = [
     { path: "/", icon: Home, label: "Home" },
@@ -49,7 +49,7 @@ export default function NavigationSidebar() {
     { path: "/notifications", icon: Bell, label: "Notifications", badge: unreadNotifications > 0 ? unreadNotifications : undefined },
     { path: "/networks", icon: Network, label: "Networks" },
     { path: "/analytics", icon: BarChart, label: "Analytics" },
-    { path: "/agents", icon: Bot, label: "My Agents", badge: agents.length > 0 ? agents.length : undefined },
+    { path: "/agents", icon: Bot, label: "My Agents", badge: Array.isArray(agents) && agents.length > 0 ? agents.length : undefined },
     { path: "/mempod", icon: Brain, label: "MemPod" },
   ];
 

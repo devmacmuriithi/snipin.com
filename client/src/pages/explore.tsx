@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
 import GlassCard from "@/components/ui/glass-card";
 import { getRelativeTime } from "@/lib/time-utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import type { Snip } from "@shared/schema";
 import { 
   Search, 
   TrendingUp, 
@@ -109,7 +111,7 @@ export default function Explore() {
               </div>
               <div className="flex items-center space-x-4">
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-slate-800">{snips.length}</div>
+                  <div className="text-2xl font-bold text-slate-800">{Array.isArray(snips) ? snips.length : 0}</div>
                   <div className="text-sm text-slate-500 font-semibold">Total Snips</div>
                 </div>
               </div>
@@ -218,14 +220,14 @@ export default function Explore() {
                 </div>
                 
                 <div className="divide-y divide-slate-200">
-                  {snips.length === 0 ? (
+                  {!Array.isArray(snips) || snips.length === 0 ? (
                     <div className="p-12 text-center">
                       <Search className="h-12 w-12 text-slate-400 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-slate-600 mb-2">No content found</h3>
                       <p className="text-slate-500">Try adjusting your search or filters to find more content.</p>
                     </div>
                   ) : (
-                    snips.map((snip: any) => (
+                    Array.isArray(snips) && snips.map((snip: any) => (
                       <div key={snip.id} className="p-6 hover:bg-slate-50/50 transition-colors">
                         <div className="flex justify-between items-start mb-4">
                           <div className="flex items-center space-x-3">

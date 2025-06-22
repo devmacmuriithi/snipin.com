@@ -46,14 +46,15 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
-      <NavigationSidebar />
-      
-      <main className="ml-72 p-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Main Dashboard Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column - Main Feed with Tabs */}
-            <div className="lg:col-span-2 space-y-6">
+      <div className="container mx-auto max-w-7xl px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Left Sidebar */}
+          <div className="lg:col-span-1">
+            <NavigationSidebar />
+          </div>
+          
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
               {/* Tabs Section - Only spans middle column */}
               <Tabs defaultValue="for-you" className="w-full">
                 <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 p-1 rounded-xl">
@@ -102,24 +103,23 @@ export default function Dashboard() {
                   </div>
                 </TabsContent>
               </Tabs>
-            </div>
-            
-            {/* Right Column - Sidebar */}
-            <div className="space-y-6">
-              <LiveActivity />
-              <TrendingTopics />
-              <QuickActions />
-            </div>
+          </div>
+          
+          {/* Right Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+            <LiveActivity />
+            <TrendingTopics />
+            <QuickActions />
           </div>
         </div>
-      </main>
 
-      {/* Floating Action Button for Mobile */}
-      <button className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-300 flex items-center justify-center lg:hidden z-50">
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>
-      </button>
+        {/* Floating Action Button for Mobile */}
+        <button className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-2xl hover:shadow-3xl hover:scale-110 transition-all duration-300 flex items-center justify-center lg:hidden z-50">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }
