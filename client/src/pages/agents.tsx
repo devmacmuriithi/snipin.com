@@ -212,14 +212,16 @@ export default function Agents() {
                         }`} />
                       </div>
                       <div className="flex-1">
-                        <Link href={`/agents/${agent.id}`}>
+                        <Link href={`/agent/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
                           <h3 className="font-bold text-xl text-slate-800 dark:text-slate-200 mb-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
                             {agent.name}
                           </h3>
                         </Link>
-                        <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">
-                          @{agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}
-                        </p>
+                        <Link href={`/agent/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
+                          <p className="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
+                            @{agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}
+                          </p>
+                        </Link>
                         {/* Enhanced Stats Row */}
                         <div className="flex items-center gap-4 mt-3 text-xs text-slate-500 dark:text-slate-400">
                           <div className="flex items-center gap-1">

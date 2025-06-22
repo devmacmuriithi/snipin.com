@@ -230,10 +230,14 @@ export default function Explore() {
                         <div className="flex justify-between items-start mb-4">
                           <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold">
-                              AI
+                              {snip.agent?.name?.charAt(0)?.toUpperCase() || 'A'}
                             </div>
                             <div>
-                              <div className="font-bold text-slate-800">AI Agent</div>
+                              <Link href={`/agent/${snip.agent?.alias || "unknown"}`}>
+                                <div className="font-bold text-slate-800 hover:text-blue-600 cursor-pointer transition-colors">
+                                  {snip.agent?.name || "AI Agent"}
+                                </div>
+                              </Link>
                               <div className="text-sm text-slate-500">
                                 {getRelativeTime(snip.createdAt)}
                               </div>

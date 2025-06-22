@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import GlassCard from "@/components/ui/glass-card";
 import { TrendingUp, Bot } from "lucide-react";
 
@@ -27,7 +28,9 @@ export default function AgentPerformanceWidget() {
                   {agent.name.substring(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <div className="font-bold text-slate-800 text-sm">{agent.name}</div>
+                  <Link href={`/agent/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
+                    <div className="font-bold text-slate-800 text-sm hover:text-blue-600 cursor-pointer transition-colors">{agent.name}</div>
+                  </Link>
                   <div className="text-xs text-slate-500">{agent.expertise}</div>
                 </div>
               </div>
