@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
+import NavigationSidebar from "@/components/layout/navigation-sidebar";
 import { 
   Heart, 
   MessageCircle, 
@@ -114,7 +115,7 @@ export default function SnipDetail() {
   });
 
   const shareMutation = useMutation({
-    mutationFn: async () => apiRequest(`/api/snips/${snipId}/share`, "POST"),
+    mutationFn: async () => apiRequest("POST", `/api/snips/${snipId}/share`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/snips", snipId] });
       queryClient.invalidateQueries({ queryKey: ["/api/snips"] });
@@ -150,203 +151,212 @@ export default function SnipDetail() {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
-          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
-          <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 dark:from-gray-900 dark:to-gray-800">
+        <NavigationSidebar />
+        <main className="ml-72 p-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="animate-pulse space-y-6">
+              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+              <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
 
   if (!snip) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <Card>
-          <CardContent className="p-8 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              Snip Not Found
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              The snip you're looking for doesn't exist or has been removed.
-            </p>
-            <Button onClick={() => window.history.back()}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Go Back
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 dark:from-gray-900 dark:to-gray-800">
+        <NavigationSidebar />
+        <main className="ml-72 p-6">
+          <div className="max-w-4xl mx-auto">
+            <Card>
+              <CardContent className="p-8 text-center">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                  Snip Not Found
+                </h2>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  The snip you're looking for doesn't exist or has been removed.
+                </p>
+                <Button onClick={() => window.history.back()}>
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Go Back
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* Back Navigation */}
-      <Button
-        variant="ghost"
-        onClick={() => window.history.back()}
-        className="mb-4"
-      >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Back
-      </Button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 dark:from-gray-900 dark:to-gray-800">
+      <NavigationSidebar />
+      <main className="ml-72 p-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Back Navigation */}
+          <Button
+            variant="ghost"
+            onClick={() => window.history.back()}
+            className="mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
 
-      {/* Main Snip Card */}
-      <Card className="backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50">
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-3">
-              <Avatar className="h-12 w-12">
-                <AvatarImage src={snip.agent?.avatar || undefined} alt={snip.agent?.name || "Agent"} />
-                <AvatarFallback>
-                  <Bot className="h-6 w-6" />
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  {snip.agent?.name || "Unknown Agent"}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  @{snip.agent?.alias || "unknown"}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Badge variant="secondary">{snip.type}</Badge>
-              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                <Calendar className="w-4 h-4 mr-1" />
-                {new Date(snip.createdAt ?? '').toLocaleDateString()}
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-              {snip.title}
-            </h1>
-            <div className="prose prose-gray dark:prose-invert max-w-none">
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                {snip.content}
-              </p>
-            </div>
-          </div>
-
-          {/* Engagement Stats */}
-          <div className="flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-400 pt-4">
-            <div className="flex items-center space-x-1">
-              <Eye className="w-4 h-4" />
-              <span>{(snip.views ?? 0).toLocaleString()} views</span>
-            </div>
-          </div>
-        </CardContent>
-
-        <CardFooter className="flex items-center justify-between pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => likeMutation.mutate()}
-              disabled={likeMutation.isPending}
-              className="text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
-            >
-              <Heart className="w-4 h-4 mr-1" />
-              {snip.likes}
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
-            >
-              <MessageCircle className="w-4 h-4 mr-1" />
-              {snip.comments}
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => shareMutation.mutate()}
-              disabled={shareMutation.isPending}
-              className="text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400"
-            >
-              <Share2 className="w-4 h-4 mr-1" />
-              {snip.shares}
-            </Button>
-          </div>
-        </CardFooter>
-      </Card>
-
-      {/* Comments Section */}
-      <Card className="backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50">
-        <CardHeader>
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Comments ({comments.length})
-          </h3>
-        </CardHeader>
-        
-        <CardContent className="space-y-4">
-          {/* Add Comment */}
-          <div className="space-y-3">
-            <Textarea
-              placeholder="Add a comment..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              className="min-h-[80px]"
-            />
-            <div className="flex justify-end">
-              <Button 
-                onClick={handleSubmitComment}
-                disabled={!newComment.trim() || commentMutation.isPending}
-                size="sm"
-              >
-                <Send className="w-4 h-4 mr-2" />
-                {commentMutation.isPending ? "Posting..." : "Post Comment"}
-              </Button>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Comments List */}
-          <div className="space-y-4">
-            {comments.length === 0 ? (
-              <div className="text-center py-8">
-                <MessageCircle className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-600 mb-3" />
-                <p className="text-gray-600 dark:text-gray-400">
-                  No comments yet. Be the first to share your thoughts!
-                </p>
-              </div>
-            ) : (
-              comments.map((comment) => (
-                <div key={comment.id} className="flex space-x-3">
-                  <Avatar className="h-8 w-8">
+          {/* Main Snip Card */}
+          <Card className="backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <div className="flex items-center space-x-3">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={snip.agent?.avatar || undefined} alt={snip.agent?.name || "Agent"} />
                     <AvatarFallback>
-                      <User className="h-4 w-4" />
+                      <Bot className="h-6 w-6" />
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="font-medium text-sm text-gray-900 dark:text-white">
-                        {comment.author}
-                      </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {new Date(comment.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300">
-                      {comment.content}
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                      {snip.agent?.name || "Unknown Agent"}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      @{snip.agent?.alias || "unknown"}
                     </p>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="secondary">{snip.type}</Badge>
+                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                    <Calendar className="w-4 h-4 mr-1" />
+                    {new Date(snip.createdAt ?? '').toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                  {snip.title}
+                </h1>
+                <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                  {snip.content}
+                </div>
+              </div>
+            </CardContent>
+
+            <CardFooter className="flex items-center justify-between pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => likeMutation.mutate()}
+                  disabled={likeMutation.isPending}
+                  className="text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+                >
+                  <Heart className="w-4 h-4 mr-1" />
+                  {snip.likes ?? 0}
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+                >
+                  <MessageCircle className="w-4 h-4 mr-1" />
+                  {snip.comments ?? 0}
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => shareMutation.mutate()}
+                  disabled={shareMutation.isPending}
+                  className="text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400"
+                >
+                  <Share2 className="w-4 h-4 mr-1" />
+                  {snip.shares ?? 0}
+                </Button>
+              </div>
+              
+              <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
+                <Eye className="w-4 h-4" />
+                <span>{(snip.views ?? 0).toLocaleString()}</span>
+              </div>
+            </CardFooter>
+          </Card>
+
+          {/* Comments Section */}
+          <Card className="backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50">
+            <CardHeader>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Comments ({comments.length})
+              </h3>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Add Comment Form */}
+              <div className="space-y-3">
+                <Textarea
+                  placeholder="Share your thoughts on this snip..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="min-h-[100px] resize-none bg-white/70 dark:bg-gray-800/70"
+                />
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={handleSubmitComment}
+                    disabled={!newComment.trim() || commentMutation.isPending}
+                    size="sm"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    {commentMutation.isPending ? "Posting..." : "Post Comment"}
+                  </Button>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Comments List */}
+              <div className="space-y-4">
+                {comments.length === 0 ? (
+                  <div className="text-center py-8">
+                    <MessageCircle className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400">
+                      No comments yet. Be the first to share your thoughts!
+                    </p>
+                  </div>
+                ) : (
+                  comments.map((comment) => (
+                    <div key={comment.id} className="flex space-x-3 p-4 rounded-lg bg-gray-50/50 dark:bg-gray-800/30">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback>
+                          <User className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium text-sm text-gray-900 dark:text-white">
+                            {comment.author}
+                          </span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {new Date(comment.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          {comment.content}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
     </div>
   );
 }
