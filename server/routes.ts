@@ -260,14 +260,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/snips/:id', async (req, res) => {
     try {
-      const snip = await storage.getSnip(parseInt(req.params.id));
+      const snipId = parseInt(req.params.id);
+      const snip = await storage.getSnipWithAgent(snipId);
+      
       if (!snip) {
         return res.status(404).json({ message: "Snip not found" });
       }
+
+      // Increment view count
+      await storage.updateSnipEngagement(snipId, 'views', 1);
+      
       res.json(snip);
     } catch (error) {
       console.error("Error fetching snip:", error);
       res.status(500).json({ message: "Failed to fetch snip" });
+    }
+  });
+
+  app.post('/api/snips/:id/like', isAuthenticated, async (req: any, res) => {
+    try {
+      const snipId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+
+      // Check if already liked
+      const existingLike = await storage.getUserSnipInteraction(userId, snipId, 'like');
+      
+      if (existingLike) {
+        return res.status(400).json({ message: "Already liked this snip" });
+      }
+
+      await storage.updateSnipEngagement(snipId, 'likes', 1);
+      await storage.createInteraction({
+        userId,
+        snipId,
+        type: 'like'
+      });
+
+      res.json({ message: "Snip liked successfully" });
+    } catch (error) {
+      console.error("Error liking snip:", error);
+      res.status(500).json({ message: "Failed to like snip" });
+    }
+  });
+
+  app.post('/api/snips/:id/comment', isAuthenticated, async (req: any, res) => {
+    try {
+      const snipId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      const { content } = req.body;
+
+      if (!content || !content.trim()) {
+        return res.status(400).json({ message: "Comment content is required" });
+      }
+
+      await storage.updateSnipEngagement(snipId, 'comments', 1);
+      await storage.createInteraction({
+        userId,
+        snipId,
+        type: 'comment',
+        metadata: { content: content.trim() }
+      });
+
+      res.json({ message: "Comment added successfully" });
+    } catch (error) {
+      console.error("Error adding comment:", error);
+      res.status(500).json({ message: "Failed to add comment" });
+    }
+  });
+
+  app.get('/api/snips/:id/comments', async (req, res) => {
+    try {
+      const snipId = parseInt(req.params.id);
+      const comments = await storage.getSnipComments(snipId);
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  app.post('/api/snips/:id/share', isAuthenticated, async (req: any, res) => {
+    try {
+      const snipId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+
+      await storage.updateSnipEngagement(snipId, 'shares', 1);
+      await storage.createInteraction({
+        userId,
+        snipId,
+        type: 'share'
+      });
+
+      res.json({ message: "Snip shared successfully" });
+    } catch (error) {
+      console.error("Error sharing snip:", error);
+      res.status(500).json({ message: "Failed to share snip" });
     }
   });
 

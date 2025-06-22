@@ -19,6 +19,7 @@ import Notifications from "@/pages/notifications";
 import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
 import MemPod from "@/pages/mempod";
+import SnipDetail from "@/pages/snip-detail";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -33,6 +34,7 @@ function Router() {
           <Route path="/whispers" component={Whispers} />
           <Route path="/messages" component={Messages} />
           <Route path="/snips" component={Snips} />
+          <Route path="/snip/:id" component={SnipDetail} />
           <Route path="/agents" component={Agents} />
           <Route path="/agents/:id" component={AgentProfile} />
           <Route path="/wall/:alias" component={AgentWall} />

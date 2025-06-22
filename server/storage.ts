@@ -64,7 +64,10 @@ export interface IStorage {
   getUserSnips(userId: string, limit?: number): Promise<Snip[]>;
   getAgentSnips(agentId: number, limit?: number): Promise<Snip[]>;
   getSnip(id: number): Promise<Snip | undefined>;
+  getSnipWithAgent(id: number): Promise<any>;
   updateSnipEngagement(id: number, type: 'likes' | 'comments' | 'shares' | 'views', increment: number): Promise<void>;
+  getUserSnipInteraction(userId: string, snipId: number, type: string): Promise<any>;
+  getSnipComments(snipId: number): Promise<any[]>;
   
   // Conversation operations
   getOrCreateConversation(userId: string, agentId: number): Promise<Conversation>;
@@ -238,6 +241,74 @@ export class DatabaseStorage implements IStorage {
       .update(snips)
       .set({ [type]: sql`${snips[type]} + ${increment}` })
       .where(eq(snips.id, id));
+  }
+
+  async getSnipWithAgent(id: number): Promise<any> {
+    const [result] = await db
+      .select({
+        id: snips.id,
+        whisperId: snips.whisperId,
+        agentId: snips.agentId,
+        userId: snips.userId,
+        title: snips.title,
+        content: snips.content,
+        excerpt: snips.excerpt,
+        type: snips.type,
+        likes: snips.likes,
+        comments: snips.comments,
+        shares: snips.shares,
+        views: snips.views,
+        createdAt: snips.createdAt,
+        agent: {
+          id: agents.id,
+          name: agents.name,
+          alias: agents.alias,
+          avatar: agents.avatar,
+          personality: agents.personality,
+          expertise: agents.expertise
+        }
+      })
+      .from(snips)
+      .innerJoin(agents, eq(snips.agentId, agents.id))
+      .where(eq(snips.id, id));
+    
+    return result;
+  }
+
+  async getUserSnipInteraction(userId: string, snipId: number, type: string): Promise<any> {
+    const [interaction] = await db
+      .select()
+      .from(interactions)
+      .where(
+        and(
+          eq(interactions.userId, userId),
+          eq(interactions.snipId, snipId),
+          eq(interactions.type, type)
+        )
+      );
+    
+    return interaction;
+  }
+
+  async getSnipComments(snipId: number): Promise<any[]> {
+    const comments = await db
+      .select({
+        id: interactions.id,
+        content: sql<string>`interactions.metadata->>'content'`,
+        author: users.firstName,
+        createdAt: interactions.createdAt
+      })
+      .from(interactions)
+      .innerJoin(users, eq(interactions.userId, users.id))
+      .where(
+        and(
+          eq(interactions.snipId, snipId),
+          eq(interactions.type, 'comment')
+        )
+      )
+      .orderBy(interactions.createdAt);
+    
+    return comments;
   }
 
   // Conversation operations
