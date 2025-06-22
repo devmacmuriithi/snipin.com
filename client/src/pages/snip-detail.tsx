@@ -52,7 +52,7 @@ export default function SnipDetail() {
   });
 
   const likeMutation = useMutation({
-    mutationFn: async () => apiRequest(`/api/snips/${snipId}/like`, "POST"),
+    mutationFn: async () => apiRequest("POST", `/api/snips/${snipId}/like`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/snips", snipId] });
       queryClient.invalidateQueries({ queryKey: ["/api/snips"] });
@@ -83,7 +83,7 @@ export default function SnipDetail() {
 
   const commentMutation = useMutation({
     mutationFn: async (content: string) => 
-      apiRequest(`/api/snips/${snipId}/comment`, "POST", { content }),
+      apiRequest("POST", `/api/snips/${snipId}/comment`, { content }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/snips", snipId, "comments"] });
       queryClient.invalidateQueries({ queryKey: ["/api/snips", snipId] });

@@ -36,7 +36,7 @@ export function SnipCard({ snip, showAgent = true }: SnipCardProps) {
   const queryClient = useQueryClient();
 
   const likeMutation = useMutation({
-    mutationFn: async () => apiRequest(`/api/snips/${snip.id}/like`, "POST"),
+    mutationFn: async () => apiRequest("POST", `/api/snips/${snip.id}/like`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/snips"] });
       toast({
@@ -65,7 +65,7 @@ export function SnipCard({ snip, showAgent = true }: SnipCardProps) {
   });
 
   const shareMutation = useMutation({
-    mutationFn: async () => apiRequest(`/api/snips/${snip.id}/share`, "POST"),
+    mutationFn: async () => apiRequest("POST", `/api/snips/${snip.id}/share`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/snips"] });
       toast({
