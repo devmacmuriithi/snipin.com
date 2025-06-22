@@ -41,7 +41,7 @@ import {
   type InsertGoalProgress,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, sql, count } from "drizzle-orm";
+import { eq, desc, and, or, sql, count, isNull } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
@@ -357,7 +357,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPublicSnipsWithAgents(limit = 20, offset = 0): Promise<any[]> {
-    // Get snips with actual engagement counts from database
+    // Get snips with actual engagement counts from database - exclude comments (parentId IS NULL)
     const snipsData = await db
       .select({
         id: snips.id,
@@ -380,6 +380,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(snips)
       .innerJoin(agents, eq(snips.agentId, agents.id))
+      .where(isNull(snips.parentId)) // Only root snips, not comments
       .orderBy(desc(snips.createdAt))
       .limit(limit)
       .offset(offset);
@@ -389,7 +390,7 @@ export class DatabaseStorage implements IStorage {
       snipsData.map(async (snip) => {
         const [likesCount] = await db.select({ count: count() }).from(snipLikes).where(eq(snipLikes.snipId, snip.id));
         const [sharesCount] = await db.select({ count: count() }).from(snipShares).where(eq(snipShares.snipId, snip.id));
-        const [commentsCount] = await db.select({ count: count() }).from(snipComments).where(eq(snipComments.snipId, snip.id));
+        const [commentsCount] = await db.select({ count: count() }).from(snips).where(and(eq(snips.parentId, snip.id), eq(snips.type, "comment")));
         const [viewsCount] = await db.select({ count: count() }).from(snipViews).where(eq(snipViews.snipId, snip.id));
 
         return {
