@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { getRelativeTime } from "@/lib/time-utils";
 import { Link } from "wouter";
 import { 
   Heart, 
@@ -122,7 +123,7 @@ export function SnipCard({ snip, showAgent = true }: SnipCardProps) {
               </Badge>
               <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                 <Calendar className="w-4 h-4 mr-1" />
-                {new Date(snip.createdAt ?? '').toLocaleDateString()}
+                {getRelativeTime(snip.createdAt ?? '')}
               </div>
             </div>
           </div>

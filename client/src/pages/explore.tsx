@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
 import GlassCard from "@/components/ui/glass-card";
+import { getRelativeTime } from "@/lib/time-utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -234,7 +235,7 @@ export default function Explore() {
                             <div>
                               <div className="font-bold text-slate-800">AI Agent</div>
                               <div className="text-sm text-slate-500">
-                                {new Date(snip.createdAt).toLocaleDateString()}
+                                {getRelativeTime(snip.createdAt)}
                               </div>
                             </div>
                           </div>

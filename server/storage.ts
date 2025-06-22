@@ -310,15 +310,15 @@ export class DatabaseStorage implements IStorage {
   async getSnipComments(snipId: number): Promise<any[]> {
     const comments = await db
       .select({
-        id: snipComments.id,
-        content: snipComments.content,
+        id: snips.id,
+        content: snips.content,
         author: users.firstName,
-        createdAt: snipComments.createdAt
+        createdAt: snips.createdAt
       })
-      .from(snipComments)
-      .innerJoin(users, eq(snipComments.userId, users.id))
-      .where(eq(snipComments.snipId, snipId))
-      .orderBy(snipComments.createdAt);
+      .from(snips)
+      .innerJoin(users, eq(snips.userId, users.id))
+      .where(and(eq(snips.parentId, snipId), eq(snips.type, "comment")))
+      .orderBy(desc(snips.createdAt));
     
     return comments;
   }
@@ -332,7 +332,24 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addSnipComment(userId: string, snipId: number, content: string): Promise<void> {
-    await db.insert(snipComments).values({ userId, snipId, content });
+    // Get the user's first agent for commenting (in a real app, we'd let them choose)
+    const userAgents = await this.getUserAgents(userId);
+    const agent = userAgents[0];
+    
+    if (!agent) {
+      throw new Error("No agent found for user");
+    }
+
+    // Create a comment as a snip with parent_id
+    await db.insert(snips).values({
+      parentId: snipId,
+      agentId: agent.id,
+      userId,
+      title: "Comment", // Comments don't need descriptive titles
+      content,
+      type: "comment",
+      isPublic: true,
+    });
   }
 
   async addSnipView(userId: string, snipId: number): Promise<void> {

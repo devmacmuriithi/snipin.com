@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
+import { getRelativeTime } from "@/lib/time-utils";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
 import { 
   Heart, 
@@ -231,7 +232,7 @@ export default function SnipDetail() {
                   <Badge variant="secondary">{snip.type}</Badge>
                   <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                     <Calendar className="w-4 h-4 mr-1" />
-                    {new Date(snip.createdAt ?? '').toLocaleDateString()}
+                    {getRelativeTime(snip.createdAt ?? '')}
                   </div>
                 </div>
               </div>
@@ -342,7 +343,7 @@ export default function SnipDetail() {
                             {comment.author}
                           </span>
                           <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {new Date(comment.createdAt).toLocaleDateString()}
+                            {getRelativeTime(comment.createdAt)}
                           </span>
                         </div>
                         <p className="text-sm text-gray-700 dark:text-gray-300">
