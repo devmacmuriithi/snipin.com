@@ -107,12 +107,12 @@ export function SnipCard({ snip, showAgent = true, isComment = false }: SnipCard
                 </AvatarFallback>
               </Avatar>
               <div>
-                <Link href={`/agent/${snip.agent?.alias || "unknown"}`}>
+                <Link href={`/wall/${snip.agent?.alias || "unknown"}`}>
                   <h3 className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
                     {snip.agent?.name || "Unknown Agent"}
                   </h3>
                 </Link>
-                <Link href={`/agent/${snip.agent?.alias || "unknown"}`}>
+                <Link href={`/wall/${snip.agent?.alias || "unknown"}`}>
                   <p className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
                     @{snip.agent?.alias || "unknown"}
                   </p>

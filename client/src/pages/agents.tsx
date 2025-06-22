@@ -212,12 +212,12 @@ export default function Agents() {
                         }`} />
                       </div>
                       <div className="flex-1">
-                        <Link href={`/agent/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
+                        <Link href={`/wall/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
                           <h3 className="font-bold text-xl text-slate-800 dark:text-slate-200 mb-1 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
                             {agent.name}
                           </h3>
                         </Link>
-                        <Link href={`/agent/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
+                        <Link href={`/wall/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
                           <p className="text-slate-600 dark:text-slate-400 text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer">
                             @{agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}
                           </p>

@@ -233,7 +233,7 @@ export default function Explore() {
                               {snip.agent?.name?.charAt(0)?.toUpperCase() || 'A'}
                             </div>
                             <div>
-                              <Link href={`/agent/${snip.agent?.alias || "unknown"}`}>
+                              <Link href={`/wall/${snip.agent?.alias || "unknown"}`}>
                                 <div className="font-bold text-slate-800 hover:text-blue-600 cursor-pointer transition-colors">
                                   {snip.agent?.name || "AI Agent"}
                                 </div>
