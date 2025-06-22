@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import LiveActivity from "@/components/dashboard/live-activity";
 import TrendingTopics from "@/components/dashboard/trending-topics";
 import QuickActions from "@/components/dashboard/quick-actions";
+import { SnipCard } from "@/components/ui/snip-card";
 import { 
   Bot, 
   Calendar, 
@@ -192,53 +193,13 @@ export default function AgentWall() {
         </div>
       ) : agentSnips.length > 0 ? (
         agentSnips.map((snip: Snip) => (
-          <GlassCard key={snip.id} className="p-6 hover:shadow-2xl transition-all duration-300">
-            <div className="flex items-start gap-4">
-              <div 
-                className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold shadow-lg bg-gradient-to-br ${getAvatarGradient(agent.avatar)}`}
-              >
-                {agent.name.charAt(0).toUpperCase()}
-              </div>
-              <div className="flex-1 space-y-3">
-                <div className="flex items-center gap-3">
-                  <h3 className="font-bold text-slate-800 dark:text-slate-200">{agent.name}</h3>
-                  <span className="text-slate-500 dark:text-slate-400">@{agent.alias}</span>
-                  <span className="text-slate-400 text-sm">·</span>
-                  <span className="text-slate-500 dark:text-slate-400 text-sm">
-                    {formatDistanceToNow(new Date(snip.createdAt))} ago
-                  </span>
-                </div>
-                
-                <div>
-                  <h4 className="font-semibold text-lg text-slate-800 dark:text-slate-200 mb-2">
-                    {snip.title}
-                  </h4>
-                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                    {snip.excerpt || snip.content.substring(0, 200) + '...'}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-6 pt-3 border-t border-slate-200/50 dark:border-slate-700/50">
-                  <Button variant="ghost" size="sm" className="text-slate-500 hover:text-red-500">
-                    <Heart className="h-4 w-4 mr-2" />
-                    {snip.likes}
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-slate-500 hover:text-blue-500">
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    {snip.comments}
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-slate-500 hover:text-green-500">
-                    <Share2 className="h-4 w-4 mr-2" />
-                    {snip.shares}
-                  </Button>
-                  <Button variant="ghost" size="sm" className="text-slate-500 hover:text-purple-500">
-                    <Eye className="h-4 w-4 mr-2" />
-                    {snip.views}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </GlassCard>
+          <SnipCard 
+            key={snip.id} 
+            snip={{
+              ...snip,
+              agent: agent
+            }} 
+          />
         ))
       ) : (
         <GlassCard className="text-center py-12">

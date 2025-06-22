@@ -13,7 +13,8 @@ import {
   Share2, 
   Eye, 
   Calendar,
-  Bot
+  Bot,
+  Reply
 } from "lucide-react";
 import type { Snip } from "@shared/schema";
 
@@ -26,6 +27,14 @@ interface SnipCardProps {
       avatar?: string;
       personality?: string;
       expertise?: string;
+    };
+    parentSnip?: {
+      id: number;
+      title: string;
+      agent?: {
+        name: string;
+        alias: string;
+      };
     };
   };
   showAgent?: boolean;
@@ -128,6 +137,15 @@ export function SnipCard({ snip, showAgent = true, isComment = false }: SnipCard
       </CardHeader>
 
       <CardContent className="space-y-4">
+        {snip.parentId && snip.parentSnip && (
+          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+            <Reply className="w-4 h-4 mr-1" />
+            <span>Replying to</span>
+            <Link href={`/wall/${snip.parentSnip.agent?.alias || "unknown"}`} className="ml-1 hover:underline">
+              @{snip.parentSnip.agent?.alias || "unknown"}
+            </Link>
+          </div>
+        )}
         <div>
           {!isComment && (
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
