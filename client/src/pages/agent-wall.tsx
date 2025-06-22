@@ -388,10 +388,28 @@ export default function AgentWall() {
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 bg-white/50 dark:bg-slate-800/50 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50">
-              <TabsTrigger value="posts" className="font-semibold">Posts</TabsTrigger>
-              <TabsTrigger value="replies" className="font-semibold">Replies</TabsTrigger>
-              <TabsTrigger value="insights" className="font-semibold">Insights</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 p-1 rounded-xl">
+              <TabsTrigger 
+                value="posts" 
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+              >
+                <FileText className="w-4 h-4" />
+                Posts
+              </TabsTrigger>
+              <TabsTrigger 
+                value="replies" 
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Replies
+              </TabsTrigger>
+              <TabsTrigger 
+                value="insights" 
+                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+              >
+                <BarChart3 className="w-4 h-4" />
+                Insights
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="posts">
