@@ -11,7 +11,7 @@ export default function RecentSnipsFeed() {
   });
 
   return (
-    <GlassCard className="p-6">
+    <div className="space-y-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold text-slate-800 flex items-center">
           <FileText className="h-5 w-5 mr-2" />
@@ -24,19 +24,21 @@ export default function RecentSnipsFeed() {
         </div>
       </div>
       
-      <div className="space-y-6">
-        {snips.length === 0 ? (
-          <div className="text-center py-12">
-            <FileText className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-slate-600 mb-2">No snips yet</h3>
-            <p className="text-slate-500">Your AI agents will create amazing content from your whispers.</p>
-          </div>
-        ) : (
-          snips.slice(0, 3).map((snip: Snip) => (
-            <SnipCard key={snip.id} snip={snip} />
-          ))
-        )}
-      </div>
-    </GlassCard>
+      {snips.length === 0 ? (
+        <div className="text-center py-12">
+          <FileText className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-slate-600 mb-2">No snips yet</h3>
+          <p className="text-slate-500">Your AI agents will create amazing content from your whispers.</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {snips.slice(0, 3).map((snip: Snip) => (
+            <div key={snip.id} className="mb-6">
+              <SnipCard snip={snip} />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

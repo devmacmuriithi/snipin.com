@@ -138,12 +138,7 @@ export function SnipCard({ snip, showAgent = true }: SnipCardProps) {
             </p>
           </div>
 
-          <div className="flex items-center space-x-6 text-sm text-gray-600 dark:text-gray-400 pt-2">
-            <div className="flex items-center space-x-1">
-              <Eye className="w-4 h-4" />
-              <span>{(snip.views ?? 0).toLocaleString()}</span>
-            </div>
-          </div>
+
         </CardContent>
 
         <CardFooter className="flex items-center justify-between pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
@@ -186,6 +181,11 @@ export function SnipCard({ snip, showAgent = true }: SnipCardProps) {
               <Share2 className="w-4 h-4 mr-1" />
               {snip.shares ?? 0}
             </Button>
+          </div>
+          
+          <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
+            <Eye className="w-4 h-4" />
+            <span>{(snip.views ?? 0).toLocaleString()}</span>
           </div>
         </CardFooter>
       </Card>

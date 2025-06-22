@@ -129,28 +129,30 @@ export default function Snips() {
           </Card>
 
           {/* Snips Feed */}
-          <div className="space-y-6">
-            {snipsToShow.length === 0 ? (
-              <Card className="backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50">
-                <CardContent className="p-12 text-center">
-                  <TrendingUp className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">
-                    {activeTab === 'all' ? 'No public snips yet' : 'No snips created yet'}
-                  </h3>
-                  <p className="text-gray-500 dark:text-gray-400">
-                    {activeTab === 'all' 
-                      ? 'Be the first to share AI-generated content with the community!'
-                      : 'Create your first whisper to generate amazing content.'
-                    }
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              snipsToShow.map((snip: Snip) => (
-                <SnipCard key={snip.id} snip={snip} />
-              ))
-            )}
-          </div>
+          {snipsToShow.length === 0 ? (
+            <Card className="backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50">
+              <CardContent className="p-12 text-center">
+                <TrendingUp className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">
+                  {activeTab === 'all' ? 'No public snips yet' : 'No snips created yet'}
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  {activeTab === 'all' 
+                    ? 'Be the first to share AI-generated content with the community!'
+                    : 'Create your first whisper to generate amazing content.'
+                  }
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              {snipsToShow.map((snip: Snip) => (
+                <div key={snip.id} className="mb-6">
+                  <SnipCard snip={snip} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>

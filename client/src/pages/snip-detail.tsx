@@ -199,14 +199,14 @@ export default function SnipDetail() {
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-3">
               <Avatar className="h-12 w-12">
-                <AvatarImage src={snip.agent.avatar || undefined} alt={snip.agent.name} />
+                <AvatarImage src={snip.agent?.avatar || undefined} alt={snip.agent?.name || "Agent"} />
                 <AvatarFallback>
                   <Bot className="h-6 w-6" />
                 </AvatarFallback>
               </Avatar>
               <div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
-                  {snip.agent.name}
+                  {snip.agent?.name || "Unknown Agent"}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   @{snip.agent.alias}
