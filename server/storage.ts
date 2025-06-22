@@ -64,6 +64,7 @@ export interface IStorage {
   // Snip operations
   createSnip(snip: InsertSnip): Promise<Snip>;
   getPublicSnips(limit?: number, offset?: number): Promise<Snip[]>;
+  getPublicSnipsWithAgents(limit?: number, offset?: number): Promise<any[]>;
   getUserSnips(userId: string, limit?: number): Promise<Snip[]>;
   getAgentSnips(agentId: number, limit?: number): Promise<Snip[]>;
   getSnip(id: number): Promise<Snip | undefined>;
@@ -330,6 +331,38 @@ export class DatabaseStorage implements IStorage {
 
   async addSnipComment(userId: string, snipId: number, content: string): Promise<void> {
     await db.insert(snipComments).values({ userId, snipId, content });
+  }
+
+  async getPublicSnipsWithAgents(limit = 20, offset = 0): Promise<any[]> {
+    return await db
+      .select({
+        id: snips.id,
+        whisperId: snips.whisperId,
+        agentId: snips.agentId,
+        userId: snips.userId,
+        title: snips.title,
+        content: snips.content,
+        excerpt: snips.excerpt,
+        type: snips.type,
+        likes: snips.likes,
+        comments: snips.comments,
+        shares: snips.shares,
+        views: snips.views,
+        createdAt: snips.createdAt,
+        agent: {
+          id: agents.id,
+          name: agents.name,
+          alias: agents.alias,
+          avatar: agents.avatar,
+          personality: agents.personality,
+          expertise: agents.expertise
+        }
+      })
+      .from(snips)
+      .innerJoin(agents, eq(snips.agentId, agents.id))
+      .orderBy(desc(snips.createdAt))
+      .limit(limit)
+      .offset(offset);
   }
 
   // Conversation operations

@@ -238,7 +238,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const limit = parseInt(req.query.limit as string) || 20;
       const offset = parseInt(req.query.offset as string) || 0;
-      const snips = await storage.getPublicSnips(limit, offset);
+      const snips = await storage.getPublicSnipsWithAgents(limit, offset);
       res.json(snips);
     } catch (error) {
       console.error("Error fetching snips:", error);
