@@ -64,7 +64,7 @@ export default function NavigationSidebar() {
     : (user as any)?.email?.charAt(0).toUpperCase() || 'U';
 
   return (
-    <nav className="fixed left-0 top-0 h-full w-72 glass-morphism p-6 z-50 shadow-2xl">
+    <nav className="glass-morphism rounded-3xl p-6 shadow-2xl h-fit sticky top-6">
       {/* Brand Logo */}
       <div className="flex items-center mb-8 p-4">
         <Brain className="text-2xl gradient-text mr-3 h-6 w-6" />
@@ -113,7 +113,7 @@ export default function NavigationSidebar() {
       </Link>
       
       {/* User Profile */}
-      <div className="absolute bottom-6 left-6 right-6">
+      <div className="mt-8">
         <div className="flex items-center p-4 glass-morphism rounded-2xl">
           <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg mr-3">
             {initials}

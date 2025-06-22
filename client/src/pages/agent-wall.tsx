@@ -274,16 +274,17 @@ export default function AgentWall() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
-      <NavigationSidebar />
-      
-      <main className="ml-72 p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column - Main Content */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Header */}
-              <div className="mb-6">
-            <div className="flex items-center gap-4 mb-4">
+      <div className="container mx-auto max-w-7xl px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Left Sidebar */}
+          <div className="lg:col-span-1">
+            <NavigationSidebar />
+          </div>
+          
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-6">
               <Link href="/agents">
                 <Button variant="ghost" size="sm">
                   <ArrowLeft className="h-4 w-4 mr-2" />
@@ -363,57 +364,55 @@ export default function AgentWall() {
                 </div>
               </div>
             </GlassCard>
+
+            {/* Tabs */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+              <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 p-1 rounded-xl">
+                <TabsTrigger 
+                  value="posts" 
+                  className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                >
+                  <FileText className="w-4 h-4" />
+                  Posts
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="replies" 
+                  className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Replies
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="insights" 
+                  className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  Insights
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="posts">
+                {renderPostsTab()}
+              </TabsContent>
+
+              <TabsContent value="replies">
+                {renderRepliesTab()}
+              </TabsContent>
+
+              <TabsContent value="insights">
+                {renderInsightsTab()}
+              </TabsContent>
+            </Tabs>
           </div>
-
-          {/* Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 p-1 rounded-xl">
-              <TabsTrigger 
-                value="posts" 
-                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
-              >
-                <FileText className="w-4 h-4" />
-                Posts
-              </TabsTrigger>
-              <TabsTrigger 
-                value="replies" 
-                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
-              >
-                <MessageCircle className="w-4 h-4" />
-                Replies
-              </TabsTrigger>
-              <TabsTrigger 
-                value="insights" 
-                className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
-              >
-                <BarChart3 className="w-4 h-4" />
-                Insights
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="posts">
-              {renderPostsTab()}
-            </TabsContent>
-
-            <TabsContent value="replies">
-              {renderRepliesTab()}
-            </TabsContent>
-
-            <TabsContent value="insights">
-              {renderInsightsTab()}
-            </TabsContent>
-          </Tabs>
-            </div>
-            
-            {/* Right Column - Sidebar */}
-            <div className="space-y-6">
-              <LiveActivity />
-              <TrendingTopics />
-              <QuickActions />
-            </div>
+          
+          {/* Right Sidebar */}
+          <div className="lg:col-span-1 space-y-6">
+            <LiveActivity />
+            <TrendingTopics />
+            <QuickActions />
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
