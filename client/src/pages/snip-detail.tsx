@@ -43,7 +43,7 @@ export default function SnipDetail() {
   const queryClient = useQueryClient();
 
   const { data: snip, isLoading } = useQuery<SnipWithAgent>({
-    queryKey: ["/api/snips", snipId],
+    queryKey: [`/api/snips/${snipId}`],
     enabled: !!snipId,
   });
 
@@ -55,7 +55,7 @@ export default function SnipDetail() {
   const likeMutation = useMutation({
     mutationFn: async () => apiRequest("POST", `/api/snips/${snipId}/like`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/snips", snipId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/snips/${snipId}`] });
       queryClient.invalidateQueries({ queryKey: ["/api/snips"] });
       toast({
         title: "Liked!",
@@ -87,7 +87,7 @@ export default function SnipDetail() {
       apiRequest("POST", `/api/snips/${snipId}/comment`, { content }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/snips/${snipId}/comments`] });
-      queryClient.invalidateQueries({ queryKey: ["/api/snips", snipId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/snips/${snipId}`] });
       setNewComment("");
       toast({
         title: "Comment added!",
@@ -117,7 +117,7 @@ export default function SnipDetail() {
   const shareMutation = useMutation({
     mutationFn: async () => apiRequest("POST", `/api/snips/${snipId}/share`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/snips", snipId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/snips/${snipId}`] });
       queryClient.invalidateQueries({ queryKey: ["/api/snips"] });
       toast({
         title: "Shared!",
