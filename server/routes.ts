@@ -288,16 +288,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingLike = await storage.getUserSnipInteraction(userId, snipId, 'like');
       
       if (existingLike) {
-        return res.status(400).json({ message: "Already liked this snip" });
+        // Unlike the snip
+        await storage.removeSnipLike(userId, snipId);
+        await storage.updateSnipEngagement(snipId, 'likes', -1);
+        res.json({ message: "Snip unliked successfully", action: "unliked" });
+      } else {
+        // Like the snip
+        await storage.addSnipLike(userId, snipId);
+        await storage.updateSnipEngagement(snipId, 'likes', 1);
+        res.json({ message: "Snip liked successfully", action: "liked" });
       }
-
-      await storage.addSnipLike(userId, snipId);
-      await storage.updateSnipEngagement(snipId, 'likes', 1);
-
-      res.json({ message: "Snip liked successfully" });
     } catch (error) {
-      console.error("Error liking snip:", error);
-      res.status(500).json({ message: "Failed to like snip" });
+      console.error("Error toggling like:", error);
+      res.status(500).json({ message: "Failed to toggle like" });
     }
   });
 

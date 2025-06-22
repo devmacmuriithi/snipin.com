@@ -74,6 +74,7 @@ export interface IStorage {
   getUserSnipInteraction(userId: string, snipId: number, type: string): Promise<any>;
   getSnipComments(snipId: number): Promise<any[]>;
   addSnipLike(userId: string, snipId: number): Promise<void>;
+  removeSnipLike(userId: string, snipId: number): Promise<void>;
   addSnipShare(userId: string, snipId: number): Promise<void>;
   addSnipComment(userId: string, snipId: number, content: string): Promise<void>;
   addSnipView(userId: string, snipId: number): Promise<void>;
@@ -355,6 +356,10 @@ export class DatabaseStorage implements IStorage {
 
   async addSnipLike(userId: string, snipId: number): Promise<void> {
     await db.insert(snipLikes).values({ userId, snipId });
+  }
+
+  async removeSnipLike(userId: string, snipId: number): Promise<void> {
+    await db.delete(snipLikes).where(and(eq(snipLikes.userId, userId), eq(snipLikes.snipId, snipId)));
   }
 
   async addSnipShare(userId: string, snipId: number): Promise<void> {

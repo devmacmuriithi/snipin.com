@@ -54,12 +54,12 @@ export default function SnipDetail() {
 
   const likeMutation = useMutation({
     mutationFn: async () => apiRequest("POST", `/api/snips/${snipId}/like`),
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: [`/api/snips/${snipId}`] });
       queryClient.invalidateQueries({ queryKey: ["/api/snips"] });
       toast({
-        title: "Liked!",
-        description: "You liked this snip",
+        title: data.action === "liked" ? "Liked!" : "Unliked!",
+        description: data.action === "liked" ? "You liked this snip" : "You unliked this snip",
       });
     },
     onError: (error) => {
@@ -74,6 +74,17 @@ export default function SnipDetail() {
         }, 500);
         return;
       }
+      
+      // Handle already liked case
+      if (error.message.includes("Already liked")) {
+        toast({
+          title: "Already liked",
+          description: "You've already liked this snip",
+          variant: "default",
+        });
+        return;
+      }
+      
       toast({
         title: "Error",
         description: "Failed to like snip",
@@ -312,7 +323,7 @@ export default function SnipDetail() {
                     size="sm"
                   >
                     <Send className="w-4 h-4 mr-2" />
-                    {commentMutation.isPending ? "Posting..." : "Post Comment"}
+                    {commentMutation.isPending ? "Replying..." : "Reply"}
                   </Button>
                 </div>
               </div>

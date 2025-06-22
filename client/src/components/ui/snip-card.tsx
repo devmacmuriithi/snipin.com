@@ -118,9 +118,11 @@ export function SnipCard({ snip, showAgent = true, isComment = false }: SnipCard
             </div>
           )}
           <div className="flex items-center space-x-2">
-            <Badge variant="secondary" className="text-xs">
-              {snip.type}
-            </Badge>
+            {!isComment && (
+              <Badge variant="secondary" className="text-xs">
+                {snip.type}
+              </Badge>
+            )}
             <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
               <Calendar className="w-4 h-4 mr-1" />
               {getRelativeTime(snip.createdAt ?? '')}
