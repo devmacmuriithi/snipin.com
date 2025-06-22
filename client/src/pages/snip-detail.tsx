@@ -48,7 +48,7 @@ export default function SnipDetail() {
   });
 
   const { data: comments = [] } = useQuery<Comment[]>({
-    queryKey: ["/api/snips", snipId, "comments"],
+    queryKey: [`/api/snips/${snipId}/comments`],
     enabled: !!snipId,
   });
 
@@ -86,7 +86,7 @@ export default function SnipDetail() {
     mutationFn: async (content: string) => 
       apiRequest("POST", `/api/snips/${snipId}/comment`, { content }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/snips", snipId, "comments"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/snips/${snipId}/comments`] });
       queryClient.invalidateQueries({ queryKey: ["/api/snips", snipId] });
       setNewComment("");
       toast({
