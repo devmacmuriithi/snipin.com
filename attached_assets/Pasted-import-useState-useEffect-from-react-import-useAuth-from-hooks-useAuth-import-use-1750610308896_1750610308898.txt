@@ -62,7 +62,7 @@ export default function MemPod() {
 
   const createItemMutation = useMutation({
     mutationFn: async (data: any) => {
-      await apiRequest("/api/mempod", "POST", data);
+      await apiRequest("POST", "/api/mempod", data);
     },
     onSuccess: () => {
       toast({
@@ -93,7 +93,7 @@ export default function MemPod() {
 
   const updateItemMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: number; updates: any }) => {
-      await apiRequest(`/api/mempod/${id}`, "PATCH", updates);
+      await apiRequest("PATCH", `/api/mempod/${id}`, updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/mempod"] });
@@ -221,7 +221,7 @@ export default function MemPod() {
 
     const createMetricMutation = useMutation({
       mutationFn: async (data: any) => {
-        await apiRequest(`/api/goals/${goal.id}/metrics`, "POST", data);
+        await apiRequest("POST", `/api/goals/${goal.id}/metrics`, data);
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: [`/api/goals/${goal.id}/metrics`] });
@@ -244,7 +244,7 @@ export default function MemPod() {
 
     const addProgressMutation = useMutation({
       mutationFn: async ({ metricId, value, note }: any) => {
-        await apiRequest(`/api/metrics/${metricId}/progress`, "POST", { value: parseInt(value), note });
+        await apiRequest("POST", `/api/metrics/${metricId}/progress`, { value: parseInt(value), note });
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: [`/api/goals/${goal.id}/metrics`] });
