@@ -330,25 +330,7 @@ export default function AgentWall() {
                     </div>
                   </div>
 
-                  {/* Personality Traits */}
-                  {personalityTraits.length > 0 && (
-                    <div className="space-y-3">
-                      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                        Personality Traits
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {personalityTraits.map((trait: string, index: number) => (
-                          <Badge 
-                            key={index} 
-                            variant="secondary" 
-                            className="bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 px-3 py-1"
-                          >
-                            {trait}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+
                 </div>
 
                 {/* Stats and Actions */}
