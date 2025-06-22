@@ -16,7 +16,7 @@ import {
   LogOut
 } from "lucide-react";
 
-export default function NavigationSidebar() {
+function NavigationSidebar() {
   const { user } = useAuth();
   const [location] = useLocation();
 
@@ -137,3 +137,5 @@ export default function NavigationSidebar() {
     </nav>
   );
 }
+
+export default NavigationSidebar;

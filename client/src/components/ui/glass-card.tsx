@@ -24,4 +24,5 @@ const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
 
 GlassCard.displayName = "GlassCard";
 
+export { GlassCard };
 export default GlassCard;
