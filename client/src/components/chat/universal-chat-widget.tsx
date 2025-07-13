@@ -79,12 +79,9 @@ export default function UniversalChatWidget() {
   const createConversationMutation = useMutation({
     mutationFn: async (agentId: number) => {
       console.log("Creating conversation with agent ID:", agentId);
-      const response = await apiRequest(`/api/conversations`, {
-        method: "POST",
-        body: { agentId }
-      });
+      const response = await apiRequest("POST", `/api/conversations`, { agentId });
       console.log("Conversation created:", response);
-      return response;
+      return response.json();
     },
     onSuccess: (conversation) => {
       console.log("Conversation success:", conversation);
@@ -100,10 +97,8 @@ export default function UniversalChatWidget() {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (message: { conversationId: number; content: string }) => {
-      return await apiRequest(`/api/conversations/${message.conversationId}/messages`, {
-        method: "POST",
-        body: { content: message.content, isFromUser: true }
-      });
+      const response = await apiRequest("POST", `/api/conversations/${message.conversationId}/messages`, { content: message.content, isFromUser: true });
+      return response.json();
     },
     onSuccess: () => {
       setNewMessage("");
