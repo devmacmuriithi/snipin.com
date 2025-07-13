@@ -80,27 +80,27 @@ export default function UniversalChatWidget() {
 
   // Get messages for each open chat window using individual queries
   const messageQuery0 = useQuery({
-    queryKey: ["/api/conversations", chatWindows[0]?.conversationId, "messages"],
+    queryKey: chatWindows[0] ? ["/api/conversations", chatWindows[0].conversationId, "messages"] : ["disabled"],
     enabled: !!chatWindows[0]?.conversationId && !chatWindows[0]?.isMinimized,
   });
   
   const messageQuery1 = useQuery({
-    queryKey: ["/api/conversations", chatWindows[1]?.conversationId, "messages"],
+    queryKey: chatWindows[1] ? ["/api/conversations", chatWindows[1].conversationId, "messages"] : ["disabled"],
     enabled: !!chatWindows[1]?.conversationId && !chatWindows[1]?.isMinimized,
   });
   
   const messageQuery2 = useQuery({
-    queryKey: ["/api/conversations", chatWindows[2]?.conversationId, "messages"],
+    queryKey: chatWindows[2] ? ["/api/conversations", chatWindows[2].conversationId, "messages"] : ["disabled"],
     enabled: !!chatWindows[2]?.conversationId && !chatWindows[2]?.isMinimized,
   });
   
   const messageQuery3 = useQuery({
-    queryKey: ["/api/conversations", chatWindows[3]?.conversationId, "messages"],
+    queryKey: chatWindows[3] ? ["/api/conversations", chatWindows[3].conversationId, "messages"] : ["disabled"],
     enabled: !!chatWindows[3]?.conversationId && !chatWindows[3]?.isMinimized,
   });
   
   const messageQuery4 = useQuery({
-    queryKey: ["/api/conversations", chatWindows[4]?.conversationId, "messages"],
+    queryKey: chatWindows[4] ? ["/api/conversations", chatWindows[4].conversationId, "messages"] : ["disabled"],
     enabled: !!chatWindows[4]?.conversationId && !chatWindows[4]?.isMinimized,
   });
 
@@ -221,10 +221,12 @@ export default function UniversalChatWidget() {
 
   // Open a new chat window
   const openChatWindow = (conversation: Conversation, agent: Agent) => {
+    console.log("Opening chat window for conversation:", conversation.id, "agent:", agent.name);
     const windowId = `chat_${conversation.id}`;
     
     // Check if window already exists
     if (chatWindows.find(w => w.id === windowId)) {
+      console.log("Window already exists, unminimizing");
       // Just unminimize if it exists
       setChatWindows(prev => prev.map(w => 
         w.id === windowId ? { ...w, isMinimized: false } : w
@@ -240,7 +242,12 @@ export default function UniversalChatWidget() {
       isMinimized: false,
     };
 
-    setChatWindows(prev => [...prev, newWindow]);
+    console.log("Creating new chat window:", newWindow);
+    setChatWindows(prev => {
+      const updated = [...prev, newWindow];
+      console.log("Updated chat windows:", updated);
+      return updated;
+    });
     setIsMainWindowOpen(false);
   };
 
@@ -280,7 +287,9 @@ export default function UniversalChatWidget() {
 
   // Open existing conversation
   const openExistingConversation = (conversation: Conversation) => {
+    console.log("Opening existing conversation:", conversation);
     const agent = agents.find(a => a.id === conversation.agentId);
+    console.log("Found agent:", agent);
     if (agent) {
       openChatWindow(conversation, agent);
     }
@@ -320,7 +329,8 @@ export default function UniversalChatWidget() {
       isEnabled: q.isEnabled,
       queryKey: q.queryKey
     })));
-  }, [chatWindows, messageQueries]);
+    console.log("Conversations from API:", conversations);
+  }, [chatWindows, messageQueries, conversations]);
 
   const filteredAgents = agents.filter((agent: Agent) => 
     searchQuery === "" || 
