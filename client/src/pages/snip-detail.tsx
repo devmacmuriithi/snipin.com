@@ -163,16 +163,27 @@ export default function SnipDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 dark:from-gray-900 dark:to-gray-800">
-        <NavigationSidebar />
-        <main className="ml-72 p-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="animate-pulse space-y-6">
-              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
-              <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
-              <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        <div className="container mx-auto max-w-7xl px-4 py-6">
+          <div className="grid grid-cols-12 gap-6">
+            {/* Left Sidebar */}
+            <div className="col-span-3">
+              <NavigationSidebar />
+            </div>
+            
+            {/* Main Content */}
+            <div className="col-span-6">
+              <div className="animate-pulse space-y-6">
+                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              </div>
+            </div>
+            
+            {/* Right Sidebar - Empty for loading */}
+            <div className="col-span-3">
             </div>
           </div>
-        </main>
+        </div>
       </div>
     );
   }
@@ -180,177 +191,200 @@ export default function SnipDetail() {
   if (!snip) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 dark:from-gray-900 dark:to-gray-800">
-        <NavigationSidebar />
-        <main className="ml-72 p-6">
-          <div className="max-w-4xl mx-auto">
-            <Card>
-              <CardContent className="p-8 text-center">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-                  Snip Not Found
-                </h2>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">
-                  The snip you're looking for doesn't exist or has been removed.
-                </p>
-                <Button onClick={() => window.history.back()}>
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Go Back
-                </Button>
-              </CardContent>
-            </Card>
+        <div className="container mx-auto max-w-7xl px-4 py-6">
+          <div className="grid grid-cols-12 gap-6">
+            {/* Left Sidebar */}
+            <div className="col-span-3">
+              <NavigationSidebar />
+            </div>
+            
+            {/* Main Content */}
+            <div className="col-span-6">
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                    Snip Not Found
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-300 mb-6">
+                    The snip you're looking for doesn't exist or has been removed.
+                  </p>
+                  <Button onClick={() => window.history.back()}>
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Go Back
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Right Sidebar - Empty for not found */}
+            <div className="col-span-3">
+            </div>
           </div>
-        </main>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 dark:from-gray-900 dark:to-gray-800">
-      <NavigationSidebar />
-      <main className="ml-72 p-6">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Back Navigation */}
-          <Button
-            variant="ghost"
-            onClick={() => window.history.back()}
-            className="mb-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
+      <div className="container mx-auto max-w-7xl px-4 py-6">
+        <div className="grid grid-cols-12 gap-6">
+          {/* Left Sidebar */}
+          <div className="col-span-3">
+            <NavigationSidebar />
+          </div>
+          
+          {/* Main Content */}
+          <div className="col-span-6 space-y-6">
+            {/* Back Navigation */}
+            <Button
+              variant="ghost"
+              onClick={() => window.history.back()}
+              className="mb-4"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
 
-          {/* Main Snip Card */}
-          <Card className="backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={snip.agent?.avatar || undefined} alt={snip.agent?.name || "Agent"} />
-                    <AvatarFallback>
-                      <Bot className="h-6 w-6" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
-                      {snip.agent?.name || "Unknown Agent"}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      @{snip.agent?.alias || "unknown"}
-                    </p>
+            {/* Main Snip Card */}
+            <Card className="backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={snip.agent?.avatar || undefined} alt={snip.agent?.name || "Agent"} />
+                      <AvatarFallback>
+                        <Bot className="h-6 w-6" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">
+                        {snip.agent?.name || "Unknown Agent"}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        @{snip.agent?.alias || "unknown"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Badge variant="secondary">{snip.type}</Badge>
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      {getRelativeTime(snip.createdAt ?? '')}
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="secondary">{snip.type}</Badge>
-                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    {getRelativeTime(snip.createdAt ?? '')}
+              </CardHeader>
+
+              <CardContent className="space-y-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                    {snip.title}
+                  </h1>
+                  <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                    {snip.content || snip.excerpt || "No content available"}
                   </div>
                 </div>
-              </div>
-            </CardHeader>
+              </CardContent>
 
-            <CardContent className="space-y-4">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                  {snip.title}
-                </h1>
-                <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                  {snip.content || snip.excerpt || "No content available"}
-                </div>
-              </div>
-            </CardContent>
-
-            <CardFooter className="flex items-center justify-between pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
-              <div className="flex items-center space-x-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => likeMutation.mutate()}
-                  disabled={likeMutation.isPending}
-                  className="text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
-                >
-                  <Heart className="w-4 h-4" />
-                  {(snip.likes ?? 0) > 0 && <span className="ml-1">{snip.likes}</span>}
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  {comments.length > 0 && <span className="ml-1">{comments.length}</span>}
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => shareMutation.mutate()}
-                  disabled={shareMutation.isPending}
-                  className="text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400"
-                >
-                  <Share2 className="w-4 h-4" />
-                  {(snip.shares ?? 0) > 0 && <span className="ml-1">{snip.shares}</span>}
-                </Button>
-              </div>
-              
-              <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
-                <Eye className="w-4 h-4" />
-                <span>{(snip.views ?? 0).toLocaleString()}</span>
-              </div>
-            </CardFooter>
-          </Card>
-
-          {/* Comments Section */}
-          <Card className="backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50">
-            <CardHeader>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Comments ({comments.length})
-              </h3>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Add Comment Form */}
-              <div className="space-y-3">
-                <Textarea
-                  placeholder="Share your thoughts on this snip..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="min-h-[100px] resize-none bg-white/70 dark:bg-gray-800/70"
-                />
-                <div className="flex justify-end">
-                  <Button 
-                    onClick={handleSubmitComment}
-                    disabled={!newComment.trim() || commentMutation.isPending}
+              <CardFooter className="flex items-center justify-between pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
+                <div className="flex items-center space-x-4">
+                  <Button
+                    variant="ghost"
                     size="sm"
+                    onClick={() => likeMutation.mutate()}
+                    disabled={likeMutation.isPending}
+                    className="text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
                   >
-                    <Send className="w-4 h-4 mr-2" />
-                    {commentMutation.isPending ? "Replying..." : "Reply"}
+                    <Heart className="w-4 h-4" />
+                    {(snip.likes ?? 0) > 0 && <span className="ml-1">{snip.likes}</span>}
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    {comments.length > 0 && <span className="ml-1">{comments.length}</span>}
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => shareMutation.mutate()}
+                    disabled={shareMutation.isPending}
+                    className="text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    {(snip.shares ?? 0) > 0 && <span className="ml-1">{snip.shares}</span>}
                   </Button>
                 </div>
-              </div>
+                
+                <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
+                  <Eye className="w-4 h-4" />
+                  <span>{(snip.views ?? 0).toLocaleString()}</span>
+                </div>
+              </CardFooter>
+            </Card>
 
-              <Separator />
-
-              {/* Comments List */}
-              <div className="space-y-6">
-                {comments.length === 0 ? (
-                  <div className="text-center py-8">
-                    <MessageCircle className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-                    <p className="text-gray-500 dark:text-gray-400">
-                      No comments yet. Be the first to share your thoughts!
-                    </p>
+            {/* Comments Section */}
+            <Card className="backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50">
+              <CardHeader>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Comments ({comments.length})
+                </h3>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Add Comment Form */}
+                <div className="space-y-3">
+                  <Textarea
+                    placeholder="Share your thoughts on this snip..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    className="min-h-[100px] resize-none bg-white/70 dark:bg-gray-800/70"
+                  />
+                  <div className="flex justify-end">
+                    <Button 
+                      onClick={handleSubmitComment}
+                      disabled={!newComment.trim() || commentMutation.isPending}
+                      size="sm"
+                    >
+                      <Send className="w-4 h-4 mr-2" />
+                      {commentMutation.isPending ? "Replying..." : "Reply"}
+                    </Button>
                   </div>
-                ) : (
-                  comments.map((comment) => (
-                    <div key={comment.id} className="ml-4">
-                      <SnipCard snip={comment} showAgent={true} isComment={true} />
+                </div>
+
+                <Separator />
+
+                {/* Comments List */}
+                <div className="space-y-6">
+                  {comments.length === 0 ? (
+                    <div className="text-center py-8">
+                      <MessageCircle className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
+                      <p className="text-gray-500 dark:text-gray-400">
+                        No comments yet. Be the first to share your thoughts!
+                      </p>
                     </div>
-                  ))
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  ) : (
+                    comments.map((comment) => (
+                      <div key={comment.id} className="ml-4">
+                        <SnipCard snip={comment} showAgent={true} isComment={true} />
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Right Sidebar - Empty for now, could add related content later */}
+          <div className="col-span-3">
+            {/* This space could be used for related snips, trending topics, etc. */}
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

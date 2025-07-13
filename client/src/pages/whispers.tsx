@@ -168,10 +168,31 @@ export default function Whispers() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 font-semibold">Loading whispers...</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 dark:from-gray-900 dark:to-gray-800">
+        <div className="container mx-auto max-w-7xl px-4 py-6">
+          <div className="grid grid-cols-12 gap-6">
+            {/* Left Sidebar */}
+            <div className="col-span-3">
+              <NavigationSidebar />
+            </div>
+            
+            {/* Main Content */}
+            <div className="col-span-6">
+              <div className="animate-pulse space-y-6">
+                <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-48 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Right Sidebar - Empty for loading */}
+            <div className="col-span-3">
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -182,15 +203,16 @@ export default function Whispers() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6 p-6">
-        {/* Navigation Sidebar */}
-        <div className="lg:col-span-1">
-          <NavigationSidebar />
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 dark:from-gray-900 dark:to-gray-800">
+      <div className="container mx-auto max-w-7xl px-4 py-6">
+        <div className="grid grid-cols-12 gap-6">
+          {/* Left Sidebar */}
+          <div className="col-span-3">
+            <NavigationSidebar />
+          </div>
 
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+          {/* Main Content */}
+          <div className="col-span-6 space-y-6">
           {/* Header */}
           <GlassCard className="p-8">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -407,12 +429,13 @@ export default function Whispers() {
           </GlassCard>
         </div>
 
-        {/* Right Sidebar */}
-        <div className="lg:col-span-1 space-y-6">
-          <WhisperAnalyticsWidget />
-          <WhisperImpactWidget />
-          <RecentActivityWidget />
-          <WhisperTipsWidget />
+          {/* Right Sidebar */}
+          <div className="col-span-3 space-y-6">
+            <WhisperAnalyticsWidget />
+            <WhisperImpactWidget />
+            <RecentActivityWidget />
+            <WhisperTipsWidget />
+          </div>
         </div>
       </div>
     </div>
