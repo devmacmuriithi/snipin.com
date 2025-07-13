@@ -20,6 +20,7 @@ import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
 import MemPod from "@/pages/mempod";
 import SnipDetail from "@/pages/snip-detail";
+import WhisperDetail from "@/pages/whisper-detail";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -32,6 +33,7 @@ function Router() {
         <>
           <Route path="/" component={Dashboard} />
           <Route path="/whispers" component={Whispers} />
+          <Route path="/whisper/:id" component={WhisperDetail} />
           <Route path="/messages" component={Messages} />
           <Route path="/snips" component={Snips} />
           <Route path="/snip/:id" component={SnipDetail} />

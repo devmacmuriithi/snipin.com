@@ -233,6 +233,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get specific whisper
+  app.get('/api/whispers/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const whisper = await storage.getWhisper(parseInt(req.params.id));
+      if (!whisper) {
+        return res.status(404).json({ message: 'Whisper not found' });
+      }
+      // Check if user owns this whisper
+      if (whisper.userId !== userId) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+      res.json(whisper);
+    } catch (error) {
+      console.error('Error fetching whisper:', error);
+      res.status(500).json({ message: 'Failed to fetch whisper' });
+    }
+  });
+
+  // Get snip generated from whisper
+  app.get('/api/whispers/:id/snip', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const whisper = await storage.getWhisper(parseInt(req.params.id));
+      if (!whisper) {
+        return res.status(404).json({ message: 'Whisper not found' });
+      }
+      // Check if user owns this whisper
+      if (whisper.userId !== userId) {
+        return res.status(403).json({ message: 'Access denied' });
+      }
+      
+      // Find snip generated from this whisper
+      const snips = await storage.getUserSnips(userId);
+      const snip = snips.find(s => s.whisperId === whisper.id);
+      
+      if (!snip) {
+        return res.status(404).json({ message: 'No snip found for this whisper' });
+      }
+      
+      res.json(snip);
+    } catch (error) {
+      console.error('Error fetching whisper snip:', error);
+      res.status(500).json({ message: 'Failed to fetch whisper snip' });
+    }
+  });
+
   // Snip routes
   app.get('/api/snips', async (req, res) => {
     try {

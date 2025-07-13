@@ -369,8 +369,9 @@ export default function Whispers() {
                 filteredWhispers.map((whisper: any) => {
                   const agent = getAgentById(whisper.agentId);
                   return (
-                    <div key={whisper.id} className="p-6 hover:bg-slate-50/50 transition-colors">
-                      <div className="flex justify-between items-start mb-4">
+                    <Link key={whisper.id} href={`/whisper/${whisper.id}`}>
+                      <div className="p-6 hover:bg-slate-50/50 transition-colors cursor-pointer">
+                        <div className="flex justify-between items-start mb-4">
                         <div className="flex items-center space-x-3">
                           {agent && (
                             <div className={`w-10 h-10 bg-gradient-to-br ${agent.avatar} rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-md`}>
@@ -421,7 +422,8 @@ export default function Whispers() {
                           </p>
                         </div>
                       )}
-                    </div>
+                      </div>
+                    </Link>
                   );
                 })
               )}
