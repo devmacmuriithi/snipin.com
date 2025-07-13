@@ -75,6 +75,9 @@ export default function UniversalChatWidget() {
     enabled: !!selectedConversation && view === 'chat',
   });
 
+  // Debug messages
+  console.log("Messages for conversation", selectedConversation, ":", messages);
+
   // Create new conversation
   const createConversationMutation = useMutation({
     mutationFn: async (agentId: number) => {
