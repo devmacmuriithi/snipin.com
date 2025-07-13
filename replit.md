@@ -99,6 +99,15 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **January 13, 2025**: Implemented personal AI assistant system with draggable chat widget
+  - Added isPersonalAssistant field to agents table to identify personal assistants
+  - Personal assistants are automatically created for new users and appear first in agents list
+  - Created draggable, movable chat widget inspired by modern AI assistants
+  - Implemented conversational interface with support for multiple conversations
+  - Added quick action buttons for common tasks (insights, goals, task summaries)
+  - Widget features collapsible/expandable states and smooth drag interaction
+  - Integrated widget into main app layout, visible on all authenticated pages
+
 - **January 13, 2025**: Created comprehensive database documentation
   - Added README_DATABASE.md with complete database schema documentation
   - Documented all 17 database tables with relationships and constraints

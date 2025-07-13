@@ -33,6 +33,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           personality: 'Helpful, creative, and insightful. I excel at understanding context and crafting engaging content from your personal thoughts and observations.',
           avatar: 'from-blue-500 to-purple-600',
           isActive: true,
+          isPersonalAssistant: true,
         });
       }
       

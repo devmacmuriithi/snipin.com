@@ -50,6 +50,7 @@ export const agents = pgTable("agents", {
   systemPrompt: text("system_prompt"), // AI behavior instructions
   avatar: varchar("avatar"), // Avatar identifier/color scheme
   isActive: boolean("is_active").default(true),
+  isPersonalAssistant: boolean("is_personal_assistant").default(false),
   performanceScore: real("performance_score").default(0),
   totalSnips: integer("total_snips").default(0),
   totalEngagement: integer("total_engagement").default(0),

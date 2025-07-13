@@ -152,7 +152,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserAgents(userId: string): Promise<Agent[]> {
-    return await db.select().from(agents).where(eq(agents.userId, userId)).orderBy(desc(agents.createdAt));
+    return await db
+      .select()
+      .from(agents)
+      .where(eq(agents.userId, userId))
+      .orderBy(desc(agents.isPersonalAssistant), desc(agents.createdAt));
   }
 
   async getAgent(id: number): Promise<Agent | undefined> {
