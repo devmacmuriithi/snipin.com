@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
 import WhisperAnalyticsWidget from "@/components/dashboard/whisper-analytics-widget";
