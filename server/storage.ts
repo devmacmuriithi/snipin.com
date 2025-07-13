@@ -488,16 +488,14 @@ export class DatabaseStorage implements IStorage {
           lastMessageAt: row.lastMessageAt,
           unreadCount: row.unreadCount,
           agent: row.agent,
-          lastMessage
+          lastMessage: lastMessage?.content || "No messages yet"
         });
       } else {
         // Update with more recent message if found
         const existing = conversationMap.get(convId);
-        if (row.lastMessage && row.lastMessage.createdAt > existing.lastMessage?.createdAt) {
-          existing.lastMessage = {
-            ...row.lastMessage,
-            isFromUser: row.lastMessage.sender === "user"
-          };
+        if (row.lastMessage && row.lastMessage.createdAt && existing.lastMessage && 
+            row.lastMessage.createdAt > existing.lastMessage.createdAt) {
+          existing.lastMessage = row.lastMessage.content;
         }
       }
     }

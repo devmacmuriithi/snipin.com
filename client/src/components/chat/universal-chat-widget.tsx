@@ -59,7 +59,7 @@ export default function UniversalChatWidget() {
   // Get all user agents
   const { data: agents = [] } = useQuery({
     queryKey: ["/api/agents"],
-    enabled: !!user && (view === 'new-chat' || isOpen),
+    enabled: !!user && isOpen,
   });
 
   // Get all conversations
@@ -86,6 +86,9 @@ export default function UniversalChatWidget() {
       setSelectedConversation(conversation.id);
       setView('chat');
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+    },
+    onError: (error) => {
+      console.error("Error creating conversation:", error);
     }
   });
 
@@ -101,6 +104,9 @@ export default function UniversalChatWidget() {
       setNewMessage("");
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", selectedConversation, "messages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+    },
+    onError: (error) => {
+      console.error("Error sending message:", error);
     }
   });
 
@@ -122,23 +128,26 @@ export default function UniversalChatWidget() {
 
   const startNewChat = (agent: Agent) => {
     setSelectedAgent(agent);
+    setSearchQuery(""); // Clear search when starting new chat
     createConversationMutation.mutate(agent.id);
   };
 
   const openConversation = (conversation: Conversation) => {
     setSelectedConversation(conversation.id);
     setSelectedAgent(conversation.agent);
+    setSearchQuery(""); // Clear search when opening conversation
     setView('chat');
   };
 
   const filteredAgents = agents.filter((agent: Agent) => 
-    agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    agent.isActive
+    searchQuery === "" || 
+    agent.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const filteredConversations = conversations.filter((conv: Conversation) =>
+    searchQuery === "" ||
     conv.agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    conv.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
+    (conv.lastMessage && conv.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   if (!user) return null;
@@ -251,7 +260,7 @@ export default function UniversalChatWidget() {
                                 </span>
                               </div>
                               <p className="text-sm text-gray-500 truncate">
-                                {conversation.lastMessage}
+                                {conversation.lastMessage || "No messages yet"}
                               </p>
                             </div>
                             {conversation.unreadCount > 0 && (
@@ -307,33 +316,43 @@ export default function UniversalChatWidget() {
 
                 <CardContent className="p-0">
                   <ScrollArea className="h-[480px]">
-                    <div className="p-2 space-y-1">
-                      {filteredAgents.map((agent: Agent) => (
-                        <div
-                          key={agent.id}
-                          onClick={() => startNewChat(agent)}
-                          className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                        >
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={agent.avatar} alt={agent.name} />
-                            <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                              <Bot className="h-5 w-5" />
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-gray-900 truncate">{agent.name}</h4>
-                            <div className="flex items-center space-x-2">
-                              <div className={`w-2 h-2 rounded-full ${
-                                agent.isActive ? 'bg-green-500' : 'bg-gray-400'
-                              }`} />
-                              <span className="text-xs text-gray-500">
-                                {agent.isActive ? 'Active' : 'Inactive'}
-                              </span>
+                    {filteredAgents.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+                        <Bot className="h-12 w-12 text-gray-400 mb-4" />
+                        <h3 className="font-medium text-gray-900 mb-2">No agents found</h3>
+                        <p className="text-sm text-gray-500">
+                          {searchQuery ? "Try adjusting your search" : "You don't have any agents yet"}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="p-2 space-y-1">
+                        {filteredAgents.map((agent: Agent) => (
+                          <div
+                            key={agent.id}
+                            onClick={() => startNewChat(agent)}
+                            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                          >
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={agent.avatar} alt={agent.name} />
+                              <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                                <Bot className="h-5 w-5" />
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-gray-900 truncate">{agent.name}</h4>
+                              <div className="flex items-center space-x-2">
+                                <div className={`w-2 h-2 rounded-full ${
+                                  agent.isActive ? 'bg-green-500' : 'bg-gray-400'
+                                }`} />
+                                <span className="text-xs text-gray-500">
+                                  {agent.isActive ? 'Active' : 'Inactive'}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    )}
                   </ScrollArea>
                 </CardContent>
               </>
@@ -378,22 +397,30 @@ export default function UniversalChatWidget() {
                   {/* Messages area */}
                   <ScrollArea className="flex-1 h-[400px]">
                     <div className="p-4 space-y-3">
-                      {messages.map((message: Message) => (
-                        <div
-                          key={message.id}
-                          className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
-                        >
-                          <div
-                            className={`max-w-[80%] p-3 rounded-2xl text-sm ${
-                              message.sender === "user"
-                                ? "bg-blue-500 text-white"
-                                : "bg-gray-100 text-gray-800"
-                            }`}
-                          >
-                            {message.content}
-                          </div>
+                      {messages.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-32 text-center">
+                          <MessageSquare className="h-8 w-8 text-gray-400 mb-2" />
+                          <p className="text-sm text-gray-500">No messages yet</p>
+                          <p className="text-xs text-gray-400">Start the conversation below</p>
                         </div>
-                      ))}
+                      ) : (
+                        messages.map((message: Message) => (
+                          <div
+                            key={message.id}
+                            className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
+                          >
+                            <div
+                              className={`max-w-[80%] p-3 rounded-2xl text-sm ${
+                                message.sender === "user"
+                                  ? "bg-blue-500 text-white"
+                                  : "bg-gray-100 text-gray-800"
+                              }`}
+                            >
+                              {message.content}
+                            </div>
+                          </div>
+                        ))
+                      )}
                       <div ref={messagesEndRef} />
                     </div>
                   </ScrollArea>
