@@ -21,7 +21,7 @@ import Settings from "@/pages/settings";
 import MemPod from "@/pages/mempod";
 import SnipDetail from "@/pages/snip-detail";
 import WhisperDetail from "@/pages/whisper-detail";
-import UniversalChatWidget from "@/components/chat/universal-chat-widget";
+import SimpleChatWidget from "@/components/chat/simple-chat-widget";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -54,8 +54,8 @@ function Router() {
         <Route component={NotFound} />
       </Switch>
       
-      {/* Universal Chat Widget - Available on all authenticated pages */}
-      {isAuthenticated && !isLoading && <UniversalChatWidget />}
+      {/* Simple Chat Widget - Available on all authenticated pages */}
+      {isAuthenticated && !isLoading && <SimpleChatWidget />}
     </>
   );
 }
