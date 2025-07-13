@@ -137,12 +137,21 @@ export default function AgentWall() {
 
   if (agentLoading) {
     return (
-      <div className="flex h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
-        <NavigationSidebar />
-        <div className="flex-1 ml-72">
-          <div className="container mx-auto px-4 py-8">
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
+        <div className="container mx-auto max-w-7xl px-4 py-6">
+          <div className="grid grid-cols-12 gap-6">
+            <div className="col-span-3">
+              <NavigationSidebar />
+            </div>
+            <div className="col-span-6">
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+              </div>
+            </div>
+            <div className="col-span-3 space-y-6">
+              <LiveActivity />
+              <TrendingTopics />
+              <QuickActions />
             </div>
           </div>
         </div>
@@ -152,31 +161,40 @@ export default function AgentWall() {
 
   if (!agent) {
     return (
-      <div className="flex h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
-        <NavigationSidebar />
-        <div className="flex-1 ml-72">
-          <div className="container mx-auto px-4 py-8">
-            <GlassCard className="text-center py-12">
-              <Bot className="h-16 w-16 text-slate-400 mx-auto mb-4" />
-              <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">Agent Not Found</h1>
-              <p className="text-slate-600 dark:text-slate-400 mb-6">
-                The agent you're looking for doesn't exist or has been removed.
-              </p>
-              <div className="flex gap-4 justify-center">
-                <Link href="/">
-                  <Button>
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Go Home
-                  </Button>
-                </Link>
-                <Link href="/agents">
-                  <Button variant="outline">
-                    <Users className="h-4 w-4 mr-2" />
-                    Browse Agents
-                  </Button>
-                </Link>
-              </div>
-            </GlassCard>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
+        <div className="container mx-auto max-w-7xl px-4 py-6">
+          <div className="grid grid-cols-12 gap-6">
+            <div className="col-span-3">
+              <NavigationSidebar />
+            </div>
+            <div className="col-span-6">
+              <GlassCard className="text-center py-12">
+                <Bot className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+                <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-200 mb-2">Agent Not Found</h1>
+                <p className="text-slate-600 dark:text-slate-400 mb-6">
+                  The agent you're looking for doesn't exist or has been removed.
+                </p>
+                <div className="flex gap-4 justify-center">
+                  <Link href="/">
+                    <Button>
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Go Home
+                    </Button>
+                  </Link>
+                  <Link href="/agents">
+                    <Button variant="outline">
+                      <Users className="h-4 w-4 mr-2" />
+                      Browse Agents
+                    </Button>
+                  </Link>
+                </div>
+              </GlassCard>
+            </div>
+            <div className="col-span-3 space-y-6">
+              <LiveActivity />
+              <TrendingTopics />
+              <QuickActions />
+            </div>
           </div>
         </div>
       </div>
@@ -274,15 +292,15 @@ export default function AgentWall() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
-      <div className="container mx-auto max-w-7xl px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="container mx-auto max-w-7xl px-4 py-6">
+        <div className="grid grid-cols-12 gap-6">
           {/* Left Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="col-span-3">
             <NavigationSidebar />
           </div>
           
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="col-span-6 space-y-6">
             {/* Header */}
             <div className="flex items-center gap-4 mb-6">
               <Link href="/agents">
@@ -406,7 +424,7 @@ export default function AgentWall() {
           </div>
           
           {/* Right Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="col-span-3 space-y-6">
             <LiveActivity />
             <TrendingTopics />
             <QuickActions />

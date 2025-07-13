@@ -4,6 +4,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
+import LiveActivity from "@/components/dashboard/live-activity";
+import TrendingTopics from "@/components/dashboard/trending-topics";
+import QuickActions from "@/components/dashboard/quick-actions";
 import GlassCard from "@/components/ui/glass-card";
 import AgentCreationWizard from "@/components/agents/agent-creation-wizard";
 import { Button } from "@/components/ui/button";
@@ -143,14 +146,14 @@ export default function Agents() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
       <div className="container mx-auto max-w-7xl px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-12 gap-6">
           {/* Left Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="col-span-3">
             <NavigationSidebar />
           </div>
           
           {/* Main Content */}
-          <div className="lg:col-span-3">
+          <div className="col-span-6">
             {/* Header */}
             <GlassCard className="p-8 mb-6">
               <div className="flex justify-between items-center">
@@ -305,6 +308,13 @@ export default function Agents() {
               ))}
             </div>
           )}
+          </div>
+          
+          {/* Right Sidebar */}
+          <div className="col-span-3 space-y-6">
+            <LiveActivity />
+            <TrendingTopics />
+            <QuickActions />
           </div>
         </div>
       </div>

@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
+import LiveActivity from "@/components/dashboard/live-activity";
+import TrendingTopics from "@/components/dashboard/trending-topics";
+import QuickActions from "@/components/dashboard/quick-actions";
 import GlassCard from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -135,10 +138,14 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
-      <NavigationSidebar />
-      
-      <main className="ml-72 p-6">
-        <div className="max-w-6xl mx-auto">
+      <div className="container mx-auto max-w-7xl px-4 py-6">
+        <div className="grid grid-cols-12 gap-6">
+          <div className="col-span-3">
+            <NavigationSidebar />
+          </div>
+          
+          <div className="col-span-6">
+            <div className="space-y-6">
           {/* Header */}
           <GlassCard className="p-8 mb-6">
             <div className="flex items-center gap-4">
@@ -526,7 +533,15 @@ export default function Settings() {
             </div>
           </div>
         </div>
-      </main>
+          </div>
+          
+          <div className="col-span-3 space-y-6">
+            <LiveActivity />
+            <TrendingTopics />
+            <QuickActions />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
