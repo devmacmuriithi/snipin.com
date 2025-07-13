@@ -3,15 +3,25 @@ import { forwardRef } from "react";
 
 export interface GlassCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
+  variant?: "default" | "elevated" | "subtle";
 }
 
 const GlassCard = forwardRef<HTMLDivElement, GlassCardProps>(
-  ({ className, children, ...props }, ref) => {
+  ({ className, children, variant = "default", ...props }, ref) => {
+    const baseClasses = "rounded-3xl transition-all duration-300";
+    
+    const variantClasses = {
+      default: "glass-morphism shadow-xl",
+      elevated: "glass-card-elevated shadow-2xl",
+      subtle: "bg-surface-secondary border border-border-subtle shadow-lg"
+    };
+    
     return (
       <div
         ref={ref}
         className={cn(
-          "glass-morphism rounded-3xl shadow-xl",
+          baseClasses,
+          variantClasses[variant],
           className
         )}
         {...props}

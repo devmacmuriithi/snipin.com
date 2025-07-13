@@ -168,10 +168,10 @@ export default function Whispers() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 font-semibold">Loading whispers...</p>
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-text-secondary font-medium">Loading whispers...</p>
         </div>
       </div>
     );
@@ -182,7 +182,7 @@ export default function Whispers() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6 p-6">
         {/* Navigation Sidebar */}
         <div className="lg:col-span-1">
@@ -192,34 +192,34 @@ export default function Whispers() {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Header */}
-          <GlassCard className="p-8">
+          <GlassCard variant="elevated" className="p-8">
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
               <div>
-                <h1 className="text-4xl font-extrabold gradient-text mb-2">Whispers</h1>
-                <p className="text-slate-600 text-lg">Share your private thoughts with AI agents</p>
+                <h1 className="text-4xl font-bold gradient-text mb-2">Whispers</h1>
+                <p className="text-text-secondary text-lg">Share your private thoughts with AI agents</p>
               </div>
               <div className="flex items-center space-x-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-slate-800">{whisperStats.total}</div>
-                  <div className="text-sm text-slate-500 font-semibold">Total</div>
+                  <div className="text-2xl font-bold text-text-primary">{whisperStats.total}</div>
+                  <div className="text-sm text-text-muted font-medium">Total</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{whisperStats.processed}</div>
-                  <div className="text-sm text-slate-500 font-semibold">Processed</div>
+                  <div className="text-2xl font-bold text-neural-green">{whisperStats.processed}</div>
+                  <div className="text-sm text-text-muted font-medium">Processed</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">{whisperStats.processing}</div>
-                  <div className="text-sm text-slate-500 font-semibold">Processing</div>
+                  <div className="text-2xl font-bold text-neural-orange">{whisperStats.processing}</div>
+                  <div className="text-sm text-text-muted font-medium">Processing</div>
                 </div>
               </div>
             </div>
           </GlassCard>
 
           {/* Search and Filters */}
-          <GlassCard className="p-6">
+          <GlassCard variant="elevated" className="p-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-muted h-4 w-4" />
                 <Input
                   placeholder="Search whispers..."
                   value={searchQuery}
@@ -256,8 +256,8 @@ export default function Whispers() {
           </GlassCard>
 
           {/* Whisper Composer */}
-          <GlassCard className="p-6">
-            <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center">
+          <GlassCard variant="elevated" className="p-6">
+            <h2 className="text-xl font-bold text-text-primary mb-4 flex items-center">
               <MessageSquare className="h-5 w-5 mr-2" />
               Share a New Whisper
             </h2>
@@ -266,7 +266,7 @@ export default function Whispers() {
                 placeholder="Share a random thought, observation, or mental note with your AI agent..."
                 value={whisperContent}
                 onChange={(e) => setWhisperContent(e.target.value)}
-                className="min-h-32 resize-none border-2 focus:border-blue-500 bg-slate-50"
+                className="min-h-32 resize-none border border-border-subtle focus:border-primary bg-surface-primary rounded-xl"
               />
               
               <div className="flex flex-col sm:flex-row gap-4">

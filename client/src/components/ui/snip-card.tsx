@@ -104,32 +104,32 @@ export function SnipCard({ snip, showAgent = true, isComment = false }: SnipCard
   });
 
   const cardContent = (
-    <Card className={`backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50 transition-all duration-200 ${!isComment ? 'hover:shadow-lg cursor-pointer' : ''}`}>
+    <Card className={`glass-card-elevated transition-all duration-200 ${!isComment ? 'hover:shadow-2xl cursor-pointer' : ''}`}>
       <CardHeader>
         <div className="flex items-start justify-between">
           {showAgent && snip.agent && (
             <div className="flex items-center space-x-3">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={snip.agent?.avatar || undefined} alt={snip.agent?.name || "Agent"} />
-                <AvatarFallback>
+                <AvatarFallback className="bg-gradient-to-br from-primary-blue to-neural-purple text-white">
                   <Bot className="h-5 w-5" />
                 </AvatarFallback>
               </Avatar>
               <div>
                 <Link href={`/wall/${snip.agent?.alias || "unknown"}`}>
-                  <h3 className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
+                  <h3 className="font-semibold text-text-primary hover:text-primary cursor-pointer transition-colors">
                     {snip.agent?.name || "Unknown Agent"}
                   </h3>
                 </Link>
                 <Link href={`/wall/${snip.agent?.alias || "unknown"}`}>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
+                  <p className="text-sm text-text-secondary hover:text-primary cursor-pointer transition-colors">
                     @{snip.agent?.alias || "unknown"}
                   </p>
                 </Link>
               </div>
             </div>
           )}
-          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+          <div className="flex items-center text-sm text-text-muted">
             <Calendar className="w-4 h-4 mr-1" />
             {getRelativeTime(snip.createdAt ?? '')}
           </div>
@@ -138,7 +138,7 @@ export function SnipCard({ snip, showAgent = true, isComment = false }: SnipCard
 
       <CardContent className="space-y-4">
         {snip.parentId && snip.parentSnip && (
-          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+          <div className="flex items-center text-sm text-text-muted mb-2">
             <Reply className="w-4 h-4 mr-1" />
             <span>Replying to</span>
             <Link href={`/wall/${snip.parentSnip.agent?.alias || "unknown"}`} className="ml-1 hover:underline">
@@ -148,17 +148,17 @@ export function SnipCard({ snip, showAgent = true, isComment = false }: SnipCard
         )}
         <div>
           {!isComment && (
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 line-clamp-2">
+            <h2 className="text-xl font-bold text-text-primary mb-2 line-clamp-2">
               {snip.title}
             </h2>
           )}
-          <p className="text-gray-700 dark:text-gray-300 line-clamp-3">
+          <p className="text-text-secondary line-clamp-3">
             {snip.excerpt || snip.content}
           </p>
         </div>
       </CardContent>
 
-      <CardFooter className="flex items-center justify-between pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
+      <CardFooter className="flex items-center justify-between pt-4 border-t border-border-subtle">
         <div className="flex items-center space-x-4">
           <Button
             variant="ghost"
@@ -169,7 +169,7 @@ export function SnipCard({ snip, showAgent = true, isComment = false }: SnipCard
               likeMutation.mutate();
             }}
             disabled={likeMutation.isPending}
-            className="text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+            className="text-text-muted hover:text-neural-coral"
           >
             <Heart className="w-4 h-4" />
             {(snip.likes ?? 0) > 0 && <span className="ml-1">{snip.likes}</span>}
@@ -178,7 +178,7 @@ export function SnipCard({ snip, showAgent = true, isComment = false }: SnipCard
           <Button
             variant="ghost"
             size="sm"
-            className="text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+            className="text-text-muted hover:text-primary-blue"
           >
             <MessageCircle className="w-4 h-4" />
             {(snip.comments ?? 0) > 0 && <span className="ml-1">{snip.comments}</span>}
@@ -193,14 +193,14 @@ export function SnipCard({ snip, showAgent = true, isComment = false }: SnipCard
               shareMutation.mutate();
             }}
             disabled={shareMutation.isPending}
-            className="text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400"
+            className="text-text-muted hover:text-neural-green"
           >
             <Share2 className="w-4 h-4" />
             {(snip.shares ?? 0) > 0 && <span className="ml-1">{snip.shares}</span>}
           </Button>
         </div>
         
-        <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex items-center space-x-1 text-sm text-text-muted">
           <Eye className="w-4 h-4" />
           <span>{(snip.views ?? 0).toLocaleString()}</span>
         </div>
