@@ -52,6 +52,7 @@ export default function UniversalChatWidget() {
   const [view, setView] = useState<'conversations' | 'new-chat' | 'chat'>('conversations');
   const [selectedConversation, setSelectedConversation] = useState<number | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [selectedAgents, setSelectedAgents] = useState<Agent[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -126,16 +127,31 @@ export default function UniversalChatWidget() {
     });
   };
 
-  const startNewChat = (agent: Agent) => {
-    setSelectedAgent(agent);
-    setSearchQuery(""); // Clear search when starting new chat
-    createConversationMutation.mutate(agent.id);
+  const addAgentToChat = (agent: Agent) => {
+    if (!selectedAgents.find(a => a.id === agent.id)) {
+      setSelectedAgents([...selectedAgents, agent]);
+    }
+  };
+
+  const removeAgentFromChat = (agentId: number) => {
+    setSelectedAgents(selectedAgents.filter(a => a.id !== agentId));
+  };
+
+  const startNewChat = () => {
+    if (selectedAgents.length === 0) return;
+    
+    // For now, start with the first agent (can be extended for group chats)
+    const firstAgent = selectedAgents[0];
+    setSelectedAgent(firstAgent);
+    setSearchQuery(""); 
+    createConversationMutation.mutate(firstAgent.id);
   };
 
   const openConversation = (conversation: Conversation) => {
     setSelectedConversation(conversation.id);
     setSelectedAgent(conversation.agent);
-    setSearchQuery(""); // Clear search when opening conversation
+    setSelectedAgents([conversation.agent]);
+    setSearchQuery(""); 
     setView('chat');
   };
 
@@ -285,7 +301,10 @@ export default function UniversalChatWidget() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setView('conversations')}
+                        onClick={() => {
+                          setView('conversations');
+                          setSelectedAgents([]);
+                        }}
                         className="h-8 w-8 p-0"
                       >
                         <ArrowLeft className="h-4 w-4" />
@@ -300,6 +319,41 @@ export default function UniversalChatWidget() {
                     >
                       <X className="h-4 w-4" />
                     </Button>
+                  </div>
+                  
+                  {/* To: field with selected agents */}
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-gray-700">To:</span>
+                      <div className="flex flex-wrap gap-2 flex-1">
+                        {selectedAgents.map((agent) => (
+                          <div
+                            key={agent.id}
+                            className="flex items-center space-x-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs"
+                          >
+                            <span>{agent.name}</span>
+                            <button
+                              onClick={() => removeAgentFromChat(agent.id)}
+                              className="hover:bg-blue-200 rounded-full p-0.5"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                        {selectedAgents.length === 0 && (
+                          <span className="text-sm text-gray-500">Select agents to start chatting</span>
+                        )}
+                      </div>
+                      {selectedAgents.length > 0 && (
+                        <Button
+                          onClick={startNewChat}
+                          size="sm"
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-3"
+                        >
+                          Start Chat
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   
                   {/* Search bar */}
@@ -326,31 +380,41 @@ export default function UniversalChatWidget() {
                       </div>
                     ) : (
                       <div className="p-2 space-y-1">
-                        {filteredAgents.map((agent: Agent) => (
-                          <div
-                            key={agent.id}
-                            onClick={() => startNewChat(agent)}
-                            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                          >
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={agent.avatar} alt={agent.name} />
-                              <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                                <Bot className="h-5 w-5" />
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="font-medium text-gray-900 truncate">{agent.name}</h4>
-                              <div className="flex items-center space-x-2">
-                                <div className={`w-2 h-2 rounded-full ${
-                                  agent.isActive ? 'bg-green-500' : 'bg-gray-400'
-                                }`} />
-                                <span className="text-xs text-gray-500">
-                                  {agent.isActive ? 'Active' : 'Inactive'}
-                                </span>
+                        {filteredAgents.map((agent: Agent) => {
+                          const isSelected = selectedAgents.find(a => a.id === agent.id);
+                          return (
+                            <div
+                              key={agent.id}
+                              onClick={() => addAgentToChat(agent)}
+                              className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors ${
+                                isSelected ? 'bg-blue-50 border-2 border-blue-200' : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              <Avatar className="h-10 w-10">
+                                <AvatarImage src={agent.avatar} alt={agent.name} />
+                                <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                                  <Bot className="h-5 w-5" />
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-medium text-gray-900 truncate">{agent.name}</h4>
+                                <div className="flex items-center space-x-2">
+                                  <div className={`w-2 h-2 rounded-full ${
+                                    agent.isActive ? 'bg-green-500' : 'bg-gray-400'
+                                  }`} />
+                                  <span className="text-xs text-gray-500">
+                                    {agent.isActive ? 'Active' : 'Inactive'}
+                                  </span>
+                                </div>
                               </div>
+                              {isSelected && (
+                                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                  <span className="text-white text-xs">✓</span>
+                                </div>
+                              )}
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </ScrollArea>
@@ -365,7 +429,10 @@ export default function UniversalChatWidget() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setView('conversations')}
+                      onClick={() => {
+                        setView('conversations');
+                        setSelectedAgents([]);
+                      }}
                       className="h-8 w-8 p-0"
                     >
                       <ArrowLeft className="h-4 w-4" />

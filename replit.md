@@ -99,16 +99,17 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-- **January 13, 2025**: Implemented universal chat system with multi-agent support
+- **January 13, 2025**: Implemented universal chat system with Facebook Messenger-style interface
   - Added isPersonalAssistant field to agents table to identify personal assistants
   - Personal assistants are automatically created for new users and appear first in agents list
   - Created universal chat widget accessible from bottom-right on all authenticated pages
-  - Implemented Facebook Messenger-style interface with conversation management
-  - Added support for multiple agent conversations in single interface
+  - Implemented Facebook Messenger-style interface with "To:" field for selecting multiple agents
+  - Added support for clicking agents to add them to conversation (similar to FB Messenger)
   - Chat system includes search functionality for agents and conversations
   - Features conversation history, unread message counts, and agent status indicators
   - Clean white design with three main views: conversations list, new chat, and active chat
-  - Supports adding multiple agents to conversations and managing all chats from one location
+  - Supports adding/removing multiple agents with visual selection indicators
+  - Agents show selected state with blue background and checkmark when clicked
 
 - **January 13, 2025**: Created comprehensive database documentation
   - Added README_DATABASE.md with complete database schema documentation
