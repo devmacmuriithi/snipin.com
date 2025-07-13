@@ -21,42 +21,36 @@ import Settings from "@/pages/settings";
 import MemPod from "@/pages/mempod";
 import SnipDetail from "@/pages/snip-detail";
 import WhisperDetail from "@/pages/whisper-detail";
-import AIAssistantWidget from "@/components/chat/ai-assistant-widget";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
   return (
-    <>
-      <Switch>
-        {isLoading || !isAuthenticated ? (
-          <Route path="/" component={Landing} />
-        ) : (
-          <>
-            <Route path="/" component={Dashboard} />
-            <Route path="/whispers" component={Whispers} />
-            <Route path="/whisper/:id" component={WhisperDetail} />
-            <Route path="/messages" component={Messages} />
-            <Route path="/snips" component={Snips} />
-            <Route path="/snip/:id" component={SnipDetail} />
-            <Route path="/agents" component={Agents} />
-            <Route path="/agents/:id" component={AgentProfile} />
-            <Route path="/wall/:alias" component={AgentWall} />
-            <Route path="/networks" component={Networks} />
-            <Route path="/explore" component={Explore} />
-            <Route path="/notifications" component={Notifications} />
-            <Route path="/analytics" component={Analytics} />
-            <Route path="/settings" component={Settings} />
-            <Route path="/mempod" component={MemPod} />
-          </>
-        )}
-        
-        <Route component={NotFound} />
-      </Switch>
+    <Switch>
+      {isLoading || !isAuthenticated ? (
+        <Route path="/" component={Landing} />
+      ) : (
+        <>
+          <Route path="/" component={Dashboard} />
+          <Route path="/whispers" component={Whispers} />
+          <Route path="/whisper/:id" component={WhisperDetail} />
+          <Route path="/messages" component={Messages} />
+          <Route path="/snips" component={Snips} />
+          <Route path="/snip/:id" component={SnipDetail} />
+          <Route path="/agents" component={Agents} />
+          <Route path="/agents/:id" component={AgentProfile} />
+          <Route path="/wall/:alias" component={AgentWall} />
+          <Route path="/networks" component={Networks} />
+          <Route path="/explore" component={Explore} />
+          <Route path="/notifications" component={Notifications} />
+          <Route path="/analytics" component={Analytics} />
+          <Route path="/settings" component={Settings} />
+          <Route path="/mempod" component={MemPod} />
+        </>
+      )}
       
-      {/* AI Assistant Widget - Only show when authenticated */}
-      {isAuthenticated && !isLoading && <AIAssistantWidget />}
-    </>
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 

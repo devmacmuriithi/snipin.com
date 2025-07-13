@@ -4,21 +4,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Bot, 
+  MessageSquare, 
   X, 
-  Minus, 
-  Plus, 
   Send, 
-  User, 
-  RotateCcw, 
-  MessageSquare,
-  Sparkles,
-  BarChart3,
-  Target
+  Bot
 } from "lucide-react";
 
 interface Message {
@@ -41,36 +34,27 @@ interface Conversation {
   };
 }
 
-export default function AIAssistantWidget() {
+interface AgentChatWidgetProps {
+  agentId: number;
+  agentName: string;
+  agentAvatar: string;
+}
+
+export default function AgentChatWidget({ agentId, agentName, agentAvatar }: AgentChatWidgetProps) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
-  const [position, setPosition] = useState({ x: 20, y: 20 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [selectedConversation, setSelectedConversation] = useState<number | null>(null);
   const [newMessage, setNewMessage] = useState("");
-  const [personalAssistant, setPersonalAssistant] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const widgetRef = useRef<HTMLDivElement>(null);
 
-  // Get user's personal assistant
-  const { data: agents } = useQuery({
-    queryKey: ["/api/agents"],
-    enabled: !!user,
-  });
-
-  useEffect(() => {
-    if (agents && agents.length > 0) {
-      // Find personal assistant (should be first due to ordering)
-      const assistant = agents.find((agent: any) => agent.isPersonalAssistant) || agents[0];
-      setPersonalAssistant(assistant);
-    }
-  }, [agents]);
-
-  // Get conversations
+  // Get conversations for this agent
   const { data: conversations = [] } = useQuery({
-    queryKey: ["/api/conversations"],
+    queryKey: ["/api/conversations", agentId],
+    queryFn: async () => {
+      const allConversations = await apiRequest('/api/conversations');
+      return allConversations.filter((conv: Conversation) => conv.agentId === agentId);
+    },
     enabled: !!user && isOpen,
   });
 
@@ -80,9 +64,9 @@ export default function AIAssistantWidget() {
     enabled: !!selectedConversation,
   });
 
-  // Create or get conversation with personal assistant
+  // Create or get conversation with agent
   const createConversationMutation = useMutation({
-    mutationFn: async (agentId: number) => {
+    mutationFn: async () => {
       return await apiRequest(`/api/conversations`, {
         method: "POST",
         body: { agentId }
@@ -91,6 +75,7 @@ export default function AIAssistantWidget() {
     onSuccess: (conversation) => {
       setSelectedConversation(conversation.id);
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", agentId] });
     }
   });
 
@@ -106,6 +91,7 @@ export default function AIAssistantWidget() {
       setNewMessage("");
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", selectedConversation, "messages"] });
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", agentId] });
     }
   });
 
@@ -115,50 +101,6 @@ export default function AIAssistantWidget() {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.target === widgetRef.current || (e.target as HTMLElement).closest('.drag-handle')) {
-      setIsDragging(true);
-      const rect = widgetRef.current?.getBoundingClientRect();
-      if (rect) {
-        setDragOffset({
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
-        });
-      }
-    }
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging && widgetRef.current) {
-      const newX = e.clientX - dragOffset.x;
-      const newY = e.clientY - dragOffset.y;
-      
-      // Keep widget within viewport
-      const maxX = window.innerWidth - widgetRef.current.offsetWidth;
-      const maxY = window.innerHeight - widgetRef.current.offsetHeight;
-      
-      setPosition({
-        x: Math.max(0, Math.min(newX, maxX)),
-        y: Math.max(0, Math.min(newY, maxY))
-      });
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, dragOffset]);
 
   const handleSendMessage = () => {
     if (!newMessage.trim() || !selectedConversation) return;
@@ -170,215 +112,225 @@ export default function AIAssistantWidget() {
   };
 
   const startNewChat = () => {
-    if (personalAssistant) {
-      createConversationMutation.mutate(personalAssistant.id);
-    }
+    createConversationMutation.mutate();
   };
 
-  const getQuickActions = () => [
-    { icon: Sparkles, label: "Give Insights", message: "Can you analyze my recent activity and provide insights?" },
-    { icon: Target, label: "Set Goals", message: "Help me set and track some personal or professional goals." },
-    { icon: BarChart3, label: "Summarize Tasks", message: "Summarize my current tasks and priorities." }
-  ];
+  const openConversation = (conversationId: number) => {
+    setSelectedConversation(conversationId);
+  };
 
-  if (!user || !personalAssistant) return null;
+  if (!user) return null;
 
   return (
-    <div
-      ref={widgetRef}
-      className="fixed z-50 select-none"
-      style={{ 
-        left: position.x, 
-        top: position.y,
-        cursor: isDragging ? 'grabbing' : 'grab'
-      }}
-      onMouseDown={handleMouseDown}
-    >
-      {!isOpen ? (
-        // Collapsed floating button
-        <Button
-          onClick={() => setIsOpen(true)}
-          className="h-14 w-14 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-white/20"
-        >
-          <Bot className="h-6 w-6 text-white" />
-        </Button>
-      ) : (
-        // Expanded chat widget
-        <Card className="w-80 h-96 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
-          <CardHeader className="drag-handle p-3 border-b border-gray-200/50 dark:border-gray-700/50 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="relative">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={personalAssistant.avatar} alt={personalAssistant.name} />
-                    <AvatarFallback className={`text-white bg-gradient-to-r ${personalAssistant.avatar || 'from-blue-500 to-purple-600'}`}>
-                      <Bot className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-gray-800 dark:text-gray-200">AI Assistant</h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{conversations.length} conversations</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsOpen(false)}
-                  className="h-6 w-6 p-0 hover:bg-white/50 dark:hover:bg-gray-800/50"
-                >
-                  <Minus className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsOpen(false)}
-                  className="h-6 w-6 p-0 hover:bg-white/50 dark:hover:bg-gray-800/50"
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
+    <>
+      {/* Floating chat button */}
+      <Button
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-white shadow-lg hover:shadow-xl border border-gray-200 transition-all duration-200"
+        variant="outline"
+      >
+        <MessageSquare className="h-6 w-6 text-gray-600" />
+      </Button>
 
-          <CardContent className="p-0 h-full flex flex-col">
+      {/* Chat modal */}
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+            onClick={() => setIsOpen(false)}
+          />
+          
+          {/* Chat container */}
+          <Card className="relative w-96 h-[500px] bg-white shadow-2xl border-0 rounded-xl overflow-hidden">
             {!selectedConversation ? (
-              // Conversation list or welcome screen
-              <div className="flex-1 p-4 space-y-3">
-                <div className="text-center space-y-2 mb-4">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {conversations.length === 0 ? "No tasks due today" : "Recent conversations"}
-                  </div>
-                  <Button
-                    onClick={startNewChat}
-                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Start New Chat
-                  </Button>
-                </div>
-
-                {conversations.length === 0 ? (
-                  <div className="text-center space-y-3">
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Currently, there are no tasks in your workspace. To create a new task for editing the home page, you can follow these steps:
-                    </p>
-                    <div className="text-left space-y-2">
-                      {getQuickActions().map((action, index) => (
-                        <Button
-                          key={index}
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            startNewChat();
-                            setNewMessage(action.message);
-                          }}
-                          className="w-full justify-start text-xs h-8"
-                        >
-                          <action.icon className="h-3 w-3 mr-2" />
-                          {action.label}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {conversations.map((conv: Conversation) => (
-                      <div
-                        key={conv.id}
-                        onClick={() => setSelectedConversation(conv.id)}
-                        className="p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer border border-gray-200/50 dark:border-gray-700/50"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback className="text-xs">
-                              <Bot className="h-3 w-3" />
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium truncate">{conv.agent.name}</p>
-                            <p className="text-xs text-gray-500 truncate">{conv.lastMessage}</p>
-                          </div>
-                          {conv.unreadCount > 0 && (
-                            <Badge variant="secondary" className="text-xs">
-                              {conv.unreadCount}
-                            </Badge>
-                          )}
-                        </div>
+              // Conversation list or start new chat
+              <>
+                <CardHeader className="p-4 border-b border-gray-100 bg-gray-50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={agentAvatar} alt={agentName} />
+                        <AvatarFallback className={`text-white bg-gradient-to-r ${agentAvatar || 'from-blue-500 to-purple-600'}`}>
+                          <Bot className="h-5 w-5" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">{agentName}</h3>
+                        <p className="text-sm text-gray-500">
+                          {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
+                        </p>
                       </div>
-                    ))}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsOpen(false)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
-                )}
-              </div>
+                </CardHeader>
+
+                <CardContent className="p-0 flex flex-col h-full">
+                  {conversations.length === 0 ? (
+                    // No conversations - show start new chat
+                    <div className="flex-1 flex flex-col items-center justify-center p-6 space-y-4">
+                      <div className="text-center space-y-2">
+                        <h4 className="font-medium text-gray-900">Start a conversation</h4>
+                        <p className="text-sm text-gray-500">
+                          Send a message to {agentName} to get started
+                        </p>
+                      </div>
+                      <Button
+                        onClick={startNewChat}
+                        className="bg-blue-500 hover:bg-blue-600 text-white"
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        New message
+                      </Button>
+                    </div>
+                  ) : (
+                    // Show conversations list
+                    <div className="flex-1 overflow-y-auto">
+                      <div className="p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-gray-900">Recent conversations</h4>
+                          <Button
+                            onClick={startNewChat}
+                            size="sm"
+                            variant="outline"
+                            className="text-xs"
+                          >
+                            New
+                          </Button>
+                        </div>
+                        
+                        {conversations.map((conv: Conversation) => (
+                          <div
+                            key={conv.id}
+                            onClick={() => openConversation(conv.id)}
+                            className="p-3 rounded-lg hover:bg-gray-50 cursor-pointer border border-gray-100 transition-colors"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarFallback className="text-xs">
+                                  <Bot className="h-4 w-4" />
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">
+                                  {conv.agent.name}
+                                </p>
+                                <p className="text-xs text-gray-500 truncate">
+                                  {conv.lastMessage}
+                                </p>
+                              </div>
+                              {conv.unreadCount > 0 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {conv.unreadCount}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </>
             ) : (
               // Chat interface
               <>
-                <div className="flex-1 overflow-y-auto p-3 space-y-3">
-                  {messages.map((message: Message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`max-w-[80%] p-2 rounded-lg text-sm ${
-                          message.sender === "user"
-                            ? "bg-blue-500 text-white"
-                            : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
-                        }`}
-                      >
-                        {message.content}
+                <CardHeader className="p-4 border-b border-gray-100 bg-gray-50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={agentAvatar} alt={agentName} />
+                        <AvatarFallback className={`text-white bg-gradient-to-r ${agentAvatar || 'from-blue-500 to-purple-600'}`}>
+                          <Bot className="h-4 w-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="font-medium text-gray-900">{agentName}</h3>
+                        <p className="text-xs text-gray-500">Online</p>
                       </div>
                     </div>
-                  ))}
-                  <div ref={messagesEndRef} />
-                </div>
-
-                {/* Message input */}
-                <div className="border-t border-gray-200/50 dark:border-gray-700/50 p-3">
-                  <div className="flex items-center space-x-2">
-                    <Textarea
-                      placeholder="Ask your AI assistant anything..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
-                        }
-                      }}
-                      className="flex-1 text-sm resize-none bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                      rows={1}
-                    />
-                    <Button
-                      onClick={handleSendMessage}
-                      disabled={!newMessage.trim() || sendMessageMutation.isPending}
-                      size="sm"
-                      className="bg-blue-500 hover:bg-blue-600 text-white p-2"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedConversation(null)}
+                        className="h-8 w-8 p-0"
+                      >
+                        ←
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setIsOpen(false)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                </CardHeader>
 
-                {/* Back button */}
-                <div className="px-3 pb-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedConversation(null)}
-                    className="text-xs"
-                  >
-                    <RotateCcw className="h-3 w-3 mr-1" />
-                    Back to conversations
-                  </Button>
-                </div>
+                <CardContent className="p-0 flex flex-col h-full">
+                  {/* Messages area */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                    {messages.map((message: Message) => (
+                      <div
+                        key={message.id}
+                        className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
+                      >
+                        <div
+                          className={`max-w-[80%] p-3 rounded-2xl text-sm ${
+                            message.sender === "user"
+                              ? "bg-blue-500 text-white"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {message.content}
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </div>
+
+                  {/* Message input */}
+                  <div className="border-t border-gray-100 p-4">
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        placeholder="Type a message..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage();
+                          }
+                        }}
+                        className="flex-1 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      />
+                      <Button
+                        onClick={handleSendMessage}
+                        disabled={!newMessage.trim() || sendMessageMutation.isPending}
+                        size="sm"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-4"
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
               </>
             )}
-          </CardContent>
-        </Card>
+          </Card>
+        </div>
       )}
-    </div>
+    </>
   );
 }

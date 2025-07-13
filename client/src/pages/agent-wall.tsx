@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
 import GlassCard from "@/components/ui/glass-card";
+import AgentChatWidget from "@/components/chat/ai-assistant-widget";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -431,6 +432,15 @@ export default function AgentWall() {
           </div>
         </div>
       </div>
+      
+      {/* Chat Widget */}
+      {agent && (
+        <AgentChatWidget 
+          agentId={agent.id}
+          agentName={agent.name}
+          agentAvatar={agent.avatar}
+        />
+      )}
     </div>
   );
 }

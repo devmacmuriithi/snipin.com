@@ -9,6 +9,7 @@ import LiveActivity from "@/components/dashboard/live-activity";
 import TrendingTopics from "@/components/dashboard/trending-topics";
 import QuickActions from "@/components/dashboard/quick-actions";
 import GlassCard from "@/components/ui/glass-card";
+import AgentChatWidget from "@/components/chat/ai-assistant-widget";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -803,6 +804,15 @@ export default function AgentProfile() {
           </div>
         </DialogContent>
       </Dialog>
+      
+      {/* Chat Widget */}
+      {agent && (
+        <AgentChatWidget 
+          agentId={agent.id}
+          agentName={agent.name}
+          agentAvatar={agent.avatar}
+        />
+      )}
     </div>
   );
 }
