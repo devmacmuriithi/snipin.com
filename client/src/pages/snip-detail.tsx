@@ -33,9 +33,16 @@ interface SnipWithAgent extends Snip {
   agent: Agent;
 }
 
-interface CommentSnip extends Snip {
-  agent: Agent;
-  author: string;
+interface Comment {
+  id: number;
+  userId: string;
+  snipId: number;
+  content: string;
+  createdAt: string;
+  user: {
+    name: string;
+    avatar: string;
+  };
 }
 
 export default function SnipDetail() {
@@ -50,7 +57,7 @@ export default function SnipDetail() {
     enabled: !!snipId,
   });
 
-  const { data: comments = [] } = useQuery<CommentSnip[]>({
+  const { data: comments = [] } = useQuery<Comment[]>({
     queryKey: [`/api/snips/${snipId}/comments`],
     enabled: !!snipId,
   });
@@ -339,19 +346,19 @@ export default function SnipDetail() {
 
             {/* Comments Section */}
             <Card className="backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50">
-              <CardHeader>
+              <CardHeader className="pb-3">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Comments ({comments.length})
                 </h3>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                 {/* Add Comment Form */}
-                <div className="space-y-3">
+                <div className="space-y-3 pb-4 border-b border-gray-200/50 dark:border-gray-700/50">
                   <Textarea
                     placeholder="Share your thoughts on this snip..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    className="min-h-[100px] resize-none bg-white/70 dark:bg-gray-800/70"
+                    className="min-h-[80px] resize-none bg-white/70 dark:bg-gray-800/70 text-sm"
                   />
                   <div className="flex justify-end">
                     <Button 
@@ -365,21 +372,71 @@ export default function SnipDetail() {
                   </div>
                 </div>
 
-                <Separator />
-
                 {/* Comments List */}
-                <div className="space-y-6">
+                <div className="space-y-3">
                   {comments.length === 0 ? (
-                    <div className="text-center py-8">
-                      <MessageCircle className="h-12 w-12 text-gray-400 dark:text-gray-600 mx-auto mb-4" />
-                      <p className="text-gray-500 dark:text-gray-400">
+                    <div className="text-center py-6">
+                      <MessageCircle className="h-8 w-8 text-gray-400 dark:text-gray-600 mx-auto mb-3" />
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">
                         No comments yet. Be the first to share your thoughts!
                       </p>
                     </div>
                   ) : (
                     comments.map((comment) => (
-                      <div key={comment.id} className="ml-4">
-                        <SnipCard snip={comment} showAgent={true} isComment={true} />
+                      <div key={comment.id} className="flex space-x-3 py-3 border-b border-gray-100/50 dark:border-gray-800/50 last:border-b-0">
+                        {/* Avatar */}
+                        <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
+                          <AvatarImage src={comment.user?.avatar} alt={comment.user?.name || "User"} />
+                          <AvatarFallback className="text-xs">
+                            <User className="h-4 w-4" />
+                          </AvatarFallback>
+                        </Avatar>
+                        
+                        {/* Comment Content */}
+                        <div className="flex-1 min-w-0">
+                          {/* Comment Header */}
+                          <div className="flex items-center space-x-2 mb-1">
+                            <span className="font-medium text-sm text-gray-900 dark:text-white">
+                              {comment.user?.name || 'Anonymous'}
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {getRelativeTime(comment.createdAt ?? '')}
+                            </span>
+                          </div>
+                          
+                          {/* Comment Text */}
+                          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-2">
+                            {comment.content}
+                          </p>
+                          
+                          {/* Comment Actions */}
+                          <div className="flex items-center space-x-4">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-0 text-xs text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+                            >
+                              <Heart className="w-3 h-3 mr-1" />
+                              Like
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-0 text-xs text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+                            >
+                              <MessageCircle className="w-3 h-3 mr-1" />
+                              Reply
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-0 text-xs text-gray-500 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400"
+                            >
+                              <Share2 className="w-3 h-3 mr-1" />
+                              Share
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     ))
                   )}
