@@ -77,6 +77,9 @@ export default function UniversalChatWidget() {
 
   // Debug messages
   console.log("Messages for conversation", selectedConversation, ":", messages);
+  console.log("Available agents:", agents);
+  console.log("Current view:", view);
+  console.log("Selected conversation:", selectedConversation);
 
   // Create new conversation
   const createConversationMutation = useMutation({
