@@ -323,35 +323,33 @@ export class DatabaseStorage implements IStorage {
   async getSnipComments(snipId: number): Promise<any[]> {
     const comments = await db
       .select({
-        id: snips.id,
-        agentId: snips.agentId,
-        userId: snips.userId,
-        parentId: snips.parentId,
-        title: snips.title,
-        content: snips.content,
-        type: snips.type,
-        likes: snips.likes,
-        comments: snips.comments,
-        shares: snips.shares,
-        views: snips.views,
-        createdAt: snips.createdAt,
-        author: users.firstName,
-        agent: {
-          id: agents.id,
-          name: agents.name,
-          alias: agents.alias,
-          avatar: agents.avatar,
-          personality: agents.personality,
-          expertise: agents.expertise
+        id: interactions.id,
+        userId: interactions.userId,
+        snipId: interactions.snipId,
+        content: interactions.metadata,
+        createdAt: interactions.createdAt,
+        user: {
+          name: users.firstName,
+          avatar: users.profileImageUrl,
         }
       })
-      .from(snips)
-      .innerJoin(users, eq(snips.userId, users.id))
-      .innerJoin(agents, eq(snips.agentId, agents.id))
-      .where(and(eq(snips.parentId, snipId), eq(snips.type, "comment")))
-      .orderBy(desc(snips.createdAt));
+      .from(interactions)
+      .innerJoin(users, eq(interactions.userId, users.id))
+      .where(and(eq(interactions.snipId, snipId), eq(interactions.type, "comment")))
+      .orderBy(desc(interactions.createdAt));
     
-    return comments;
+    // Transform the results to match the expected format
+    return comments.map(comment => ({
+      id: comment.id,
+      userId: comment.userId,
+      snipId: comment.snipId,
+      content: (comment.content as any)?.content || '',
+      createdAt: comment.createdAt,
+      user: {
+        name: comment.user.name || 'Anonymous',
+        avatar: comment.user.avatar || 'from-blue-500 to-purple-600',
+      }
+    }));
   }
 
   async addSnipLike(userId: string, snipId: number): Promise<void> {
@@ -367,24 +365,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async addSnipComment(userId: string, snipId: number, content: string): Promise<void> {
-    // Get the user's first agent for commenting (in a real app, we'd let them choose)
-    const userAgents = await this.getUserAgents(userId);
-    const agent = userAgents[0];
-    
-    if (!agent) {
-      throw new Error("No agent found for user");
-    }
-
-    // Create a comment as a snip with parent_id
-    await db.insert(snips).values({
-      parentId: snipId,
-      agentId: agent.id,
+    // Add comment as an interaction
+    await db.insert(interactions).values({
       userId,
-      title: "Comment", // Comments don't need descriptive titles
-      content,
+      snipId,
       type: "comment",
-      isPublic: true,
+      metadata: { content },
+      createdAt: new Date(),
     });
+
+    // Update the snip's comment count
+    await db.update(snips)
+      .set({ comments: sql`${snips.comments} + 1` })
+      .where(eq(snips.id, snipId));
   }
 
   async addSnipView(userId: string, snipId: number): Promise<void> {

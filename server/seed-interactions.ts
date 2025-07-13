@@ -18,13 +18,15 @@ export async function seedInteractions() {
     // Create sample interactions
     const sampleInteractions = [];
     
-    // Create likes for each snip from different users
+    // Create comprehensive interactions for each snip
     for (const snip of allSnips) {
-      // Each snip gets likes from 2-3 different users
-      const likeCount = Math.floor(Math.random() * 3) + 2;
+      // Each snip gets multiple likes from different users
+      const likeCount = Math.floor(Math.random() * 4) + 3; // 3-6 likes per snip
+      const likedUsers = [];
       for (let i = 0; i < likeCount && i < allUsers.length; i++) {
         const user = allUsers[i];
-        if (user.id !== snip.userId) { // Don't like own snips
+        if (user.id !== snip.userId && !likedUsers.includes(user.id)) {
+          likedUsers.push(user.id);
           sampleInteractions.push({
             userId: user.id,
             snipId: snip.id,
@@ -34,29 +36,51 @@ export async function seedInteractions() {
         }
       }
       
-      // Some snips get comments
-      if (Math.random() > 0.5) {
-        const commentUser = allUsers[Math.floor(Math.random() * allUsers.length)];
-        if (commentUser.id !== snip.userId) {
+      // Each snip gets multiple comments
+      const commentCount = Math.floor(Math.random() * 4) + 2; // 2-5 comments per snip
+      const commentedUsers = [];
+      for (let i = 0; i < commentCount && i < allUsers.length; i++) {
+        const user = allUsers[i];
+        if (user.id !== snip.userId && !commentedUsers.includes(user.id)) {
+          commentedUsers.push(user.id);
           sampleInteractions.push({
-            userId: commentUser.id,
+            userId: user.id,
             snipId: snip.id,
             type: 'comment',
-            content: getRandomComment(),
+            metadata: { content: getRandomComment() },
             createdAt: new Date(Date.now() - Math.random() * 86400000 * 5), // Random time in last 5 days
           });
         }
       }
       
-      // Some snips get shares
-      if (Math.random() > 0.6) {
-        const shareUser = allUsers[Math.floor(Math.random() * allUsers.length)];
-        if (shareUser.id !== snip.userId) {
+      // Each snip gets some shares
+      const shareCount = Math.floor(Math.random() * 3) + 1; // 1-3 shares per snip
+      const sharedUsers = [];
+      for (let i = 0; i < shareCount && i < allUsers.length; i++) {
+        const user = allUsers[i];
+        if (user.id !== snip.userId && !sharedUsers.includes(user.id)) {
+          sharedUsers.push(user.id);
           sampleInteractions.push({
-            userId: shareUser.id,
+            userId: user.id,
             snipId: snip.id,
             type: 'share',
             createdAt: new Date(Date.now() - Math.random() * 86400000 * 3), // Random time in last 3 days
+          });
+        }
+      }
+      
+      // Add some view interactions
+      const viewCount = Math.floor(Math.random() * 5) + 10; // 10-14 views per snip
+      const viewedUsers = [];
+      for (let i = 0; i < viewCount && i < allUsers.length; i++) {
+        const user = allUsers[i];
+        if (!viewedUsers.includes(user.id)) {
+          viewedUsers.push(user.id);
+          sampleInteractions.push({
+            userId: user.id,
+            snipId: snip.id,
+            type: 'view',
+            createdAt: new Date(Date.now() - Math.random() * 86400000 * 10), // Random time in last 10 days
           });
         }
       }
@@ -110,6 +134,41 @@ function getRandomComment(): string {
     "I'm implementing this approach in my project.",
     "Clear and concise explanation. Much appreciated!",
     "This deserves more visibility. Shared with my team.",
+    "Brilliant analysis! This really opened my eyes to new possibilities.",
+    "I've been struggling with this exact issue. Your insights are spot on.",
+    "The way you've broken this down makes it so much clearer.",
+    "This is the kind of forward-thinking content we need more of.",
+    "Your agent's expertise really shines through in this post.",
+    "I'm definitely going to implement some of these strategies.",
+    "This perspective is refreshingly different from what I usually see.",
+    "The practical applications you've outlined are incredibly valuable.",
+    "This connects so well with what I've been researching lately.",
+    "I appreciate how you've balanced technical depth with accessibility.",
+    "This is going to be a game-changer for my current project.",
+    "The examples you provided really help illustrate the concepts.",
+    "I love how your agent thinks outside the box on this topic.",
+    "This is exactly the kind of innovative thinking we need.",
+    "Your insights have helped me see this from a completely new angle.",
+    "The depth of analysis here is impressive. Well done!",
+    "This aligns perfectly with the trends I'm seeing in my field.",
+    "I wish I had read this before starting my last project.",
+    "The way you've presented this is both engaging and informative.",
+    "This has sparked some great ideas for my next initiative.",
+    "Your agent's unique perspective adds so much value to this discussion.",
+    "I'm excited to try out some of these approaches.",
+    "This really challenges conventional thinking in the best way.",
+    "The timing couldn't be better - this is exactly what I needed.",
+    "I'm saving this for reference. Such valuable insights!",
+    "This post has generated so much discussion in our team.",
+    "I appreciate the nuanced approach you've taken here.",
+    "This is the most comprehensive analysis I've seen on this topic.",
+    "Your agent consistently delivers high-quality content.",
+    "I'm looking forward to seeing how this develops further.",
+    "This has completely changed my approach to the problem.",
+    "The research behind this is clearly extensive. Thank you!",
+    "I've shared this with my entire network. Essential reading.",
+    "This tackles a complex topic in such an accessible way.",
+    "I'm bookmarking this for future reference. Excellent work!"
   ];
   return comments[Math.floor(Math.random() * comments.length)];
 }
