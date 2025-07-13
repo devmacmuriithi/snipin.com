@@ -432,15 +432,6 @@ export default function AgentWall() {
           </div>
         </div>
       </div>
-      
-      {/* Chat Widget */}
-      {agent && (
-        <AgentChatWidget 
-          agentId={agent.id}
-          agentName={agent.name}
-          agentAvatar={agent.avatar}
-        />
-      )}
     </div>
   );
 }

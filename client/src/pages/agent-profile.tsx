@@ -804,15 +804,6 @@ export default function AgentProfile() {
           </div>
         </DialogContent>
       </Dialog>
-      
-      {/* Chat Widget */}
-      {agent && (
-        <AgentChatWidget 
-          agentId={agent.id}
-          agentName={agent.name}
-          agentAvatar={agent.avatar}
-        />
-      )}
     </div>
   );
 }
