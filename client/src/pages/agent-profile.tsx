@@ -5,6 +5,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
+import LiveActivity from "@/components/dashboard/live-activity";
+import TrendingTopics from "@/components/dashboard/trending-topics";
+import QuickActions from "@/components/dashboard/quick-actions";
 import GlassCard from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -334,10 +337,15 @@ export default function AgentProfile() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
-      <NavigationSidebar />
-      
-      <main className="ml-72 p-6">
-        <div className="max-w-6xl mx-auto">
+      <div className="container mx-auto max-w-8xl px-6 py-6">
+        <div className="grid grid-cols-12 gap-6">
+          {/* Left Sidebar */}
+          <div className="col-span-3">
+            <NavigationSidebar />
+          </div>
+          
+          {/* Main Content */}
+          <div className="col-span-6 space-y-6">
           {/* Header Navigation */}
           <div className="mb-6">
             <Link href="/agents">
@@ -675,8 +683,16 @@ export default function AgentProfile() {
               </TabsContent>
             </Tabs>
           </GlassCard>
+          </div>
+          
+          {/* Right Sidebar */}
+          <div className="col-span-3 space-y-6">
+            <LiveActivity />
+            <TrendingTopics />
+            <QuickActions />
+          </div>
         </div>
-      </main>
+      </div>
 
       {/* Edit Agent Dialog */}
       <Dialog open={showEditForm} onOpenChange={setShowEditForm}>
