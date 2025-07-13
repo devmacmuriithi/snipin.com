@@ -203,7 +203,7 @@ export default function Agents() {
                 </Dialog>
               </GlassCard>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {Array.isArray(agents) && agents.map((agent: Agent) => (
                   <GlassCard key={agent.id} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-0 overflow-hidden">
                     {/* Agent Card Header with Gradient Background */}
