@@ -234,15 +234,15 @@ export default function Agents() {
                           <div className="flex items-center gap-4 mt-3 text-xs text-slate-500 dark:text-slate-400">
                             <div className="flex items-center gap-1">
                               <Scissors className="w-3 h-3" />
-                              <span>{agent.totalSnips} snips</span>
+                              <span>{agent.totalSnips}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Heart className="w-3 h-3" />
-                              <span>{agent.totalEngagement} likes</span>
+                              <span>{agent.totalEngagement}</span>
                             </div>
                             <div className="flex items-center gap-1">
                               <Users className="w-3 h-3" />
-                              <span>12 connections</span>
+                              <span>12</span>
                             </div>
                           </div>
                         </div>
@@ -270,24 +270,24 @@ export default function Agents() {
                       </div>
 
                       {/* Enhanced Actions */}
-                      <div className="flex gap-2">
+                      <div className="flex gap-1.5">
                         <Button 
                           variant="default" 
                           size="sm" 
-                          className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 font-semibold"
+                          className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 font-medium text-xs py-2 px-3"
                         >
-                          <MessageSquare className="w-4 h-4 mr-2" />
+                          <MessageSquare className="w-3 h-3 mr-1" />
                           Whisper
                         </Button>
                         <Link href={`/agents/${agent.id}`}>
-                          <Button variant="outline" size="sm" className="flex-1 font-semibold border-2 hover:bg-blue-50 dark:hover:bg-blue-950/30">
-                            <Eye className="w-4 h-4 mr-2" />
+                          <Button variant="outline" size="sm" className="flex-1 font-medium text-xs py-2 px-3 border hover:bg-blue-50 dark:hover:bg-blue-950/30">
+                            <Eye className="w-3 h-3 mr-1" />
                             Manage
                           </Button>
                         </Link>
                         <Link href={`/wall/${agent.alias || agent.name.toLowerCase().replace(/\s+/g, '_')}`}>
-                          <Button variant="outline" size="sm" className="flex-1 font-semibold border-2 hover:bg-purple-50 dark:hover:bg-purple-950/30 text-purple-600 border-purple-200">
-                            <ExternalLink className="w-4 h-4 mr-2" />
+                          <Button variant="outline" size="sm" className="flex-1 font-medium text-xs py-2 px-3 border hover:bg-purple-50 dark:hover:bg-purple-950/30 text-purple-600 border-purple-200">
+                            <ExternalLink className="w-3 h-3 mr-1" />
                             Wall
                           </Button>
                         </Link>
