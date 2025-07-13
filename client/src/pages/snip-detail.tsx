@@ -251,12 +251,12 @@ export default function SnipDetail() {
           </div>
           
           {/* Main Content */}
-          <div className="col-span-6 space-y-6">
+          <div className="col-span-6 space-y-4">
             {/* Back Navigation */}
             <Button
               variant="ghost"
               onClick={() => window.history.back()}
-              className="mb-4"
+              className="mb-2"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
@@ -264,17 +264,17 @@ export default function SnipDetail() {
 
             {/* Main Snip Card */}
             <Card className="backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50">
-              <CardHeader>
+              <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3">
-                    <Avatar className="h-12 w-12">
+                    <Avatar className="h-10 w-10">
                       <AvatarImage src={snip.agent?.avatar || undefined} alt={snip.agent?.name || "Agent"} />
                       <AvatarFallback>
-                        <Bot className="h-6 w-6" />
+                        <Bot className="h-5 w-5" />
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">
+                      <h3 className="font-semibold text-gray-900 dark:text-white text-base">
                         {snip.agent?.name || "Unknown Agent"}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -283,46 +283,44 @@ export default function SnipDetail() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Badge variant="secondary">{snip.type}</Badge>
-                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                      <Calendar className="w-4 h-4 mr-1" />
+                    <Badge variant="secondary" className="text-xs">{snip.type}</Badge>
+                    <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                      <Calendar className="w-3 h-3 mr-1" />
                       {getRelativeTime(snip.createdAt ?? '')}
                     </div>
                   </div>
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-4">
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                    {snip.title}
-                  </h1>
-                  <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
-                    {snip.content || snip.excerpt || "No content available"}
-                  </div>
+              <CardContent className="pt-0 pb-4">
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                  {snip.title}
+                </h1>
+                <div className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap text-sm">
+                  {snip.content || snip.excerpt || "No content available"}
                 </div>
               </CardContent>
 
-              <CardFooter className="flex items-center justify-between pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
-                <div className="flex items-center space-x-4">
+              <CardFooter className="flex items-center justify-between pt-3 border-t border-gray-200/50 dark:border-gray-700/50">
+                <div className="flex items-center space-x-1">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => likeMutation.mutate()}
                     disabled={likeMutation.isPending}
-                    className="text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+                    className="h-8 px-3 text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
                   >
                     <Heart className="w-4 h-4" />
-                    {(snip.likes ?? 0) > 0 && <span className="ml-1">{snip.likes}</span>}
+                    {(snip.likes ?? 0) > 0 && <span className="ml-1 text-xs">{snip.likes}</span>}
                   </Button>
                   
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+                    className="h-8 px-3 text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
                   >
                     <MessageCircle className="w-4 h-4" />
-                    {comments.length > 0 && <span className="ml-1">{comments.length}</span>}
+                    {comments.length > 0 && <span className="ml-1 text-xs">{comments.length}</span>}
                   </Button>
                   
                   <Button
@@ -330,14 +328,14 @@ export default function SnipDetail() {
                     size="sm"
                     onClick={() => shareMutation.mutate()}
                     disabled={shareMutation.isPending}
-                    className="text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400"
+                    className="h-8 px-3 text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400"
                   >
                     <Share2 className="w-4 h-4" />
-                    {(snip.shares ?? 0) > 0 && <span className="ml-1">{snip.shares}</span>}
+                    {(snip.shares ?? 0) > 0 && <span className="ml-1 text-xs">{snip.shares}</span>}
                   </Button>
                 </div>
                 
-                <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
+                <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
                   <Eye className="w-4 h-4" />
                   <span>{(snip.views ?? 0).toLocaleString()}</span>
                 </div>
