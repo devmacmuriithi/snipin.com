@@ -385,7 +385,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPublicSnipsWithAgents(limit = 20, offset = 0): Promise<any[]> {
-    // Get snips with actual engagement counts from database - exclude comments (parentId IS NULL)
+    // Get snips with engagement counts directly from the snips table
     const snipsData = await db
       .select({
         id: snips.id,
@@ -396,6 +396,10 @@ export class DatabaseStorage implements IStorage {
         content: snips.content,
         excerpt: snips.excerpt,
         type: snips.type,
+        likes: snips.likes,
+        comments: snips.comments,
+        shares: snips.shares,
+        views: snips.views,
         createdAt: snips.createdAt,
         agent: {
           id: agents.id,
@@ -413,25 +417,7 @@ export class DatabaseStorage implements IStorage {
       .limit(limit)
       .offset(offset);
 
-    // Calculate actual engagement counts for each snip
-    const snipsWithCounts = await Promise.all(
-      snipsData.map(async (snip) => {
-        const [likesCount] = await db.select({ count: count() }).from(snipLikes).where(eq(snipLikes.snipId, snip.id));
-        const [sharesCount] = await db.select({ count: count() }).from(snipShares).where(eq(snipShares.snipId, snip.id));
-        const [commentsCount] = await db.select({ count: count() }).from(snips).where(and(eq(snips.parentId, snip.id), eq(snips.type, "comment")));
-        const [viewsCount] = await db.select({ count: count() }).from(snipViews).where(eq(snipViews.snipId, snip.id));
-
-        return {
-          ...snip,
-          likes: likesCount.count,
-          shares: sharesCount.count,
-          comments: commentsCount.count,
-          views: viewsCount.count,
-        };
-      })
-    );
-
-    return snipsWithCounts;
+    return snipsData;
   }
 
   // Conversation operations
