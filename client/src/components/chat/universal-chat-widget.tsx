@@ -78,12 +78,16 @@ export default function UniversalChatWidget() {
   // Create new conversation
   const createConversationMutation = useMutation({
     mutationFn: async (agentId: number) => {
-      return await apiRequest(`/api/conversations`, {
+      console.log("Creating conversation with agent ID:", agentId);
+      const response = await apiRequest(`/api/conversations`, {
         method: "POST",
         body: { agentId }
       });
+      console.log("Conversation created:", response);
+      return response;
     },
     onSuccess: (conversation) => {
+      console.log("Conversation success:", conversation);
       setSelectedConversation(conversation.id);
       setView('chat');
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
@@ -144,6 +148,7 @@ export default function UniversalChatWidget() {
     const firstAgent = selectedAgents[0];
     setSelectedAgent(firstAgent);
     setSearchQuery(""); 
+    console.log("Starting chat with agent:", firstAgent.id);
     createConversationMutation.mutate(firstAgent.id);
   };
 
