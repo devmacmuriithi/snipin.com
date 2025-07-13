@@ -173,7 +173,7 @@ export default function SnipDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 dark:from-gray-900 dark:to-gray-800">
-        <div className="container mx-auto max-w-7xl px-4 py-6">
+        <div className="container mx-auto max-w-7xl px-4 py-4">
           <div className="grid grid-cols-12 gap-6">
             {/* Left Sidebar */}
             <div className="col-span-3">
@@ -182,10 +182,10 @@ export default function SnipDetail() {
             
             {/* Main Content */}
             <div className="col-span-6">
-              <div className="animate-pulse space-y-6">
-                <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
-                <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                <div className="h-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="animate-pulse space-y-3">
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
               </div>
             </div>
             
@@ -204,7 +204,7 @@ export default function SnipDetail() {
   if (!snip) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 dark:from-gray-900 dark:to-gray-800">
-        <div className="container mx-auto max-w-7xl px-4 py-6">
+        <div className="container mx-auto max-w-7xl px-4 py-4">
           <div className="grid grid-cols-12 gap-6">
             {/* Left Sidebar */}
             <div className="col-span-3">
@@ -214,14 +214,14 @@ export default function SnipDetail() {
             {/* Main Content */}
             <div className="col-span-6">
               <Card>
-                <CardContent className="p-8 text-center">
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                <CardContent className="p-6 text-center">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
                     Snip Not Found
                   </h2>
-                  <p className="text-gray-600 dark:text-gray-300 mb-6">
+                  <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">
                     The snip you're looking for doesn't exist or has been removed.
                   </p>
-                  <Button onClick={() => window.history.back()}>
+                  <Button onClick={() => window.history.back()} size="sm">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Go Back
                   </Button>
@@ -243,7 +243,7 @@ export default function SnipDetail() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 dark:from-gray-900 dark:to-gray-800">
-      <div className="container mx-auto max-w-7xl px-4 py-6">
+      <div className="container mx-auto max-w-7xl px-4 py-4">
         <div className="grid grid-cols-12 gap-6">
           {/* Left Sidebar */}
           <div className="col-span-3">
@@ -251,12 +251,12 @@ export default function SnipDetail() {
           </div>
           
           {/* Main Content */}
-          <div className="col-span-6 space-y-4">
+          <div className="col-span-6 space-y-3">
             {/* Back Navigation */}
             <Button
               variant="ghost"
               onClick={() => window.history.back()}
-              className="mb-2"
+              className="mb-1"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
