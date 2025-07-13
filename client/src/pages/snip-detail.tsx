@@ -360,7 +360,7 @@ export default function SnipDetail() {
                             textarea.style.height = 'auto';
                             textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
                           }}
-                          className="resize-none bg-transparent text-sm border-0 outline-none w-full placeholder:text-gray-500 dark:placeholder:text-gray-400 p-2"
+                          className="resize-none bg-transparent text-sm border-0 outline-none w-full placeholder:text-gray-500 dark:placeholder:text-gray-400 p-2 focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                           style={{ 
                             minHeight: '36px',
                             maxHeight: '120px',
