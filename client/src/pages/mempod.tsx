@@ -3,6 +3,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
+import LiveActivity from "@/components/dashboard/live-activity";
+import TrendingTopics from "@/components/dashboard/trending-topics";
+import QuickActions from "@/components/dashboard/quick-actions";
 import GlassCard from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -700,6 +703,13 @@ export default function MemPod() {
                 </div>
               </div>
             </GlassCard>
+          </div>
+          
+          {/* Right Sidebar */}
+          <div className="col-span-3 space-y-6">
+            <LiveActivity />
+            <TrendingTopics />
+            <QuickActions />
           </div>
         </div>
       </div>
