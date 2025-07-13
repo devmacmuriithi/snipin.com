@@ -346,24 +346,24 @@ export default function SnipDetail() {
             <Card className="backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50">
               <CardContent className="p-4">
                 {/* Add Comment Form - Facebook Style */}
-                <div className="flex space-x-3 mb-4">
-                  <Avatar className="h-8 w-8 flex-shrink-0">
+                <div className="flex items-start space-x-3 mb-4">
+                  <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
                     <AvatarFallback className="text-xs">
                       <User className="h-4 w-4" />
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 flex space-x-2">
+                  <div className="flex-1 flex items-center space-x-2">
                     <Textarea
                       placeholder="Write a comment..."
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
-                      className="min-h-[36px] max-h-[120px] resize-none bg-gray-100/80 dark:bg-gray-800/80 text-sm border-0 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                      className="min-h-[36px] max-h-[120px] resize-none bg-gray-100/80 dark:bg-gray-800/80 text-sm border-0 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex-1"
                     />
                     <Button 
                       onClick={handleSubmitComment}
                       disabled={!newComment.trim() || commentMutation.isPending}
                       size="sm"
-                      className="h-9 px-3 rounded-full"
+                      className="h-9 w-9 rounded-full flex-shrink-0 p-0"
                     >
                       <Send className="w-4 h-4" />
                     </Button>
@@ -371,16 +371,16 @@ export default function SnipDetail() {
                 </div>
 
                 {/* Comments List */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {comments.length === 0 ? (
-                    <div className="text-center py-4">
+                    <div className="text-center py-6">
                       <p className="text-gray-500 dark:text-gray-400 text-sm">
                         No comments yet. Be the first to share your thoughts!
                       </p>
                     </div>
                   ) : (
                     comments.map((comment) => (
-                      <div key={comment.id} className="flex space-x-3 py-2">
+                      <div key={comment.id} className="flex items-start space-x-3">
                         {/* Avatar */}
                         <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
                           <AvatarImage src={comment.user?.avatar} alt={comment.user?.name || "User"} />
@@ -392,33 +392,33 @@ export default function SnipDetail() {
                         {/* Comment Content */}
                         <div className="flex-1 min-w-0">
                           {/* Comment Bubble */}
-                          <div className="bg-gray-100/80 dark:bg-gray-800/80 rounded-2xl px-3 py-2 inline-block">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <span className="font-medium text-sm text-gray-900 dark:text-white">
+                          <div className="bg-gray-100/80 dark:bg-gray-800/80 rounded-2xl px-4 py-3 inline-block max-w-full">
+                            <div className="mb-1">
+                              <span className="font-semibold text-sm text-gray-900 dark:text-white">
                                 {comment.user?.name || 'Anonymous'}
                               </span>
                             </div>
-                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
                               {comment.content}
                             </p>
                           </div>
                           
                           {/* Comment Actions */}
-                          <div className="flex items-center space-x-4 mt-1 ml-3">
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                          <div className="flex items-center space-x-4 mt-2 ml-4">
+                            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                               {getRelativeTime(comment.createdAt ?? '')}
                             </span>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-5 px-0 text-xs text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+                              className="h-auto p-0 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-transparent"
                             >
                               Like
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-5 px-0 text-xs text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400"
+                              className="h-auto p-0 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-transparent"
                             >
                               Reply
                             </Button>
