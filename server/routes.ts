@@ -573,73 +573,103 @@ Recent Whispers: ${recentWhispers.map(w => w.content).join('; ')}
 Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metadata ? JSON.stringify(a.metadata) : 'N/A'}`).join('; ')}
           `.trim();
           
-          // Generate context-aware response
-          if (recentMessages.length > 1) {
-            // Continuing conversation - reference previous messages
-            const previousMessages = recentMessages.slice(0, -1); // All except the current message
-            const hasGreeted = previousMessages.some(msg => 
-              msg.sender === 'agent' && (msg.content.includes('Hello') || msg.content.includes('Hi'))
-            );
-            
-            if (hasGreeted) {
-              // Agent has already greeted, continue conversation naturally
-              if (userMessage.includes('name') && userMessage.includes('my')) {
-                response = `${user?.name || 'I don\'t have your name on file'}, based on our conversation, `;
-              } else {
-                response = `Based on our previous messages, `;
-              }
-            } else {
-              // First response but conversation exists
-              response = `Hi ${user?.name || 'there'}! I'm ${agent.name}. `;
-            }
-          } else {
-            // First message in conversation
-            response = `Hi ${user?.name || 'there'}! I'm ${agent.name}. `;
-          }
-          
-          // Add personality and expertise context
-          if (agent.personality && agent.expertise) {
-            response += `With my ${agent.personality.toLowerCase()} personality and expertise in ${agent.expertise}, `;
-          } else if (agent.expertise) {
-            response += `With my expertise in ${agent.expertise}, `;
-          }
-          
-          // Generate contextual response based on user input and conversation history
+          // Generate context-aware response based on specific user questions first
           if (userMessage.includes('name') && userMessage.includes('my')) {
-            response += `I can see your name is ${user?.name || 'not available in my records'}. `;
+            // User is asking about their name
+            const userName = user?.firstName && user?.lastName 
+              ? `${user.firstName} ${user.lastName}`
+              : user?.firstName || user?.name || 'I don\'t have your name on file';
+            response = `Your name is ${userName}. `;
+            if (recentMessages.length > 1) {
+              response += `I remember our previous conversation, and I'm here to help you with anything you need. `;
+            } else {
+              response += `Nice to meet you! I'm ${agent.name}, and I'm here to help you. `;
+            }
           } else if (userMessage.includes('remember') || userMessage.includes('recall')) {
+            // User is asking about memory/recall
             const relevantPastMessages = recentMessages.slice(0, -1).slice(-5); // Last 5 previous messages
             if (relevantPastMessages.length > 0) {
-              response += `I remember our recent conversation about ${relevantPastMessages[relevantPastMessages.length - 1]?.content.substring(0, 50)}... `;
+              response = `Yes, I remember our recent conversation about "${relevantPastMessages[relevantPastMessages.length - 1]?.content.substring(0, 50)}...". `;
             } else {
-              response += `This appears to be our first conversation, but I'm ready to remember everything we discuss! `;
+              response = `This appears to be our first conversation, but I'm ready to remember everything we discuss! `;
             }
           } else if (userMessage.includes('about me') || userMessage.includes('who am i')) {
-            response += `From what I know, you're ${user?.name || 'a valued user'}. `;
+            // User is asking about themselves
+            const userName = user?.firstName && user?.lastName 
+              ? `${user.firstName} ${user.lastName}`
+              : user?.firstName || user?.name || 'a valued user';
+            response = `From what I know, you're ${userName}. `;
             if (recentWhispers.length > 0) {
               response += `I can see you've been working on some interesting thoughts recently. `;
             }
+          } else if (userMessage.includes('doing') && userMessage.includes('lately')) {
+            // User is asking about recent activities
+            const userName = user?.firstName && user?.lastName 
+              ? `${user.firstName} ${user.lastName}`
+              : user?.firstName || user?.name || 'there';
+            response = `Hi ${userName}! Based on your recent activity, `;
+            if (recentWhispers.length > 0) {
+              response += `I can see you've been working on some whispers: "${recentWhispers[0]?.content.substring(0, 50)}...". `;
+            }
+            if (recentActivities.length > 0) {
+              response += `You've also been active with ${recentActivities.slice(0, 2).map(a => a.type).join(' and ')}. `;
+            }
+          } else {
+            // Generate standard context-aware response
+            if (recentMessages.length > 1) {
+              // Continuing conversation - reference previous messages
+              const previousMessages = recentMessages.slice(0, -1); // All except the current message
+              const hasGreeted = previousMessages.some(msg => 
+                msg.sender === 'agent' && (msg.content.includes('Hello') || msg.content.includes('Hi'))
+              );
+              
+              if (hasGreeted) {
+                // Agent has already greeted, continue conversation naturally
+                response = `Based on our previous messages, `;
+              } else {
+                // First response but conversation exists
+                const userName = user?.firstName && user?.lastName 
+                  ? `${user.firstName} ${user.lastName}`
+                  : user?.firstName || user?.name || 'there';
+                response = `Hi ${userName}! I'm ${agent.name}. `;
+              }
+            } else {
+              // First message in conversation
+              const userName = user?.firstName && user?.lastName 
+                ? `${user.firstName} ${user.lastName}`
+                : user?.firstName || user?.name || 'there';
+              response = `Hi ${userName}! I'm ${agent.name}. `;
+            }
+            
+            // Add personality and expertise context
+            if (agent.personality && agent.expertise) {
+              response += `With my ${agent.personality.toLowerCase()} personality and expertise in ${agent.expertise}, `;
+            } else if (agent.expertise) {
+              response += `With my expertise in ${agent.expertise}, `;
+            }
           }
           
-          // Continue with contextual response
-          if (userMessage.includes('help')) {
-            response += "I'm ready to assist you with whatever you need. What would you like to explore together?";
-          } else if (userMessage.includes('question')) {
-            response += "that's a thoughtful question! Let me share my perspective on this.";
-          } else if (userMessage.includes('hello') || userMessage.includes('hi') || userMessage.includes('hey')) {
-            if (recentMessages.length > 1) {
-              response += `Great to continue our conversation! What would you like to discuss next?`;
+          // Continue with contextual response only if not already handled above
+          if (!userMessage.includes('name') && !userMessage.includes('remember') && !userMessage.includes('about me') && !userMessage.includes('doing')) {
+            if (userMessage.includes('help')) {
+              response += "I'm ready to assist you with whatever you need. What would you like to explore together?";
+            } else if (userMessage.includes('question')) {
+              response += "that's a thoughtful question! Let me share my perspective on this.";
+            } else if (userMessage.includes('hello') || userMessage.includes('hi') || userMessage.includes('hey')) {
+              if (recentMessages.length > 1) {
+                response += `Great to continue our conversation! What would you like to discuss next?`;
+              } else {
+                response += `Nice to meet you! What would you like to talk about?`;
+              }
+            } else if (userMessage.includes('thank')) {
+              response += "you're very welcome! I'm always happy to help and engage in meaningful dialogue.";
             } else {
-              response += `Nice to meet you! What would you like to talk about?`;
+              // Check if this relates to previous conversation
+              const contextualResponse = recentMessages.length > 1 
+                ? `I understand you're asking about "${req.body.content}". Let me help you with that.`
+                : `You mentioned: "${req.body.content}". How can I assist you with this?`;
+              response += contextualResponse;
             }
-          } else if (userMessage.includes('thank')) {
-            response += "you're very welcome! I'm always happy to help and engage in meaningful dialogue.";
-          } else {
-            // Check if this relates to previous conversation
-            const contextualResponse = recentMessages.length > 1 
-              ? `I understand you're asking about "${req.body.content}". Let me help you with that.`
-              : `You mentioned: "${req.body.content}". How can I assist you with this?`;
-            response += contextualResponse;
           }
           
           const agentResponse = insertMessageSchema.parse({
