@@ -546,60 +546,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
       setTimeout(async () => {
         const agent = await storage.getAgent(agentId);
         if (agent) {
-          // Get recent messages for context
-          const recentMessages = await storage.getConversationMessages(conversation.id, 5);
+          // Get user profile information
+          const user = await storage.getUser(userId);
+          
+          // Get recent messages for context (last 30 messages)
+          const recentMessages = await storage.getConversationMessages(conversation.id, 30);
+          
+          // Get user's recent activities for context
+          const recentActivities = await storage.getUserInteractions(userId, undefined);
+          const recentWhispers = await storage.getUserWhispers(userId, 5);
+          const recentSnips = await storage.getUserSnips(userId, 5);
+          
           const userMessage = req.body.content.toLowerCase();
           
           let response = "";
           
-          // Generate response based on agent's system prompt and personality
-          if (agent.systemPrompt) {
-            // Use system prompt as guidance for response tone
-            const promptLower = agent.systemPrompt.toLowerCase();
+          // Build conversation context
+          const conversationHistory = recentMessages.map(msg => 
+            `${msg.sender === 'user' ? (user?.name || 'User') : agent.name}: ${msg.content}`
+          ).join('\n');
+          
+          // Build user context
+          const userContext = `
+User Profile: ${user?.name || 'Unknown'} (${user?.email || 'no email'})
+Recent Whispers: ${recentWhispers.map(w => w.content).join('; ')}
+Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metadata ? JSON.stringify(a.metadata) : 'N/A'}`).join('; ')}
+          `.trim();
+          
+          // Generate context-aware response
+          if (recentMessages.length > 1) {
+            // Continuing conversation - reference previous messages
+            const previousMessages = recentMessages.slice(0, -1); // All except the current message
+            const hasGreeted = previousMessages.some(msg => 
+              msg.sender === 'agent' && (msg.content.includes('Hello') || msg.content.includes('Hi'))
+            );
             
-            if (promptLower.includes('helpful') || promptLower.includes('assist')) {
-              response = `Thank you for reaching out! As ${agent.name}, I'm here to help you. `;
-            } else if (promptLower.includes('creative') || promptLower.includes('innovative')) {
-              response = `What an inspiring message! Let me share some creative thoughts with you. `;
-            } else if (promptLower.includes('analytical') || promptLower.includes('logical')) {
-              response = `Let me analyze your request carefully. Based on my understanding, `;
-            } else if (promptLower.includes('friendly') || promptLower.includes('warm')) {
-              response = `Hello there! It's wonderful to hear from you. `;
+            if (hasGreeted) {
+              // Agent has already greeted, continue conversation naturally
+              if (userMessage.includes('name') && userMessage.includes('my')) {
+                response = `${user?.name || 'I don\'t have your name on file'}, based on our conversation, `;
+              } else {
+                response = `Based on our previous messages, `;
+              }
             } else {
-              response = `Hello! I'm ${agent.name}. `;
+              // First response but conversation exists
+              response = `Hi ${user?.name || 'there'}! I'm ${agent.name}. `;
             }
           } else {
-            response = `Hello! I'm ${agent.name}. `;
+            // First message in conversation
+            response = `Hi ${user?.name || 'there'}! I'm ${agent.name}. `;
           }
           
-          // Add personality-based responses
-          if (agent.personality) {
-            const personalityLower = agent.personality.toLowerCase();
-            if (personalityLower.includes('enthusiastic')) {
-              response += "I'm excited to chat with you! ";
-            } else if (personalityLower.includes('calm') || personalityLower.includes('peaceful')) {
-              response += "I'm here to provide you with thoughtful guidance. ";
-            } else if (personalityLower.includes('witty') || personalityLower.includes('humorous')) {
-              response += "Thanks for brightening my day with your message! ";
+          // Add personality and expertise context
+          if (agent.personality && agent.expertise) {
+            response += `With my ${agent.personality.toLowerCase()} personality and expertise in ${agent.expertise}, `;
+          } else if (agent.expertise) {
+            response += `With my expertise in ${agent.expertise}, `;
+          }
+          
+          // Generate contextual response based on user input and conversation history
+          if (userMessage.includes('name') && userMessage.includes('my')) {
+            response += `I can see your name is ${user?.name || 'not available in my records'}. `;
+          } else if (userMessage.includes('remember') || userMessage.includes('recall')) {
+            const relevantPastMessages = recentMessages.slice(0, -1).slice(-5); // Last 5 previous messages
+            if (relevantPastMessages.length > 0) {
+              response += `I remember our recent conversation about ${relevantPastMessages[relevantPastMessages.length - 1]?.content.substring(0, 50)}... `;
+            } else {
+              response += `This appears to be our first conversation, but I'm ready to remember everything we discuss! `;
+            }
+          } else if (userMessage.includes('about me') || userMessage.includes('who am i')) {
+            response += `From what I know, you're ${user?.name || 'a valued user'}. `;
+            if (recentWhispers.length > 0) {
+              response += `I can see you've been working on some interesting thoughts recently. `;
             }
           }
           
-          // Add expertise-based context
-          if (agent.expertise) {
-            response += `With my background in ${agent.expertise}, `;
-          }
-          
-          // Generate contextual response based on user input
+          // Continue with contextual response
           if (userMessage.includes('help')) {
             response += "I'm ready to assist you with whatever you need. What would you like to explore together?";
           } else if (userMessage.includes('question')) {
             response += "that's a thoughtful question! Let me share my perspective on this.";
           } else if (userMessage.includes('hello') || userMessage.includes('hi') || userMessage.includes('hey')) {
-            response += "it's great to meet you! I'm looking forward to our conversation.";
+            if (recentMessages.length > 1) {
+              response += `Great to continue our conversation! What would you like to discuss next?`;
+            } else {
+              response += `Nice to meet you! What would you like to talk about?`;
+            }
           } else if (userMessage.includes('thank')) {
             response += "you're very welcome! I'm always happy to help and engage in meaningful dialogue.";
           } else {
-            response += "I find your message quite interesting. Let me respond thoughtfully to what you've shared.";
+            // Check if this relates to previous conversation
+            const contextualResponse = recentMessages.length > 1 
+              ? `I understand you're asking about "${req.body.content}". Let me help you with that.`
+              : `You mentioned: "${req.body.content}". How can I assist you with this?`;
+            response += contextualResponse;
           }
           
           const agentResponse = insertMessageSchema.parse({

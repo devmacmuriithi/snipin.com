@@ -108,6 +108,12 @@ Preferred communication style: Simple, everyday language.
   - Real-time message updates with 2-second refresh interval
   - Clean message bubbles with user messages (blue, right) and agent messages (gray, left)
   - Auto-scrolling to newest messages and proper positioning system
+  - Enhanced AI agents with conversation context and user awareness:
+    - Agents now remember last 30 messages from each conversation
+    - User profile information (name, email) is available to agents
+    - Recent user activities (whispers, interactions) provide context
+    - Agents can answer questions about user's name and previous conversations
+    - Context-aware responses that reference past messages and user behavior
 
 - **January 13, 2025**: Implemented universal chat system with Facebook Messenger-style interface
   - Added isPersonalAssistant field to agents table to identify personal assistants
