@@ -60,33 +60,36 @@ function NavigationSidebar() {
     : (user as any)?.email?.charAt(0).toUpperCase() || 'U';
 
   return (
-    <nav className="glass-card-elevated rounded-3xl p-6 h-fit sticky top-6">
+    <nav className="glass-morphism rounded-3xl p-6 shadow-2xl h-fit sticky top-6">
       {/* Brand Logo */}
-      <div className="flex items-center mb-8 p-3">
-        <Brain className="gradient-text mr-3 h-7 w-7" />
-        <h1 className="text-2xl font-bold gradient-text tracking-tight">SnipIn</h1>
+      <div className="flex items-center mb-8 p-4">
+        <Brain className="text-2xl gradient-text mr-3 h-6 w-6" />
+        <h1 className="text-2xl font-extrabold gradient-text tracking-tight">SnipIn</h1>
       </div>
       
       {/* Navigation Items */}
-      <div className="space-y-1 mb-8">
+      <div className="space-y-2 mb-8">
         {navigationItems.map((item) => {
           const IconComponent = item.icon;
           const active = isActive(item.path);
           
           return (
             <Link key={item.path} href={item.path}>
-              <div className={`flex items-center p-3 rounded-xl transition-all duration-200 font-medium relative group cursor-pointer ${
+              <div className={`flex items-center p-4 rounded-2xl transition-all duration-300 font-semibold relative group cursor-pointer ${
                 active 
-                  ? 'bg-gradient-to-r from-primary-blue to-neural-purple text-white shadow-lg' 
-                  : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg' 
+                  : 'text-slate-600 hover:bg-white/50 hover:text-blue-600 hover:translate-x-1'
               }`}>
-                <IconComponent className="w-5 h-5 mr-3" />
-                <span className="text-sm">{item.label}</span>
+                {active && (
+                  <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-1 h-6 bg-white rounded-r"></div>
+                )}
+                <IconComponent className="w-6 h-6 mr-4" />
+                <span>{item.label}</span>
                 {item.badge && (
-                  <span className={`ml-auto text-xs font-medium px-2 py-1 rounded-full ${
+                  <span className={`ml-auto text-xs font-bold px-2 py-1 rounded-full ${
                     active 
                       ? 'bg-white/20 text-white' 
-                      : 'bg-neural-coral text-white'
+                      : 'bg-red-500 text-white'
                   }`}>
                     {item.badge}
                   </span>
@@ -99,24 +102,21 @@ function NavigationSidebar() {
       
       {/* New Whisper Button */}
       <Link href="/whispers">
-        <Button 
-          variant="gradient" 
-          className="w-full mb-8 h-11 font-semibold"
-        >
-          <MessageSquare className="mr-2 h-4 w-4" />
+        <Button className="w-full p-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 mb-8">
+          <MessageSquare className="mr-2 h-5 w-5" />
           New Whisper
         </Button>
       </Link>
       
       {/* User Profile */}
       <div className="mt-8">
-        <div className="flex items-center p-3 bg-surface-secondary rounded-xl border border-border-subtle">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary-blue to-neural-purple rounded-lg flex items-center justify-center text-white font-semibold text-sm mr-3">
+        <div className="flex items-center p-4 glass-morphism rounded-2xl">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg mr-3">
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-medium text-text-primary truncate text-sm">{displayName}</div>
-            <div className="text-xs text-text-muted truncate">
+            <div className="font-bold text-slate-800 truncate">{displayName}</div>
+            <div className="text-sm text-slate-500 truncate">
               @{(user as any)?.email?.split('@')[0] || 'user'}
             </div>
           </div>

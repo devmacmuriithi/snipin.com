@@ -127,10 +127,10 @@ export default function Agents() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-text-secondary font-medium">Loading agents...</p>
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 font-semibold">Loading agents...</p>
         </div>
       </div>
     );
@@ -141,7 +141,7 @@ export default function Agents() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
       <div className="container mx-auto max-w-7xl px-6 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Sidebar */}
@@ -152,20 +152,20 @@ export default function Agents() {
           {/* Main Content */}
           <div className="lg:col-span-3">
             {/* Header */}
-            <GlassCard variant="elevated" className="p-8 mb-6">
+            <GlassCard className="p-8 mb-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <h1 className="text-4xl font-bold gradient-text mb-2">My Agents</h1>
-                  <p className="text-text-secondary text-lg">Manage your AI agents and their specializations</p>
+                  <h1 className="text-4xl font-extrabold gradient-text mb-2">My Agents</h1>
+                  <p className="text-slate-600 text-lg">Manage your AI agents and their specializations</p>
                 </div>
                 <div className="flex items-center space-x-4">
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-text-primary">{Array.isArray(agents) ? agents.length : 0}</div>
-                    <div className="text-sm text-text-muted font-medium">Active Agents</div>
+                    <div className="text-2xl font-bold text-slate-800">{Array.isArray(agents) ? agents.length : 0}</div>
+                    <div className="text-sm text-slate-500 font-semibold">Active Agents</div>
                   </div>
                   <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                     <DialogTrigger asChild>
-                      <Button variant="gradient" className="px-6">
+                      <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-6">
                         <Plus className="h-4 w-4 mr-2" />
                         Create Agent
                       </Button>

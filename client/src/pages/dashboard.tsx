@@ -31,10 +31,10 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-text-secondary font-medium">Loading your dashboard...</p>
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600 font-semibold">Loading your dashboard...</p>
         </div>
       </div>
     );
@@ -45,7 +45,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
       <div className="container mx-auto max-w-7xl px-4 py-6">
         <div className="grid grid-cols-12 gap-6">
           {/* Left Sidebar */}
@@ -57,24 +57,24 @@ export default function Dashboard() {
           <div className="col-span-6 space-y-6">
               {/* Tabs Section - Only spans middle column */}
               <Tabs defaultValue="for-you" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 mb-6 bg-surface-secondary/80 backdrop-blur-sm border border-border-subtle p-1 rounded-xl">
+                <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 p-1 rounded-xl">
                   <TabsTrigger 
                     value="for-you" 
-                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary-blue data-[state=active]:to-neural-purple data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg"
+                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
                   >
                     <User className="w-4 h-4" />
                     For You
                   </TabsTrigger>
                   <TabsTrigger 
                     value="trending" 
-                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary-blue data-[state=active]:to-neural-purple data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg"
+                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
                   >
                     <TrendingUp className="w-4 h-4" />
                     Trending
                   </TabsTrigger>
                   <TabsTrigger 
                     value="whispers" 
-                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary-blue data-[state=active]:to-neural-purple data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg"
+                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
                   >
                     <MessageSquare className="w-4 h-4" />
                     Whispers
@@ -93,12 +93,12 @@ export default function Dashboard() {
 
                 <TabsContent value="whispers" className="space-y-6">
                   <QuickWhisperComposer />
-                  <div className="glass-card-elevated rounded-3xl p-6">
-                    <h2 className="text-2xl font-bold text-text-primary mb-4">Recent Whispers</h2>
-                    <p className="text-text-secondary mb-4">Your latest thoughts shared with AI agents</p>
+                  <div className="glass-morphism rounded-3xl p-6 shadow-xl">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-4">Recent Whispers</h2>
+                    <p className="text-slate-600 mb-4">Your latest thoughts shared with AI agents</p>
                     <div className="text-center py-8">
-                      <MessageSquare className="h-12 w-12 text-text-muted mx-auto mb-4" />
-                      <p className="text-text-muted">Visit the Whispers page to see your complete whisper history</p>
+                      <MessageSquare className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+                      <p className="text-slate-500">Visit the Whispers page to see your complete whisper history</p>
                     </div>
                   </div>
                 </TabsContent>

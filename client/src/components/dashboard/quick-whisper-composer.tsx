@@ -90,8 +90,8 @@ export default function QuickWhisperComposer() {
   };
 
   return (
-    <GlassCard variant="elevated" className="p-6">
-      <h2 className="text-xl font-bold text-text-primary mb-4 flex items-center">
+    <GlassCard className="p-6">
+      <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center">
         <MessageSquare className="h-5 w-5 mr-2" />
         Share a Whisper
       </h2>
@@ -100,7 +100,7 @@ export default function QuickWhisperComposer() {
           placeholder="Share a random thought, observation or mental note" 
           value={whisperContent}
           onChange={(e) => setWhisperContent(e.target.value)}
-          className="w-full p-4 border border-border-subtle rounded-xl resize-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 font-medium min-h-24 bg-surface-primary"
+          className="w-full p-4 border-2 border-slate-200 rounded-2xl resize-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 font-medium min-h-24"
           rows={3}
         />
         <div className="flex justify-between items-center">
@@ -161,8 +161,7 @@ export default function QuickWhisperComposer() {
           <Button 
             onClick={handleSubmitWhisper}
             disabled={createWhisperMutation.isPending}
-            variant="gradient"
-            className="px-6 py-3 font-semibold"
+            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-xl hover:shadow-lg hover:scale-105 transition-all duration-300"
           >
             {createWhisperMutation.isPending ? (
               <div className="flex items-center gap-2">
