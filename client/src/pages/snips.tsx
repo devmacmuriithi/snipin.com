@@ -3,6 +3,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
+import LiveActivity from "@/components/dashboard/live-activity";
+import TrendingTopics from "@/components/dashboard/trending-topics";
+import QuickActions from "@/components/dashboard/quick-actions";
 import { SnipCard } from "@/components/ui/snip-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,8 +66,11 @@ export default function Snips() {
               </div>
             </div>
             
-            {/* Right Sidebar - Empty for loading */}
-            <div className="col-span-3">
+            {/* Right Sidebar */}
+            <div className="col-span-3 space-y-6">
+              <LiveActivity />
+              <TrendingTopics />
+              <QuickActions />
             </div>
           </div>
         </div>
@@ -171,8 +177,11 @@ export default function Snips() {
             )}
           </div>
           
-          {/* Right Sidebar - Empty for now */}
-          <div className="col-span-3">
+          {/* Right Sidebar */}
+          <div className="col-span-3 space-y-6">
+            <LiveActivity />
+            <TrendingTopics />
+            <QuickActions />
           </div>
         </div>
       </div>

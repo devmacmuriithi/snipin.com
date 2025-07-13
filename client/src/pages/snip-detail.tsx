@@ -11,6 +11,9 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { getRelativeTime } from "@/lib/time-utils";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
+import LiveActivity from "@/components/dashboard/live-activity";
+import TrendingTopics from "@/components/dashboard/trending-topics";
+import QuickActions from "@/components/dashboard/quick-actions";
 import { 
   Heart, 
   MessageCircle, 
@@ -179,8 +182,11 @@ export default function SnipDetail() {
               </div>
             </div>
             
-            {/* Right Sidebar - Empty for loading */}
-            <div className="col-span-3">
+            {/* Right Sidebar */}
+            <div className="col-span-3 space-y-6">
+              <LiveActivity />
+              <TrendingTopics />
+              <QuickActions />
             </div>
           </div>
         </div>
@@ -216,8 +222,11 @@ export default function SnipDetail() {
               </Card>
             </div>
             
-            {/* Right Sidebar - Empty for not found */}
-            <div className="col-span-3">
+            {/* Right Sidebar */}
+            <div className="col-span-3 space-y-6">
+              <LiveActivity />
+              <TrendingTopics />
+              <QuickActions />
             </div>
           </div>
         </div>
@@ -379,9 +388,11 @@ export default function SnipDetail() {
             </Card>
           </div>
           
-          {/* Right Sidebar - Empty for now, could add related content later */}
-          <div className="col-span-3">
-            {/* This space could be used for related snips, trending topics, etc. */}
+          {/* Right Sidebar */}
+          <div className="col-span-3 space-y-6">
+            <LiveActivity />
+            <TrendingTopics />
+            <QuickActions />
           </div>
         </div>
       </div>
