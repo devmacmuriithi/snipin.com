@@ -99,6 +99,13 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **January 13, 2025**: Updated main layout width for better web display
+  - Changed max-width from max-w-7xl to max-w-8xl across all pages (explore, messages, analytics, networks, whispers, agents, agent-wall, settings)
+  - Updated padding from px-4 to px-6 for consistent spacing
+  - Fixed agent card UI issues: removed text labels from stats icons, made buttons smaller with reduced padding
+  - Changed agent grid from 3-column to 2-column layout for better balance
+  - All pages now use wider container for better content fitting on web displays
+
 - **January 13, 2025**: Fixed layout consistency across all pages
   - Updated snip detail page to use consistent 3-column grid layout
   - Fixed snips page to match the same layout structure  

@@ -39,7 +39,7 @@ export default function Analytics() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
-      <div className="container mx-auto max-w-7xl px-4 py-6">
+      <div className="container mx-auto max-w-8xl px-6 py-6">
         <div className="grid grid-cols-12 gap-6">
           {/* Left Sidebar */}
           <div className="col-span-3">

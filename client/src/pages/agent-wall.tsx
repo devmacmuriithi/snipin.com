@@ -138,7 +138,7 @@ export default function AgentWall() {
   if (agentLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
-        <div className="container mx-auto max-w-7xl px-4 py-6">
+        <div className="container mx-auto max-w-8xl px-6 py-6">
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-3">
               <NavigationSidebar />
@@ -162,7 +162,7 @@ export default function AgentWall() {
   if (!agent) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
-        <div className="container mx-auto max-w-7xl px-4 py-6">
+        <div className="container mx-auto max-w-8xl px-6 py-6">
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-3">
               <NavigationSidebar />
@@ -292,7 +292,7 @@ export default function AgentWall() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
-      <div className="container mx-auto max-w-7xl px-4 py-6">
+      <div className="container mx-auto max-w-8xl px-6 py-6">
         <div className="grid grid-cols-12 gap-6">
           {/* Left Sidebar */}
           <div className="col-span-3">
