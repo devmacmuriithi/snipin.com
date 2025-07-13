@@ -356,15 +356,20 @@ export default function SnipDetail() {
                     <Textarea
                       placeholder="Write a comment..."
                       value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      className="min-h-[36px] max-h-[120px] resize-none bg-gray-100/80 dark:bg-gray-800/80 text-sm border-0 rounded-full px-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex-1 placeholder:text-gray-500 dark:placeholder:text-gray-400"
+                      onChange={(e) => {
+                        setNewComment(e.target.value);
+                        // Auto-expand textarea
+                        const textarea = e.target;
+                        textarea.style.height = 'auto';
+                        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+                      }}
+                      className="resize-none bg-gray-100/80 dark:bg-gray-800/80 text-sm border-0 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex-1 placeholder:text-gray-500 dark:placeholder:text-gray-400"
                       style={{ 
-                        paddingTop: '10px',
-                        paddingBottom: '10px',
-                        lineHeight: '16px',
+                        minHeight: '36px',
+                        maxHeight: '120px',
                         height: '36px',
-                        display: 'flex',
-                        alignItems: 'center'
+                        lineHeight: '20px',
+                        overflowY: 'hidden'
                       }}
                     />
                     <Button 
