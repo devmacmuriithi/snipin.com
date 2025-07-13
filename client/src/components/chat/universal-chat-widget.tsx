@@ -79,28 +79,32 @@ export default function UniversalChatWidget() {
   });
 
   // Get messages for each open chat window using individual queries
-  const messageQueries = [
-    useQuery({
-      queryKey: ["/api/conversations", chatWindows[0]?.conversationId, "messages"],
-      enabled: !!chatWindows[0]?.conversationId && !chatWindows[0]?.isMinimized,
-    }),
-    useQuery({
-      queryKey: ["/api/conversations", chatWindows[1]?.conversationId, "messages"],
-      enabled: !!chatWindows[1]?.conversationId && !chatWindows[1]?.isMinimized,
-    }),
-    useQuery({
-      queryKey: ["/api/conversations", chatWindows[2]?.conversationId, "messages"],
-      enabled: !!chatWindows[2]?.conversationId && !chatWindows[2]?.isMinimized,
-    }),
-    useQuery({
-      queryKey: ["/api/conversations", chatWindows[3]?.conversationId, "messages"],
-      enabled: !!chatWindows[3]?.conversationId && !chatWindows[3]?.isMinimized,
-    }),
-    useQuery({
-      queryKey: ["/api/conversations", chatWindows[4]?.conversationId, "messages"],
-      enabled: !!chatWindows[4]?.conversationId && !chatWindows[4]?.isMinimized,
-    })
-  ];
+  const messageQuery0 = useQuery({
+    queryKey: ["/api/conversations", chatWindows[0]?.conversationId, "messages"],
+    enabled: !!chatWindows[0]?.conversationId && !chatWindows[0]?.isMinimized,
+  });
+  
+  const messageQuery1 = useQuery({
+    queryKey: ["/api/conversations", chatWindows[1]?.conversationId, "messages"],
+    enabled: !!chatWindows[1]?.conversationId && !chatWindows[1]?.isMinimized,
+  });
+  
+  const messageQuery2 = useQuery({
+    queryKey: ["/api/conversations", chatWindows[2]?.conversationId, "messages"],
+    enabled: !!chatWindows[2]?.conversationId && !chatWindows[2]?.isMinimized,
+  });
+  
+  const messageQuery3 = useQuery({
+    queryKey: ["/api/conversations", chatWindows[3]?.conversationId, "messages"],
+    enabled: !!chatWindows[3]?.conversationId && !chatWindows[3]?.isMinimized,
+  });
+  
+  const messageQuery4 = useQuery({
+    queryKey: ["/api/conversations", chatWindows[4]?.conversationId, "messages"],
+    enabled: !!chatWindows[4]?.conversationId && !chatWindows[4]?.isMinimized,
+  });
+
+  const messageQueries = [messageQuery0, messageQuery1, messageQuery2, messageQuery3, messageQuery4];
 
   // Create new conversation
   const createConversationMutation = useMutation({
@@ -118,98 +122,102 @@ export default function UniversalChatWidget() {
   });
 
   // Send message mutations for each chat window
-  const sendMessageMutations = [
-    useMutation({
-      mutationFn: async (content: string) => {
-        const window = chatWindows[0];
-        if (!window) return;
-        const response = await apiRequest("POST", `/api/conversations/${window.conversationId}/messages`, { 
-          content, 
-          isFromUser: true 
-        });
-        return response.json();
-      },
-      onSuccess: () => {
-        const window = chatWindows[0];
-        if (!window) return;
-        setMessageInputs(prev => ({ ...prev, [window.id]: "" }));
-        queryClient.invalidateQueries({ queryKey: ["/api/conversations", window.conversationId, "messages"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
-      },
-    }),
-    useMutation({
-      mutationFn: async (content: string) => {
-        const window = chatWindows[1];
-        if (!window) return;
-        const response = await apiRequest("POST", `/api/conversations/${window.conversationId}/messages`, { 
-          content, 
-          isFromUser: true 
-        });
-        return response.json();
-      },
-      onSuccess: () => {
-        const window = chatWindows[1];
-        if (!window) return;
-        setMessageInputs(prev => ({ ...prev, [window.id]: "" }));
-        queryClient.invalidateQueries({ queryKey: ["/api/conversations", window.conversationId, "messages"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
-      },
-    }),
-    useMutation({
-      mutationFn: async (content: string) => {
-        const window = chatWindows[2];
-        if (!window) return;
-        const response = await apiRequest("POST", `/api/conversations/${window.conversationId}/messages`, { 
-          content, 
-          isFromUser: true 
-        });
-        return response.json();
-      },
-      onSuccess: () => {
-        const window = chatWindows[2];
-        if (!window) return;
-        setMessageInputs(prev => ({ ...prev, [window.id]: "" }));
-        queryClient.invalidateQueries({ queryKey: ["/api/conversations", window.conversationId, "messages"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
-      },
-    }),
-    useMutation({
-      mutationFn: async (content: string) => {
-        const window = chatWindows[3];
-        if (!window) return;
-        const response = await apiRequest("POST", `/api/conversations/${window.conversationId}/messages`, { 
-          content, 
-          isFromUser: true 
-        });
-        return response.json();
-      },
-      onSuccess: () => {
-        const window = chatWindows[3];
-        if (!window) return;
-        setMessageInputs(prev => ({ ...prev, [window.id]: "" }));
-        queryClient.invalidateQueries({ queryKey: ["/api/conversations", window.conversationId, "messages"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
-      },
-    }),
-    useMutation({
-      mutationFn: async (content: string) => {
-        const window = chatWindows[4];
-        if (!window) return;
-        const response = await apiRequest("POST", `/api/conversations/${window.conversationId}/messages`, { 
-          content, 
-          isFromUser: true 
-        });
-        return response.json();
-      },
-      onSuccess: () => {
-        const window = chatWindows[4];
-        if (!window) return;
-        setMessageInputs(prev => ({ ...prev, [window.id]: "" }));
-        queryClient.invalidateQueries({ queryKey: ["/api/conversations", window.conversationId, "messages"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
-      },
-    })
-  ];
+  const sendMutation0 = useMutation({
+    mutationFn: async (content: string) => {
+      const window = chatWindows[0];
+      if (!window) return;
+      const response = await apiRequest("POST", `/api/conversations/${window.conversationId}/messages`, { 
+        content, 
+        isFromUser: true 
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      const window = chatWindows[0];
+      if (!window) return;
+      setMessageInputs(prev => ({ ...prev, [window.id]: "" }));
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", window.conversationId, "messages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+    },
+  });
+  
+  const sendMutation1 = useMutation({
+    mutationFn: async (content: string) => {
+      const window = chatWindows[1];
+      if (!window) return;
+      const response = await apiRequest("POST", `/api/conversations/${window.conversationId}/messages`, { 
+        content, 
+        isFromUser: true 
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      const window = chatWindows[1];
+      if (!window) return;
+      setMessageInputs(prev => ({ ...prev, [window.id]: "" }));
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", window.conversationId, "messages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+    },
+  });
+  
+  const sendMutation2 = useMutation({
+    mutationFn: async (content: string) => {
+      const window = chatWindows[2];
+      if (!window) return;
+      const response = await apiRequest("POST", `/api/conversations/${window.conversationId}/messages`, { 
+        content, 
+        isFromUser: true 
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      const window = chatWindows[2];
+      if (!window) return;
+      setMessageInputs(prev => ({ ...prev, [window.id]: "" }));
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", window.conversationId, "messages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+    },
+  });
+  
+  const sendMutation3 = useMutation({
+    mutationFn: async (content: string) => {
+      const window = chatWindows[3];
+      if (!window) return;
+      const response = await apiRequest("POST", `/api/conversations/${window.conversationId}/messages`, { 
+        content, 
+        isFromUser: true 
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      const window = chatWindows[3];
+      if (!window) return;
+      setMessageInputs(prev => ({ ...prev, [window.id]: "" }));
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", window.conversationId, "messages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+    },
+  });
+  
+  const sendMutation4 = useMutation({
+    mutationFn: async (content: string) => {
+      const window = chatWindows[4];
+      if (!window) return;
+      const response = await apiRequest("POST", `/api/conversations/${window.conversationId}/messages`, { 
+        content, 
+        isFromUser: true 
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      const window = chatWindows[4];
+      if (!window) return;
+      setMessageInputs(prev => ({ ...prev, [window.id]: "" }));
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", window.conversationId, "messages"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+    },
+  });
+
+  const sendMessageMutations = [sendMutation0, sendMutation1, sendMutation2, sendMutation3, sendMutation4];
 
   // Open a new chat window
   const openChatWindow = (conversation: Conversation, agent: Agent) => {
@@ -629,11 +637,6 @@ export default function UniversalChatWidget() {
                 <CardContent className="p-0 flex flex-col">
                   <ScrollArea className="h-80">
                     <div className="p-3 space-y-2">
-                      {/* Debug info */}
-                      <div className="text-xs text-gray-400 mb-2">
-                        Conv ID: {window.conversationId} | Messages: {messages.length} | Query enabled: {messageQueries[index]?.isEnabled ? 'Yes' : 'No'}
-                      </div>
-                      
                       {messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-32 text-center">
                           <MessageSquare className="h-6 w-6 text-gray-400 mb-2" />
