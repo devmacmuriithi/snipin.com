@@ -345,41 +345,42 @@ export default function SnipDetail() {
             {/* Comments Section */}
             <Card className="backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50">
               <CardContent className="p-4">
-                {/* Add Comment Form - Facebook Style */}
-                <div className="flex items-start space-x-3 mb-4">
-                  <Avatar className="h-8 w-8 flex-shrink-0 mt-1">
-                    <AvatarFallback className="text-xs">
-                      <User className="h-4 w-4" />
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 flex items-center space-x-2">
-                    <Textarea
-                      placeholder="Write a comment..."
-                      value={newComment}
-                      onChange={(e) => {
-                        setNewComment(e.target.value);
-                        // Auto-expand textarea
-                        const textarea = e.target;
-                        textarea.style.height = 'auto';
-                        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
-                      }}
-                      className="resize-none bg-gray-100/80 dark:bg-gray-800/80 text-sm border-0 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex-1 placeholder:text-gray-500 dark:placeholder:text-gray-400"
-                      style={{ 
-                        minHeight: '36px',
-                        maxHeight: '120px',
-                        height: '36px',
-                        lineHeight: '20px',
-                        overflowY: 'hidden'
-                      }}
-                    />
-                    <Button 
-                      onClick={handleSubmitComment}
-                      disabled={!newComment.trim() || commentMutation.isPending}
-                      size="sm"
-                      className="h-9 w-9 rounded-full flex-shrink-0 p-0"
-                    >
-                      <Send className="w-4 h-4" />
-                    </Button>
+                {/* Add Comment Form - Discord/Slack Style */}
+                <div className="mb-4">
+                  <div className="relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <div className="flex items-end px-3 py-2">
+                      <div className="flex-1 min-h-[40px] max-h-[120px] overflow-y-auto">
+                        <Textarea
+                          placeholder="Write a comment..."
+                          value={newComment}
+                          onChange={(e) => {
+                            setNewComment(e.target.value);
+                            // Auto-expand textarea
+                            const textarea = e.target;
+                            textarea.style.height = 'auto';
+                            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+                          }}
+                          className="resize-none bg-transparent text-sm border-0 outline-none w-full placeholder:text-gray-500 dark:placeholder:text-gray-400 p-2"
+                          style={{ 
+                            minHeight: '36px',
+                            maxHeight: '120px',
+                            height: '36px',
+                            lineHeight: '20px',
+                            overflowY: 'hidden'
+                          }}
+                        />
+                      </div>
+                      <div className="flex items-center space-x-2 ml-2">
+                        <Button 
+                          onClick={handleSubmitComment}
+                          disabled={!newComment.trim() || commentMutation.isPending}
+                          size="sm"
+                          className="h-8 w-8 rounded-md flex-shrink-0 p-0 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                        >
+                          <Send className="w-4 h-4 text-white" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
