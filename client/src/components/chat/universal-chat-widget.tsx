@@ -15,7 +15,8 @@ import {
   Bot,
   Plus,
   Search,
-  ArrowLeft
+  ArrowLeft,
+  Minus
 } from "lucide-react";
 
 interface Message {
@@ -43,131 +44,175 @@ interface Agent {
   name: string;
   avatar: string;
   isActive: boolean;
+  expertise?: string;
+  personality?: string;
+}
+
+interface ChatWindow {
+  id: string;
+  conversationId: number;
+  agent: Agent;
+  isMinimized: boolean;
 }
 
 export default function UniversalChatWidget() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [isOpen, setIsOpen] = useState(false);
-  const [view, setView] = useState<'conversations' | 'new-chat' | 'chat'>('conversations');
-  const [selectedConversation, setSelectedConversation] = useState<number | null>(null);
-  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
+  const [isMainWindowOpen, setIsMainWindowOpen] = useState(false);
+  const [mainView, setMainView] = useState<'conversations' | 'new-chat'>('conversations');
+  const [chatWindows, setChatWindows] = useState<ChatWindow[]>([]);
   const [selectedAgents, setSelectedAgents] = useState<Agent[]>([]);
-  const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [messageInputs, setMessageInputs] = useState<Record<string, string>>({});
+  const messagesEndRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   // Get all user agents
   const { data: agents = [] } = useQuery({
     queryKey: ["/api/agents"],
-    enabled: !!user && isOpen,
+    enabled: !!user,
   });
 
   // Get all conversations
   const { data: conversations = [] } = useQuery({
     queryKey: ["/api/conversations"],
-    enabled: !!user && isOpen,
+    enabled: !!user,
   });
 
-  // Get messages for selected conversation
-  const { data: messages = [] } = useQuery({
-    queryKey: ["/api/conversations", selectedConversation, "messages"],
-    enabled: !!selectedConversation && view === 'chat',
-  });
+  // Get messages for each open chat window
+  const openChatQueries = chatWindows.map(window => ({
+    queryKey: ["/api/conversations", window.conversationId, "messages"],
+    enabled: !!window.conversationId && !window.isMinimized,
+  }));
 
-  // Debug messages
-  console.log("Messages for conversation", selectedConversation, ":", messages);
-  console.log("Available agents:", agents);
-  console.log("Current view:", view);
-  console.log("Selected conversation:", selectedConversation);
+  // Create message queries for each chat window
+  const messageQueries = openChatQueries.map(query => 
+    useQuery({
+      queryKey: query.queryKey,
+      enabled: query.enabled,
+    })
+  );
 
   // Create new conversation
   const createConversationMutation = useMutation({
     mutationFn: async (agentId: number) => {
-      console.log("Creating conversation with agent ID:", agentId);
       const response = await apiRequest("POST", `/api/conversations`, { agentId });
-      console.log("Conversation created:", response);
       return response.json();
     },
-    onSuccess: (conversation) => {
-      console.log("Conversation success:", conversation);
-      setSelectedConversation(conversation.id);
-      setView('chat');
+    onSuccess: (conversation, agentId) => {
+      const agent = agents.find(a => a.id === agentId);
+      if (agent) {
+        openChatWindow(conversation, agent);
+      }
       queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
     },
-    onError: (error) => {
-      console.error("Error creating conversation:", error);
-    }
   });
 
-  // Send message mutation
-  const sendMessageMutation = useMutation({
-    mutationFn: async (message: { conversationId: number; content: string }) => {
-      const response = await apiRequest("POST", `/api/conversations/${message.conversationId}/messages`, { content: message.content, isFromUser: true });
-      return response.json();
-    },
-    onSuccess: () => {
-      setNewMessage("");
-      queryClient.invalidateQueries({ queryKey: ["/api/conversations", selectedConversation, "messages"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
-    },
-    onError: (error) => {
-      console.error("Error sending message:", error);
-    }
-  });
+  // Send message mutations for each chat window
+  const sendMessageMutations = chatWindows.map(window => 
+    useMutation({
+      mutationFn: async (content: string) => {
+        const response = await apiRequest("POST", `/api/conversations/${window.conversationId}/messages`, { 
+          content, 
+          isFromUser: true 
+        });
+        return response.json();
+      },
+      onSuccess: () => {
+        setMessageInputs(prev => ({ ...prev, [window.id]: "" }));
+        queryClient.invalidateQueries({ queryKey: ["/api/conversations", window.conversationId, "messages"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+      },
+    })
+  );
 
-  // Auto-scroll to bottom
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
-
-  const handleSendMessage = () => {
-    if (!newMessage.trim() || !selectedConversation) return;
+  // Open a new chat window
+  const openChatWindow = (conversation: Conversation, agent: Agent) => {
+    const windowId = `chat_${conversation.id}`;
     
-    sendMessageMutation.mutate({
-      conversationId: selectedConversation,
-      content: newMessage
-    });
+    // Check if window already exists
+    if (chatWindows.find(w => w.id === windowId)) {
+      // Just unminimize if it exists
+      setChatWindows(prev => prev.map(w => 
+        w.id === windowId ? { ...w, isMinimized: false } : w
+      ));
+      return;
+    }
+
+    // Create new window
+    const newWindow: ChatWindow = {
+      id: windowId,
+      conversationId: conversation.id,
+      agent,
+      isMinimized: false,
+    };
+
+    setChatWindows(prev => [...prev, newWindow]);
+    setIsMainWindowOpen(false);
   };
 
+  // Close chat window
+  const closeChatWindow = (windowId: string) => {
+    setChatWindows(prev => prev.filter(w => w.id !== windowId));
+  };
+
+  // Minimize/maximize chat window
+  const toggleMinimizeWindow = (windowId: string) => {
+    setChatWindows(prev => prev.map(w => 
+      w.id === windowId ? { ...w, isMinimized: !w.isMinimized } : w
+    ));
+  };
+
+  // Add agent to selection
   const addAgentToChat = (agent: Agent) => {
     if (!selectedAgents.find(a => a.id === agent.id)) {
       setSelectedAgents([...selectedAgents, agent]);
     }
   };
 
+  // Remove agent from selection
   const removeAgentFromChat = (agentId: number) => {
     setSelectedAgents(selectedAgents.filter(a => a.id !== agentId));
   };
 
+  // Start new chat
   const startNewChat = () => {
-    console.log("startNewChat called");
-    console.log("selectedAgents:", selectedAgents);
+    if (selectedAgents.length === 0) return;
     
-    if (selectedAgents.length === 0) {
-      console.log("No agents selected, returning");
-      return;
-    }
-    
-    // For now, start with the first agent (can be extended for group chats)
     const firstAgent = selectedAgents[0];
-    console.log("First agent:", firstAgent);
-    
-    setSelectedAgent(firstAgent);
-    setSearchQuery(""); 
-    console.log("Starting chat with agent:", firstAgent.id);
     createConversationMutation.mutate(firstAgent.id);
+    setSelectedAgents([]);
+    setSearchQuery("");
   };
 
-  const openConversation = (conversation: Conversation) => {
-    setSelectedConversation(conversation.id);
-    setSelectedAgent(conversation.agent);
-    setSelectedAgents([conversation.agent]);
-    setSearchQuery(""); 
-    setView('chat');
+  // Open existing conversation
+  const openExistingConversation = (conversation: Conversation) => {
+    const agent = agents.find(a => a.id === conversation.agentId);
+    if (agent) {
+      openChatWindow(conversation, agent);
+    }
+    setIsMainWindowOpen(false);
   };
+
+  // Send message
+  const sendMessage = (windowIndex: number) => {
+    const window = chatWindows[windowIndex];
+    const message = messageInputs[window.id];
+    
+    if (!message?.trim()) return;
+    
+    const mutation = sendMessageMutations[windowIndex];
+    mutation.mutate(message);
+  };
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    chatWindows.forEach(window => {
+      const messagesEnd = messagesEndRefs.current[window.id];
+      if (messagesEnd) {
+        messagesEnd.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+  }, [messageQueries.map(q => q.data)]);
 
   const filteredAgents = agents.filter((agent: Agent) => 
     searchQuery === "" || 
@@ -176,7 +221,7 @@ export default function UniversalChatWidget() {
 
   const filteredConversations = conversations.filter((conv: Conversation) =>
     searchQuery === "" ||
-    conv.agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    conv.agent?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (conv.lastMessage && conv.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
@@ -186,7 +231,7 @@ export default function UniversalChatWidget() {
     <>
       {/* Floating chat button */}
       <Button
-        onClick={() => setIsOpen(true)}
+        onClick={() => setIsMainWindowOpen(!isMainWindowOpen)}
         className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-blue-500 hover:bg-blue-600 shadow-lg hover:shadow-xl transition-all duration-200"
       >
         <MessageSquare className="h-6 w-6 text-white" />
@@ -199,88 +244,78 @@ export default function UniversalChatWidget() {
         )}
       </Button>
 
-      {/* Chat modal */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-black/20 backdrop-blur-sm"
-            onClick={() => setIsOpen(false)}
-          />
-          
-          {/* Chat container */}
-          <Card className="relative w-96 h-[600px] bg-white shadow-2xl border-0 rounded-xl overflow-hidden">
-            {view === 'conversations' && (
+      {/* Main chat window (bottom-right positioned) */}
+      {isMainWindowOpen && (
+        <div className="fixed bottom-24 right-6 z-50">
+          <Card className="w-80 h-96 bg-white shadow-2xl border border-gray-200 rounded-lg overflow-hidden">
+            {mainView === 'conversations' && (
               <>
-                <CardHeader className="p-4 border-b border-gray-100">
+                <CardHeader className="p-3 border-b border-gray-100 bg-white">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-gray-900">Chats</h2>
-                    <div className="flex items-center space-x-2">
+                    <h2 className="text-sm font-semibold text-gray-900">Chats</h2>
+                    <div className="flex items-center space-x-1">
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setView('new-chat')}
-                        className="h-8 w-8 p-0"
+                        onClick={() => setMainView('new-chat')}
+                        className="h-6 w-6 p-0 text-gray-600 hover:text-gray-900"
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setIsOpen(false)}
-                        className="h-8 w-8 p-0"
+                        onClick={() => setIsMainWindowOpen(false)}
+                        className="h-6 w-6 p-0 text-gray-600 hover:text-gray-900"
                       >
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                   
-                  {/* Search bar */}
-                  <div className="relative mt-3">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <div className="relative mt-2">
+                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
                     <Input
                       placeholder="Search conversations..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      className="pl-7 py-1 text-xs bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                     />
                   </div>
                 </CardHeader>
 
                 <CardContent className="p-0">
-                  <ScrollArea className="h-[480px]">
+                  <ScrollArea className="h-80">
                     {filteredConversations.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-                        <MessageSquare className="h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="font-medium text-gray-900 mb-2">No conversations yet</h3>
-                        <p className="text-sm text-gray-500 mb-4">
-                          Start chatting with your AI agents
-                        </p>
+                      <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+                        <MessageSquare className="h-8 w-8 text-gray-400 mb-2" />
+                        <p className="text-xs text-gray-500 mb-2">No conversations yet</p>
                         <Button
-                          onClick={() => setView('new-chat')}
-                          className="bg-blue-500 hover:bg-blue-600 text-white"
+                          onClick={() => setMainView('new-chat')}
+                          size="sm"
+                          className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1"
                         >
                           Start new chat
                         </Button>
                       </div>
                     ) : (
-                      <div className="p-2 space-y-1">
+                      <div className="p-1">
                         {filteredConversations.map((conversation: Conversation) => (
                           <div
                             key={conversation.id}
-                            onClick={() => openConversation(conversation)}
-                            className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                            onClick={() => openExistingConversation(conversation)}
+                            className="flex items-center space-x-2 p-2 rounded hover:bg-gray-50 cursor-pointer"
                           >
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={conversation.agent.avatar} alt={conversation.agent.name} />
-                              <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                                <Bot className="h-5 w-5" />
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={conversation.agent?.avatar} alt={conversation.agent?.name} />
+                              <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs">
+                                <Bot className="h-3 w-3" />
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
-                                <h4 className="font-medium text-gray-900 truncate">
-                                  {conversation.agent.name}
+                                <h4 className="font-medium text-gray-900 truncate text-xs">
+                                  {conversation.agent?.name}
                                 </h4>
                                 <span className="text-xs text-gray-500">
                                   {new Date(conversation.lastMessageAt).toLocaleTimeString([], { 
@@ -289,12 +324,12 @@ export default function UniversalChatWidget() {
                                   })}
                                 </span>
                               </div>
-                              <p className="text-sm text-gray-500 truncate">
+                              <p className="text-xs text-gray-500 truncate">
                                 {conversation.lastMessage || "No messages yet"}
                               </p>
                             </div>
                             {conversation.unreadCount > 0 && (
-                              <Badge className="bg-blue-500 text-white">
+                              <Badge className="bg-blue-500 text-white text-xs px-1">
                                 {conversation.unreadCount}
                               </Badge>
                             )}
@@ -307,39 +342,39 @@ export default function UniversalChatWidget() {
               </>
             )}
 
-            {view === 'new-chat' && (
+            {mainView === 'new-chat' && (
               <>
-                <CardHeader className="p-4 border-b border-gray-100">
+                <CardHeader className="p-3 border-b border-gray-100 bg-white">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => {
-                          setView('conversations');
+                          setMainView('conversations');
                           setSelectedAgents([]);
                         }}
-                        className="h-8 w-8 p-0"
+                        className="h-6 w-6 p-0 text-gray-600 hover:text-gray-900"
                       >
                         <ArrowLeft className="h-4 w-4" />
                       </Button>
-                      <h2 className="text-lg font-semibold text-gray-900">New message</h2>
+                      <h2 className="text-sm font-semibold text-gray-900">New message</h2>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setIsOpen(false)}
-                      className="h-8 w-8 p-0"
+                      onClick={() => setIsMainWindowOpen(false)}
+                      className="h-6 w-6 p-0 text-gray-600 hover:text-gray-900"
                     >
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
                   
-                  {/* To: field with selected agents */}
-                  <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  {/* To: field */}
+                  <div className="mt-2 p-2 bg-gray-50 rounded border border-gray-200">
                     <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-gray-700">To:</span>
-                      <div className="flex flex-wrap gap-2 flex-1">
+                      <span className="text-xs font-medium text-gray-700">To:</span>
+                      <div className="flex flex-wrap gap-1 flex-1">
                         {selectedAgents.map((agent) => (
                           <div
                             key={agent.id}
@@ -350,12 +385,12 @@ export default function UniversalChatWidget() {
                               onClick={() => removeAgentFromChat(agent.id)}
                               className="hover:bg-blue-200 rounded-full p-0.5"
                             >
-                              <X className="h-3 w-3" />
+                              <X className="h-2 w-2" />
                             </button>
                           </div>
                         ))}
                         {selectedAgents.length === 0 && (
-                          <span className="text-sm text-gray-500">Select agents to start chatting</span>
+                          <span className="text-xs text-gray-500">Select agents to start chatting</span>
                         )}
                       </div>
                       {selectedAgents.length > 0 && (
@@ -363,7 +398,7 @@ export default function UniversalChatWidget() {
                           onClick={startNewChat}
                           disabled={createConversationMutation.isPending}
                           size="sm"
-                          className="bg-blue-500 hover:bg-blue-600 text-white px-3"
+                          className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 text-xs"
                         >
                           {createConversationMutation.isPending ? "Creating..." : "Start Chat"}
                         </Button>
@@ -371,50 +406,46 @@ export default function UniversalChatWidget() {
                     </div>
                   </div>
                   
-                  {/* Search bar */}
-                  <div className="relative mt-3">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <div className="relative mt-2">
+                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
                     <Input
                       placeholder="Search agents..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                      className="pl-7 py-1 text-xs bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                     />
                   </div>
                 </CardHeader>
 
                 <CardContent className="p-0">
-                  <ScrollArea className="h-[480px]">
+                  <ScrollArea className="h-80">
                     {filteredAgents.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-                        <Bot className="h-12 w-12 text-gray-400 mb-4" />
-                        <h3 className="font-medium text-gray-900 mb-2">No agents found</h3>
-                        <p className="text-sm text-gray-500">
-                          {searchQuery ? "Try adjusting your search" : "You don't have any agents yet"}
-                        </p>
+                      <div className="flex flex-col items-center justify-center h-full p-4 text-center">
+                        <Bot className="h-8 w-8 text-gray-400 mb-2" />
+                        <p className="text-xs text-gray-500">No agents found</p>
                       </div>
                     ) : (
-                      <div className="p-2 space-y-1">
+                      <div className="p-1">
                         {filteredAgents.map((agent: Agent) => {
                           const isSelected = selectedAgents.find(a => a.id === agent.id);
                           return (
                             <div
                               key={agent.id}
                               onClick={() => addAgentToChat(agent)}
-                              className={`flex items-center space-x-3 p-3 rounded-lg cursor-pointer transition-colors ${
-                                isSelected ? 'bg-blue-50 border-2 border-blue-200' : 'hover:bg-gray-50'
+                              className={`flex items-center space-x-2 p-2 rounded cursor-pointer transition-colors ${
+                                isSelected ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'
                               }`}
                             >
-                              <Avatar className="h-10 w-10">
+                              <Avatar className="h-8 w-8">
                                 <AvatarImage src={agent.avatar} alt={agent.name} />
-                                <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                                  <Bot className="h-5 w-5" />
+                                <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs">
+                                  <Bot className="h-3 w-3" />
                                 </AvatarFallback>
                               </Avatar>
                               <div className="flex-1 min-w-0">
-                                <h4 className="font-medium text-gray-900 truncate">{agent.name}</h4>
-                                <div className="flex items-center space-x-2">
-                                  <div className={`w-2 h-2 rounded-full ${
+                                <h4 className="font-medium text-gray-900 truncate text-xs">{agent.name}</h4>
+                                <div className="flex items-center space-x-1">
+                                  <div className={`w-1.5 h-1.5 rounded-full ${
                                     agent.isActive ? 'bg-green-500' : 'bg-gray-400'
                                   }`} />
                                   <span className="text-xs text-gray-500">
@@ -423,7 +454,7 @@ export default function UniversalChatWidget() {
                                 </div>
                               </div>
                               {isSelected && (
-                                <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
                                   <span className="text-white text-xs">✓</span>
                                 </div>
                               )}
@@ -436,53 +467,71 @@ export default function UniversalChatWidget() {
                 </CardContent>
               </>
             )}
+          </Card>
+        </div>
+      )}
 
-            {view === 'chat' && selectedAgent && (
-              <>
-                <CardHeader className="p-4 border-b border-gray-100">
-                  <div className="flex items-center space-x-3">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setView('conversations');
-                        setSelectedAgents([]);
-                      }}
-                      className="h-8 w-8 p-0"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                    </Button>
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={selectedAgent.avatar} alt={selectedAgent.name} />
-                      <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                        <Bot className="h-4 w-4" />
+      {/* Individual chat windows (stacked from right) */}
+      {chatWindows.map((window, index) => {
+        const messages = messageQueries[index]?.data || [];
+        const sendMutation = sendMessageMutations[index];
+        
+        return (
+          <div
+            key={window.id}
+            className={`fixed bottom-6 z-40 transition-all duration-300`}
+            style={{
+              right: `${100 + (index * 320)}px`, // Stack windows from right
+            }}
+          >
+            <Card className="w-80 bg-white shadow-xl border border-gray-200 rounded-lg overflow-hidden">
+              {/* Chat header */}
+              <CardHeader className="p-3 border-b border-gray-100 bg-blue-500 text-white">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={window.agent.avatar} alt={window.agent.name} />
+                      <AvatarFallback className="bg-white text-blue-500 text-xs">
+                        <Bot className="h-3 w-3" />
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-900">{selectedAgent.name}</h3>
-                      <p className="text-xs text-gray-500">
-                        {selectedAgent.isActive ? 'Active now' : 'Last seen recently'}
+                    <div>
+                      <h3 className="font-medium text-white text-sm">{window.agent.name}</h3>
+                      <p className="text-xs text-blue-100">
+                        {window.agent.isActive ? 'Active now' : 'Last seen recently'}
                       </p>
                     </div>
+                  </div>
+                  <div className="flex items-center space-x-1">
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setIsOpen(false)}
-                      className="h-8 w-8 p-0"
+                      onClick={() => toggleMinimizeWindow(window.id)}
+                      className="h-6 w-6 p-0 text-blue-100 hover:text-white hover:bg-blue-600"
                     >
-                      <X className="h-4 w-4" />
+                      <Minus className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => closeChatWindow(window.id)}
+                      className="h-6 w-6 p-0 text-blue-100 hover:text-white hover:bg-blue-600"
+                    >
+                      <X className="h-3 w-3" />
                     </Button>
                   </div>
-                </CardHeader>
+                </div>
+              </CardHeader>
 
-                <CardContent className="p-0 flex flex-col h-full">
-                  {/* Messages area */}
-                  <ScrollArea className="flex-1 h-[400px]">
-                    <div className="p-4 space-y-3">
+              {/* Chat messages */}
+              {!window.isMinimized && (
+                <CardContent className="p-0 flex flex-col">
+                  <ScrollArea className="h-80">
+                    <div className="p-3 space-y-2">
                       {messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-32 text-center">
-                          <MessageSquare className="h-8 w-8 text-gray-400 mb-2" />
-                          <p className="text-sm text-gray-500">No messages yet</p>
+                          <MessageSquare className="h-6 w-6 text-gray-400 mb-2" />
+                          <p className="text-xs text-gray-500">No messages yet</p>
                           <p className="text-xs text-gray-400">Start the conversation below</p>
                         </div>
                       ) : (
@@ -492,7 +541,7 @@ export default function UniversalChatWidget() {
                             className={`flex ${message.sender === "user" ? "justify-end" : "justify-start"}`}
                           >
                             <div
-                              className={`max-w-[80%] p-3 rounded-2xl text-sm ${
+                              className={`max-w-[80%] px-3 py-2 rounded-2xl text-xs ${
                                 message.sender === "user"
                                   ? "bg-blue-500 text-white"
                                   : "bg-gray-100 text-gray-800"
@@ -503,41 +552,44 @@ export default function UniversalChatWidget() {
                           </div>
                         ))
                       )}
-                      <div ref={messagesEndRef} />
+                      <div ref={el => messagesEndRefs.current[window.id] = el} />
                     </div>
                   </ScrollArea>
 
                   {/* Message input */}
-                  <div className="border-t border-gray-100 p-4">
+                  <div className="border-t border-gray-100 p-3">
                     <div className="flex items-center space-x-2">
                       <Input
                         placeholder="Type a message..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
+                        value={messageInputs[window.id] || ""}
+                        onChange={(e) => setMessageInputs(prev => ({ 
+                          ...prev, 
+                          [window.id]: e.target.value 
+                        }))}
                         onKeyPress={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
-                            handleSendMessage();
+                            sendMessage(index);
                           }
                         }}
-                        className="flex-1 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                        className="flex-1 text-xs border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                       />
                       <Button
-                        onClick={handleSendMessage}
-                        disabled={!newMessage.trim() || sendMessageMutation.isPending}
+                        onClick={() => sendMessage(index)}
+                        disabled={!messageInputs[window.id]?.trim() || sendMutation.isPending}
                         size="sm"
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-4"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1"
                       >
-                        <Send className="h-4 w-4" />
+                        <Send className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>
                 </CardContent>
-              </>
-            )}
-          </Card>
-        </div>
-      )}
+              )}
+            </Card>
+          </div>
+        );
+      })}
     </>
   );
 }
