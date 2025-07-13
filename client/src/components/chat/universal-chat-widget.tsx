@@ -302,6 +302,18 @@ export default function UniversalChatWidget() {
     });
   }, [messageQueries.map(q => q.data)]);
 
+  // Debug logging
+  useEffect(() => {
+    console.log("Chat Windows:", chatWindows);
+    console.log("Message Queries:", messageQueries.map((q, i) => ({
+      index: i,
+      data: q.data,
+      isLoading: q.isLoading,
+      isEnabled: q.isEnabled,
+      queryKey: q.queryKey
+    })));
+  }, [chatWindows, messageQueries]);
+
   const filteredAgents = agents.filter((agent: Agent) => 
     searchQuery === "" || 
     agent.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -617,6 +629,11 @@ export default function UniversalChatWidget() {
                 <CardContent className="p-0 flex flex-col">
                   <ScrollArea className="h-80">
                     <div className="p-3 space-y-2">
+                      {/* Debug info */}
+                      <div className="text-xs text-gray-400 mb-2">
+                        Conv ID: {window.conversationId} | Messages: {messages.length} | Query enabled: {messageQueries[index]?.isEnabled ? 'Yes' : 'No'}
+                      </div>
+                      
                       {messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-32 text-center">
                           <MessageSquare className="h-6 w-6 text-gray-400 mb-2" />
