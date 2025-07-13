@@ -99,6 +99,16 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+- **January 13, 2025**: Successfully implemented universal chat system with Facebook Messenger-style interface
+  - Completely rebuilt chat system from scratch with clean, reliable architecture
+  - Fixed message display issues with proper React Query implementation
+  - Messages now display in correct chronological order (oldest to newest)
+  - Chat windows stack horizontally like Facebook Messenger
+  - Individual ChatWindow components for each conversation
+  - Real-time message updates with 2-second refresh interval
+  - Clean message bubbles with user messages (blue, right) and agent messages (gray, left)
+  - Auto-scrolling to newest messages and proper positioning system
+
 - **January 13, 2025**: Implemented universal chat system with Facebook Messenger-style interface
   - Added isPersonalAssistant field to agents table to identify personal assistants
   - Personal assistants are automatically created for new users and appear first in agents list

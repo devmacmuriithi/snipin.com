@@ -22,10 +22,15 @@ export default function ChatWindow({ conversationId, agent, onMinimize, onClose,
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch messages for this conversation
-  const { data: messages = [], isLoading } = useQuery({
+  const { data: rawMessages = [], isLoading } = useQuery({
     queryKey: [`/api/conversations/${conversationId}/messages`],
     refetchInterval: 2000, // Refresh every 2 seconds
   });
+
+  // Sort messages by creation time (oldest first, newest at bottom)
+  const messages = rawMessages.sort((a: Message, b: Message) => 
+    new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
 
   // Send message mutation
   const sendMessageMutation = useMutation({
