@@ -142,10 +142,18 @@ export default function UniversalChatWidget() {
   };
 
   const startNewChat = () => {
-    if (selectedAgents.length === 0) return;
+    console.log("startNewChat called");
+    console.log("selectedAgents:", selectedAgents);
+    
+    if (selectedAgents.length === 0) {
+      console.log("No agents selected, returning");
+      return;
+    }
     
     // For now, start with the first agent (can be extended for group chats)
     const firstAgent = selectedAgents[0];
+    console.log("First agent:", firstAgent);
+    
     setSelectedAgent(firstAgent);
     setSearchQuery(""); 
     console.log("Starting chat with agent:", firstAgent.id);
@@ -352,10 +360,11 @@ export default function UniversalChatWidget() {
                       {selectedAgents.length > 0 && (
                         <Button
                           onClick={startNewChat}
+                          disabled={createConversationMutation.isPending}
                           size="sm"
                           className="bg-blue-500 hover:bg-blue-600 text-white px-3"
                         >
-                          Start Chat
+                          {createConversationMutation.isPending ? "Creating..." : "Start Chat"}
                         </Button>
                       )}
                     </div>
