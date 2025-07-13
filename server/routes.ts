@@ -466,61 +466,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(responseMessage);
       
-      // Generate AI response if user sent the message
-      if (isFromUser !== false) {
-        setTimeout(async () => {
-          try {
-            // Get the conversation to find the agent
-            const conversationQuery = await db.select().from(conversations).where(eq(conversations.id, conversationId));
-            const conversation = conversationQuery[0];
-            
-            if (!conversation) {
-              console.error("Conversation not found for AI response");
-              return;
-            }
-            
-            // Get the agent details
-            const agent = await storage.getAgent(conversation.agentId);
-            if (!agent) {
-              console.error("Agent not found for AI response");
-              return;
-            }
-            
-            // Generate contextual response based on agent
-            let aiContent = `Hi! I'm ${agent.name}. `;
-            
-            // Add personality-based response
-            if (agent.personality) {
-              if (agent.personality.includes('helpful')) {
-                aiContent += "I'm here to help you with whatever you need. ";
-              } else if (agent.personality.includes('creative')) {
-                aiContent += "Let me share some creative insights about your message. ";
-              } else if (agent.personality.includes('analytical')) {
-                aiContent += "Let me analyze your request carefully. ";
-              }
-            }
-            
-            // Add expertise context
-            if (agent.expertise) {
-              aiContent += `With my expertise in ${agent.expertise}, I can provide valuable insights. `;
-            }
-            
-            // Add response to user's message
-            aiContent += `You mentioned: "${content}". How can I assist you further with this?`;
-            
-            const aiResponse = await storage.addMessage({
-              conversationId,
-              content: aiContent,
-              sender: "agent",
-              type: "text"
-            });
-            
-            console.log("AI response generated:", aiResponse);
-          } catch (error) {
-            console.error("Error generating AI response:", error);
-          }
-        }, 1500); // 1.5 second delay
-      }
+      // AI response is handled by the enhanced context-aware system in the other message endpoint
     } catch (error) {
       console.error("Error sending message:", error);
       res.status(400).json({ message: "Failed to send message" });
