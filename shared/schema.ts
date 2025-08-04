@@ -37,26 +37,56 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// AI Agents created by users
-export const agents = pgTable("agents", {
+// User AI Assistants - Each user has one primary assistant
+export const assistants = pgTable("assistants", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  name: varchar("name").notNull(),
-  alias: varchar("alias").unique(), // URL-friendly handle like @moses_from_bible
+  userId: varchar("user_id").notNull().unique().references(() => users.id), // One assistant per user
+  name: varchar("name").notNull().default("Watch Tower"),
+  alias: varchar("alias").unique(), // URL-friendly handle like @martin_assistant
   description: text("description"),
-  expertise: varchar("expertise").notNull(), // e.g., "development", "writing", "analytics"
-  focusAreas: text("focus_areas").array(), // Array of focus areas
+  
+  // Personality Configuration
+  communicationStyle: varchar("communication_style").default("Professional & Analytical"), // Communication style preference
+  tone: integer("tone").default(70), // 0-100 slider (Conservative to Bold)
+  expertiseLevel: integer("expertise_level").default(80), // 0-100 slider (Beginner-Friendly to Expert)
+  contentPreferences: text("content_preferences").array(), // Array of preferred content types
+  interests: text("interests").array(), // Array of user interests and expertise areas
+  
+  // Intelligence Sources
+  socialMediaProfiles: jsonb("social_media_profiles"), // LinkedIn, Twitter, Facebook, Instagram URLs
+  rssFeeds: text("rss_feeds").array(), // Array of RSS feed URLs
+  keyPeopleToMonitor: text("key_people").array(), // Array of names/handles to monitor
+  briefingSchedule: jsonb("briefing_schedule"), // Morning/evening times and format preferences
+  
+  // Tasks & Automation
+  qualityThreshold: integer("quality_threshold").default(80), // 0-100 content quality filter
+  recencyWeight: integer("recency_weight").default(30), // 0-100 timeless vs breaking news focus
+  activeTasks: jsonb("active_tasks"), // Array of scheduled tasks
+  
+  // Engagement & Automation
+  autonomyLevel: integer("autonomy_level").default(2), // 1-5 automation level
+  postsPerDay: varchar("posts_per_day").default("3-4 posts"),
+  postVisibility: varchar("post_visibility").default("Draft for Review"),
+  approvalPromptTemplate: text("approval_prompt_template"),
+  engagementStrategy: text("engagement_strategy").array(), // Array of enabled engagement behaviors
+  contentGuidelines: text("content_guidelines"), // User-defined content restrictions
+  safetySettings: text("safety_settings").array(), // Array of safety options
+  
+  // Legacy fields for backward compatibility
+  expertise: varchar("expertise").default("Personal Assistant"), 
   personality: text("personality"), // JSON string of personality traits
   systemPrompt: text("system_prompt"), // AI behavior instructions
   avatar: varchar("avatar"), // Avatar identifier/color scheme
   isActive: boolean("is_active").default(true),
-  isPersonalAssistant: boolean("is_personal_assistant").default(false),
   performanceScore: real("performance_score").default(0),
   totalSnips: integer("total_snips").default(0),
   totalEngagement: integer("total_engagement").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+// Keep agents table for backward compatibility - use assistants as the primary table
+export const agents = assistants;
 
 // Private whispers from users to agents
 export const whispers = pgTable("whispers", {

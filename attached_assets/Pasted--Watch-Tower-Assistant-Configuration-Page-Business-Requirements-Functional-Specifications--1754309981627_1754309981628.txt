@@ -1,0 +1,333 @@
+# Watch Tower Assistant Configuration Page
+## Business Requirements & Functional Specifications
+
+---
+
+## 🎯 Page Overview
+
+**Purpose**: Central configuration interface for personalizing the Watch Tower AI assistant that monitors, learns, and engages on behalf of users across digital platforms.
+
+**Core Function**: Transform a generic AI into a personalized intelligence companion through comprehensive configuration options.
+
+---
+
+## 🏗️ Page Structure
+
+### **Main Layout**
+- **Header Section**: Page title and description
+- **Tabbed Configuration Interface**: 4 primary tabs
+- **Save Button**: Persistent save action at bottom
+- **Task Creation Modal**: Overlay for creating scheduled tasks
+
+### **Tab Organization**
+1. **Personality** - AI voice, tone, and content preferences
+2. **Intelligence** - Data sources and monitoring setup
+3. **Tasks** - Automated research and action scheduling
+4. **Engagement** - Social media automation and boundaries
+
+---
+
+## 🎛️ Tab 1: Personality Configuration
+
+### **Assistant Identity**
+- **Assistant Name**: Text input for AI companion name
+- **Communication Style**: Dropdown selection
+  - Professional & Analytical
+  - Casual & Friendly  
+  - Formal & Academic
+  - Creative & Expressive
+
+### **Voice & Tone Settings**
+- **Tone Preference**: Slider (Conservative ↔ Bold)
+- **Expertise Level**: Slider (Beginner-Friendly ↔ Expert)
+
+### **Content Preferences**
+Checkbox grid for preferred content types:
+- Industry Insights
+- Technical Deep Dives
+- Opinion Pieces
+- Research Summaries
+- Personal Stories
+- How-To Guides
+
+### **Interests & Expertise**
+- **Add Interface**: Text input + Add button
+- **Dynamic List**: Display added interests with remove options
+- **Default Examples**: AI, Machine Learning, Data Science
+
+---
+
+## 🧠 Tab 2: Intelligence Sources
+
+### **Social Media Monitoring**
+Four input fields in 2x2 grid:
+- **LinkedIn Profile URL**: Full LinkedIn profile URL
+- **Twitter/X Handle**: Username with @ symbol
+- **Facebook Page**: Facebook page URL
+- **Instagram Handle**: Username with @ symbol
+
+### **RSS Feeds & News Sources**
+- **Add Interface**: URL input + "Add Feed" button
+- **Feed List**: Display added feeds with remove options
+- **Default Examples**: TechCrunch AI Feed, MIT Technology Review
+
+### **Key People to Monitor**
+- **Add Interface**: Name/handle input + "Add Person" button
+- **Person List**: Display monitored people with remove options
+- **Default Examples**: Andrej Karpathy, Yann LeCun
+
+### **Intelligence Briefing Schedule**
+- **Morning Briefing Time**: Time picker (default: 08:00)
+- **Evening Summary Time**: Time picker (default: 18:00)
+- **Briefing Format**: Dropdown selection
+  - Executive Summary (2-3 key insights)
+  - Detailed Report (5-7 insights with context)
+  - Quick Highlights (1-2 sentences each)
+
+---
+
+## 📅 Tab 3: Tasks & Automation
+
+### **Task Creation**
+- **"Add Task" Button**: Opens modal for new task creation
+- **Task Modal Components**:
+  - Task Name input
+  - Frequency buttons (Once, Daily, Weekly, Monthly, Yearly)
+  - Execution Time picker
+  - Instructions textarea
+  - Create Task button
+
+### **Active Tasks Display**
+List of existing tasks showing:
+- **Task Name** with status indicator (green=active, gray=inactive)
+- **Frequency Badge**: Visual frequency indicator
+- **Instructions Preview**: First line of task instructions
+- **Action Buttons**: Edit, pause, delete options
+
+### **Relevance Scoring Settings**
+- **Quality Threshold**: Slider (Low Quality ↔ High Quality Only)
+- **Recency Weight**: Slider (Timeless Content ↔ Breaking News Focus)
+
+---
+
+## ❤️ Tab 4: Engagement & Automation
+
+### **Automation Level Control**
+- **AI Autonomy Slider**: 5-level scale with descriptions
+  1. Manual Approval (All actions require approval)
+  2. Suggested Actions (AI suggests, user approves)
+  3. Semi-Autonomous (AI can like/share, approval for comments)
+  4. Mostly Autonomous (AI engages freely, daily summary)
+  5. Fully Autonomous (Complete automation, weekly oversight)
+
+### **Content Creation Settings**
+- **Posts Per Day**: Dropdown (1-2, 3-4, 5-6, Custom schedule)
+- **Post Visibility**: Dropdown (Always Public, Draft for Review, Private by Default)
+- **Approval Prompt Template**: Textarea for customizing AI approval requests
+
+### **Engagement Strategy**
+Checkbox options for AI engagement behaviors:
+- Auto-like relevant posts
+- Share with commentary
+- Reply to comments on my posts
+- Initiate conversations
+- Engage with network posts
+- Follow suggested accounts
+
+### **Safety & Boundaries**
+- **Content Guidelines**: Textarea for defining content restrictions
+- **Safety Options**: Checkboxes for safety measures
+  - Fact-check before sharing
+  - Avoid controversial topics
+  - Never engage in debates
+  - Maintain professional tone
+
+---
+
+## 💾 Data Requirements
+
+### **Configuration Data Structure**
+```javascript
+{
+  personality: {
+    name: "Assistant name",
+    communicationStyle: "Selected style",
+    tone: 70,                    // 0-100 slider value
+    expertise: 80,               // 0-100 slider value
+    contentPreferences: [...],   // Array of selected types
+    interests: [...]             // Array of user interests
+  },
+  intelligence: {
+    socialMedia: {
+      linkedin: "URL",
+      twitter: "@handle",
+      facebook: "URL", 
+      instagram: "@handle"
+    },
+    rssFeeds: [...],            // Array of RSS URLs
+    keyPeople: [...],           // Array of names/handles
+    briefingSchedule: {
+      morning: "08:00",
+      evening: "18:00",
+      format: "Selected format"
+    }
+  },
+  tasks: {
+    qualityThreshold: 80,       // 0-100 slider value
+    recencyWeight: 30,          // 0-100 slider value
+    activeTasks: [...]          // Array of task objects
+  },
+  engagement: {
+    autonomyLevel: 3,           // 1-5 scale
+    postsPerDay: "3-4 posts",
+    postVisibility: "Draft for Review",
+    approvalPrompt: "Template text",
+    engagementStrategy: [...],  // Array of enabled strategies
+    contentGuidelines: "Guidelines text",
+    safetySettings: [...]       // Array of safety options
+  }
+}
+```
+
+### **Task Object Structure**
+```javascript
+{
+  id: "unique-id",
+  name: "Task name",
+  frequency: "daily|weekly|monthly|yearly|once",
+  time: "HH:MM",
+  instructions: "Detailed task instructions",
+  status: "active|inactive|paused"
+}
+```
+
+---
+
+## 🔄 User Interactions
+
+### **Form Interactions**
+- **Input Fields**: Text, URL, time, textarea inputs
+- **Sliders**: Range inputs with contextual labels
+- **Checkboxes**: Multi-select options with visual feedback
+- **Dropdowns**: Single-select menus for predefined options
+
+### **List Management**
+- **Add Functionality**: Input + button to add new items
+- **Remove Functionality**: Remove button for each list item
+- **Dynamic Updates**: Real-time list updates without page refresh
+
+### **Modal Operations**
+- **Task Creation**: Modal overlay for complex task setup
+- **Form Validation**: Required field validation before submission
+- **Cancel/Close**: Multiple ways to exit modal
+
+### **Configuration Persistence**
+- **Auto-Save**: Continuous saving of configuration changes
+- **Manual Save**: Explicit save button for user control
+- **Visual Feedback**: Save confirmation and loading states
+
+---
+
+## 🔌 Integration Requirements
+
+### **Backend API Calls**
+- **Save Configuration**: `PUT /api/user/configuration`
+- **Load Configuration**: `GET /api/user/configuration`
+- **Task Management**: CRUD operations for task scheduling
+- **Social Profile Validation**: Verify social media URLs/handles
+
+### **Real-time Features**
+- **Configuration Sync**: Real-time updates across devices
+- **Task Execution Status**: Live updates on task completion
+- **Validation Feedback**: Immediate validation of inputs
+
+### **External Service Integration**
+- **Social Media APIs**: Validate profile URLs and handles
+- **RSS Feed Validation**: Check feed accessibility and format
+- **AI Model Configuration**: Pass personality settings to AI engine
+
+---
+
+## 📋 Functional Requirements
+
+### **Core Functionality**
+1. **Multi-tab Navigation**: Switch between 4 configuration sections
+2. **Dynamic Form Management**: Add/remove items from lists
+3. **Slider Controls**: Visual range inputs with real-time feedback
+4. **Modal Task Creation**: Complex task scheduling interface
+5. **Configuration Persistence**: Save and load user preferences
+
+### **Validation Requirements**
+- **Required Fields**: Assistant name, task instructions
+- **URL Validation**: LinkedIn, Facebook, RSS feed URLs
+- **Handle Validation**: Twitter/Instagram handle format
+- **Time Validation**: Valid time format for schedules
+
+### **User Experience Requirements**
+- **Intuitive Navigation**: Clear tab structure and labeling
+- **Progressive Disclosure**: Show advanced options when needed
+- **Immediate Feedback**: Visual confirmation of actions
+- **Error Handling**: Clear error messages and recovery options
+
+---
+
+## 🎯 Business Value
+
+### **User Retention Drivers**
+- **Personalization Depth**: Extensive customization creates switching costs
+- **Configuration Complexity**: Investment in setup increases commitment
+- **Unique AI Personality**: Irreplaceable personalized assistant
+
+### **Revenue Impact**
+- **Premium Features**: Advanced automation levels for paid tiers
+- **Enterprise Options**: Team configuration and compliance features
+- **Usage Analytics**: Configuration depth correlates with subscription value
+
+### **Competitive Advantage**
+- **Granular Control**: More configuration options than competitors
+- **AI Specialization**: Domain-specific AI personality development
+- **Automation Levels**: Flexible autonomy from manual to fully automated
+
+---
+
+## 🚀 Implementation Priority
+
+### **Phase 1: Core Configuration (Week 1-2)**
+- Basic tab navigation
+- Essential form inputs
+- Simple save functionality
+
+### **Phase 2: Advanced Features (Week 3-4)**
+- Dynamic list management
+- Task creation modal
+- Slider controls with feedback
+
+### **Phase 3: Polish & Integration (Week 5-6)**
+- Real-time validation
+- Backend integration
+- Advanced automation settings
+
+### **Success Criteria**
+- **User Completion Rate**: 80% of users complete full configuration
+- **Configuration Depth**: Average user configures 70% of available options
+- **Return Rate**: 90% of users return to modify configuration within 30 days
+
+---
+
+## 📊 Key Metrics to Track
+
+### **Usage Metrics**
+- Configuration completion rates per tab
+- Most/least used configuration options
+- Time spent in configuration interface
+- Configuration modification frequency
+
+### **Business Metrics**
+- Correlation between configuration depth and subscription tier
+- Feature usage by user segment
+- Configuration abandonment points
+- Support tickets related to configuration
+
+---
+
+**This configuration page is the foundation for creating irreplaceable user value through deep AI personalization - the key to building a sustainable, high-revenue Watch Tower platform.**

@@ -45,7 +45,7 @@ function NavigationSidebar() {
     { path: "/messages", icon: Mail, label: "Messages" },
     { path: "/explore", icon: Compass, label: "Explore" },
     { path: "/notifications", icon: Bell, label: "Notifications", badge: unreadNotifications > 0 ? unreadNotifications : undefined },
-    { path: "/agents", icon: Bot, label: "My Agents", badge: Array.isArray(agents) && agents.length > 0 ? agents.length : undefined },
+    { path: "/assistant", icon: Bot, label: "My Assistant" },
     { path: "/mempod", icon: Brain, label: "MemPod" },
   ];
 

@@ -11,6 +11,7 @@ import Whispers from "@/pages/whispers";
 import Messages from "@/pages/messages";
 import Snips from "@/pages/snips";
 import Agents from "@/pages/agents";
+import Assistant from "@/pages/assistant";
 import AgentProfile from "@/pages/agent-profile";
 import AgentWall from "@/pages/agent-wall";
 import Networks from "@/pages/networks";
@@ -39,6 +40,7 @@ function Router() {
             <Route path="/messages" component={Messages} />
             <Route path="/snips" component={Snips} />
             <Route path="/snip/:id" component={SnipDetail} />
+            <Route path="/assistant" component={Assistant} />
             <Route path="/agents" component={Agents} />
             <Route path="/agents/:id" component={AgentProfile} />
             <Route path="/wall/:alias" component={AgentWall} />

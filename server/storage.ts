@@ -1,5 +1,6 @@
 import {
   users,
+  assistants,
   agents,
   whispers,
   snips,
@@ -47,6 +48,10 @@ export interface IStorage {
   // User operations (mandatory for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  
+  // Assistant operations (single assistant per user)
+  getUserAssistant(userId: string): Promise<Agent | undefined>;
+  saveUserAssistant(assistantData: any): Promise<Agent>;
   
   // Agent operations
   createAgent(agent: InsertAgent): Promise<Agent>;
@@ -156,7 +161,7 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(agents)
       .where(eq(agents.userId, userId))
-      .orderBy(desc(agents.isPersonalAssistant), desc(agents.createdAt));
+      .orderBy(desc(agents.createdAt));
   }
 
   async getAgent(id: number): Promise<Agent | undefined> {
@@ -180,6 +185,86 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAgent(id: number): Promise<void> {
     await db.delete(agents).where(eq(agents.id, id));
+  }
+
+  // Assistant operations (single assistant per user)
+  async getUserAssistant(userId: string): Promise<Agent | undefined> {
+    const [assistant] = await db
+      .select()
+      .from(assistants)
+      .where(eq(assistants.userId, userId))
+      .limit(1);
+    return assistant;
+  }
+
+  async saveUserAssistant(assistantData: any): Promise<Agent> {
+    // Check if user already has an assistant
+    const existing = await this.getUserAssistant(assistantData.userId);
+    
+    if (existing) {
+      // Update existing assistant
+      const [updated] = await db
+        .update(assistants)
+        .set({
+          name: assistantData.name,
+          communicationStyle: assistantData.communicationStyle,
+          tone: assistantData.tone,
+          expertiseLevel: assistantData.expertiseLevel,
+          contentPreferences: assistantData.contentPreferences,
+          interests: assistantData.interests,
+          socialMediaProfiles: assistantData.socialMediaProfiles,
+          rssFeeds: assistantData.rssFeeds,
+          keyPeopleToMonitor: assistantData.keyPeopleToMonitor,
+          briefingSchedule: assistantData.briefingSchedule,
+          qualityThreshold: assistantData.qualityThreshold,
+          recencyWeight: assistantData.recencyWeight,
+          activeTasks: assistantData.activeTasks,
+          autonomyLevel: assistantData.autonomyLevel,
+          postsPerDay: assistantData.postsPerDay,
+          postVisibility: assistantData.postVisibility,
+          approvalPromptTemplate: assistantData.approvalPromptTemplate,
+          engagementStrategy: assistantData.engagementStrategy,
+          contentGuidelines: assistantData.contentGuidelines,
+          safetySettings: assistantData.safetySettings,
+          updatedAt: new Date(),
+        })
+        .where(eq(assistants.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      // Create new assistant
+      const [newAssistant] = await db
+        .insert(assistants)
+        .values({
+          userId: assistantData.userId,
+          name: assistantData.name || 'Watch Tower',
+          alias: `${assistantData.userId}_assistant`.toLowerCase(),
+          description: 'Your personal AI intelligence companion',
+          expertise: 'Personal Assistant',
+          communicationStyle: assistantData.communicationStyle,
+          tone: assistantData.tone,
+          expertiseLevel: assistantData.expertiseLevel,
+          contentPreferences: assistantData.contentPreferences,
+          interests: assistantData.interests,
+          socialMediaProfiles: assistantData.socialMediaProfiles,
+          rssFeeds: assistantData.rssFeeds,
+          keyPeopleToMonitor: assistantData.keyPeopleToMonitor,
+          briefingSchedule: assistantData.briefingSchedule,
+          qualityThreshold: assistantData.qualityThreshold,
+          recencyWeight: assistantData.recencyWeight,
+          activeTasks: assistantData.activeTasks,
+          autonomyLevel: assistantData.autonomyLevel,
+          postsPerDay: assistantData.postsPerDay,
+          postVisibility: assistantData.postVisibility,
+          approvalPromptTemplate: assistantData.approvalPromptTemplate,
+          engagementStrategy: assistantData.engagementStrategy,
+          contentGuidelines: assistantData.contentGuidelines,
+          safetySettings: assistantData.safetySettings,
+          isActive: true,
+        })
+        .returning();
+      return newAssistant;
+    }
   }
 
   // Whisper operations
@@ -752,7 +837,7 @@ export class DatabaseStorage implements IStorage {
     // Calculate overall progress as average of all metric progress percentages
     let totalProgress = 0;
     for (const metric of metrics) {
-      const progressPercentage = Math.min(100, (metric.currentValue / metric.targetValue) * 100);
+      const progressPercentage = Math.min(100, ((metric.currentValue || 0) / metric.targetValue) * 100);
       totalProgress += progressPercentage;
     }
     

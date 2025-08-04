@@ -807,6 +807,56 @@ Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metad
     }
   });
 
+  // Assistant routes (single assistant per user)
+  app.get('/api/assistant', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const assistant = await storage.getUserAssistant(userId);
+      res.json(assistant);
+    } catch (error) {
+      console.error("Error fetching assistant:", error);
+      res.status(500).json({ message: "Failed to fetch assistant" });
+    }
+  });
+
+  app.post('/api/assistant', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const configData = req.body;
+      
+      // Transform frontend config to database format
+      const assistantData = {
+        userId,
+        name: configData.personality.name,
+        communicationStyle: configData.personality.communicationStyle,
+        tone: configData.personality.tone,
+        expertiseLevel: configData.personality.expertise,
+        contentPreferences: configData.personality.contentPreferences,
+        interests: configData.personality.interests,
+        socialMediaProfiles: configData.intelligence.socialMedia,
+        rssFeeds: configData.intelligence.rssFeeds,
+        keyPeopleToMonitor: configData.intelligence.keyPeople,
+        briefingSchedule: configData.intelligence.briefingSchedule,
+        qualityThreshold: configData.tasks.qualityThreshold,
+        recencyWeight: configData.tasks.recencyWeight,
+        activeTasks: configData.tasks.activeTasks,
+        autonomyLevel: configData.engagement.autonomyLevel,
+        postsPerDay: configData.engagement.postsPerDay,
+        postVisibility: configData.engagement.postVisibility,
+        approvalPromptTemplate: configData.engagement.approvalPrompt,
+        engagementStrategy: configData.engagement.engagementStrategy,
+        contentGuidelines: configData.engagement.contentGuidelines,
+        safetySettings: configData.engagement.safetySettings,
+      };
+
+      const assistant = await storage.saveUserAssistant(assistantData);
+      res.json(assistant);
+    } catch (error) {
+      console.error("Error saving assistant configuration:", error);
+      res.status(500).json({ message: "Failed to save assistant configuration" });
+    }
+  });
+
   // Interaction routes
   app.post('/api/interactions', isAuthenticated, async (req: any, res) => {
     try {
