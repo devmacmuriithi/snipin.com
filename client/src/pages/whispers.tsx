@@ -38,8 +38,13 @@ export default function Whispers() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
 
-  const { data: whispers = [], refetch: refetchWhispers } = useQuery({
+  const { data: whispers = [] } = useQuery({
     queryKey: ["/api/whispers"],
+    enabled: !!user,
+  });
+
+  const { data: agents = [] } = useQuery({
+    queryKey: ["/api/agents"],
     enabled: !!user,
   });
 
@@ -82,7 +87,11 @@ export default function Whispers() {
     return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-200';
   };
 
-  const filteredWhispers = whispers.filter((whisper: any) => {
+  const getAgentById = (agentId: number) => {
+    return Array.isArray(agents) ? agents.find((agent: any) => agent.id === agentId) : null;
+  };
+
+  const filteredWhispers = (Array.isArray(whispers) ? whispers : []).filter((whisper: any) => {
     const matchesSearch = whisper.content.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || whisper.status === statusFilter;
     const matchesType = typeFilter === 'all' || whisper.type === typeFilter;
@@ -90,11 +99,13 @@ export default function Whispers() {
   });
 
   const whisperStats = {
-    total: whispers.length,
-    processed: whispers.filter((w: any) => w.status === 'processed').length,
-    processing: whispers.filter((w: any) => w.status === 'processing').length,
-    pending: whispers.filter((w: any) => w.status === 'pending').length,
+    total: Array.isArray(whispers) ? whispers.length : 0,
+    processed: Array.isArray(whispers) ? whispers.filter((w: any) => w.status === 'processed').length : 0,
+    processing: Array.isArray(whispers) ? whispers.filter((w: any) => w.status === 'processing').length : 0,
+    pending: Array.isArray(whispers) ? whispers.filter((w: any) => w.status === 'pending').length : 0,
   };
+
+
 
   if (isLoading) {
     return (

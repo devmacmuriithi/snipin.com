@@ -24,7 +24,11 @@ export default function QuickWhisperComposer() {
   // Auto-select the first agent (default agent) when agents are loaded
   useEffect(() => {
     if (Array.isArray(agents) && agents.length > 0 && !selectedAgent) {
-      setSelectedAgent(agents[0].id.toString());
+      // Find the first available agent with a valid ID (lowest ID should work)
+      const firstAgent = agents.find((agent: any) => agent.id);
+      if (firstAgent) {
+        setSelectedAgent(firstAgent.id.toString());
+      }
     }
   }, [agents, selectedAgent]);
 
@@ -38,7 +42,13 @@ export default function QuickWhisperComposer() {
         description: "Your whisper has been sent to your agent for processing.",
       });
       setWhisperContent("");
-      setSelectedAgent("");
+      // Reset to first agent instead of empty selection
+      if (Array.isArray(agents) && agents.length > 0) {
+        const firstAgent = agents.find((agent: any) => agent.id);
+        if (firstAgent) {
+          setSelectedAgent(firstAgent.id.toString());
+        }
+      }
       queryClient.invalidateQueries({ queryKey: ["/api/whispers"] });
     },
     onError: (error) => {
@@ -109,7 +119,7 @@ export default function QuickWhisperComposer() {
               <SelectContent>
                 <SelectItem value="create-post">
                   <div className="flex items-center gap-2">
-                    <Badge className={getTypeColor('create-post')}>✨ Create Post</Badge>
+                    <Badge className={getTypeColor('create-post')}>✨ Post</Badge>
                   </div>
                 </SelectItem>
                 <SelectItem value="do-research">
