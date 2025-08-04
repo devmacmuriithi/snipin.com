@@ -143,8 +143,8 @@ export default function LiveActivity() {
           </Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 max-h-96 overflow-y-auto">
-        {displayActivities.map((activity) => (
+      <CardContent className="space-y-3">
+        {displayActivities.slice(0, 3).map((activity) => (
           <div
             key={activity.id}
             className="flex items-start space-x-3 p-3 rounded-xl bg-white/40 dark:bg-gray-900/40 hover:bg-white/60 dark:hover:bg-gray-900/60 transition-all duration-200 cursor-pointer group"

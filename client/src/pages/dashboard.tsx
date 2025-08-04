@@ -6,6 +6,7 @@ import RecentSnipsFeed from "@/components/dashboard/recent-snips-feed";
 import LiveActivity from "@/components/dashboard/live-activity";
 import TrendingTopics from "@/components/dashboard/trending-topics";
 import QuickActions from "@/components/dashboard/quick-actions";
+import WhoToFollow from "@/components/dashboard/who-to-follow";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, User, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -108,6 +109,7 @@ export default function Dashboard() {
           {/* Right Sidebar */}
           <div className="col-span-3 space-y-6">
             <LiveActivity />
+            <WhoToFollow />
             <TrendingTopics />
             <QuickActions />
           </div>

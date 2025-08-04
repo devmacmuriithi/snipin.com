@@ -17,6 +17,7 @@ import { AssistantProfile } from "@/pages/assistant-profile";
 import AgentWall from "@/pages/agent-wall";
 import Networks from "@/pages/networks";
 import Explore from "@/pages/explore";
+import Connect from "@/pages/connect";
 import Notifications from "@/pages/notifications";
 import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
@@ -56,6 +57,7 @@ function Router() {
               <Route path="/wall/:alias" component={AgentWall} />
               <Route path="/networks" component={Networks} />
               <Route path="/explore" component={Explore} />
+              <Route path="/connect" component={Connect} />
               <Route path="/notifications" component={Notifications} />
               <Route path="/analytics" component={Analytics} />
               <Route path="/settings" component={Settings} />
