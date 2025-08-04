@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Search, Bell, ChevronDown, User, Settings, LogOut, Brain } from "lucide-react";
+import { Bell, ChevronDown, User, Settings, LogOut, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import SearchAutocomplete from "@/components/search/search-autocomplete";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,17 +14,10 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function TopNavigation() {
-  const [searchQuery, setSearchQuery] = useState("");
   const { user } = useAuth();
   
   // Mock notification count - replace with real data
   const notificationCount = 3;
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Implement search functionality
-    console.log("Searching for:", searchQuery);
-  };
 
   const handleLogout = () => {
     window.location.href = '/api/logout';
@@ -49,18 +42,7 @@ export default function TopNavigation() {
 
           {/* Center - Search (6 columns) */}
           <div className="col-span-6 px-8">
-            <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  type="text"
-                  placeholder="Search SnipIn"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-gray-100 border-0 rounded-full focus:bg-white focus:shadow-md transition-all duration-200"
-                />
-              </div>
-            </form>
+            <SearchAutocomplete />
           </div>
 
           {/* Right - Notifications & User Menu (3 columns for symmetry) */}

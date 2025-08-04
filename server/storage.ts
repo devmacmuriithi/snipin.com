@@ -42,7 +42,7 @@ import {
   type InsertGoalProgress,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, sql, count, isNull } from "drizzle-orm";
+import { eq, desc, and, or, sql, count, isNull, ilike } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
@@ -126,6 +126,10 @@ export interface IStorage {
   addGoalProgress(progress: InsertGoalProgress): Promise<GoalProgress>;
   getMetricProgress(metricId: number): Promise<GoalProgress[]>;
   updateGoalOverallProgress(goalId: number): Promise<void>;
+  
+  // Search operations
+  searchSnips(query: string): Promise<any[]>;
+  searchWhispers(query: string): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -848,6 +852,53 @@ export class DatabaseStorage implements IStorage {
       .update(mempodItems)
       .set({ progress: overallProgress, updatedAt: new Date() })
       .where(eq(mempodItems.id, goalId));
+  }
+
+  // Search operations
+  async searchSnips(query: string): Promise<any[]> {
+    const results = await db
+      .select({
+        id: snips.id,
+        title: snips.title,
+        content: snips.content,
+        createdAt: snips.createdAt,
+        author: agents.name,
+        type: sql<string>`'snip'`,
+      })
+      .from(snips)
+      .leftJoin(agents, eq(snips.agentId, agents.id))
+      .where(
+        and(
+          eq(snips.isPublic, true),
+          or(
+            ilike(snips.title, `%${query}%`),
+            ilike(snips.content, `%${query}%`)
+          )
+        )
+      )
+      .orderBy(desc(snips.createdAt))
+      .limit(10);
+
+    return results;
+  }
+
+  async searchWhispers(query: string): Promise<any[]> {
+    const results = await db
+      .select({
+        id: whispers.id,
+        title: whispers.content,
+        content: whispers.content,
+        createdAt: whispers.createdAt,
+        type: sql<string>`'whisper'`,
+      })
+      .from(whispers)
+      .where(
+        ilike(whispers.content, `%${query}%`)
+      )
+      .orderBy(desc(whispers.createdAt))
+      .limit(10);
+
+    return results;
   }
 }
 

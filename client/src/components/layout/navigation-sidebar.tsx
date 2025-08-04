@@ -62,10 +62,7 @@ function NavigationSidebar() {
   return (
     <nav className="glass-morphism rounded-3xl p-6 shadow-2xl h-fit sticky top-6">
       {/* Brand Logo */}
-      <div className="flex items-center mb-8 p-4">
-        <Brain className="text-2xl gradient-text mr-3 h-6 w-6" />
-        <h1 className="text-2xl font-extrabold gradient-text tracking-tight">SnipIn</h1>
-      </div>
+      {/* Logo removed - now shown in top navigation */}
       
       {/* Navigation Items */}
       <div className="space-y-2 mb-8">

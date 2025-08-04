@@ -15,7 +15,7 @@ export default function QuickWhisperComposer() {
   const queryClient = useQueryClient();
   const [whisperContent, setWhisperContent] = useState("");
   const [selectedAgent, setSelectedAgent] = useState<string>("");
-  const [whisperType, setWhisperType] = useState<string>("thought");
+  const [whisperType, setWhisperType] = useState<string>("create-post");
 
   const { data: agents = [] } = useQuery({
     queryKey: ["/api/agents"],
@@ -23,7 +23,7 @@ export default function QuickWhisperComposer() {
 
   // Auto-select the first agent (default agent) when agents are loaded
   useEffect(() => {
-    if (agents.length > 0 && !selectedAgent) {
+    if (Array.isArray(agents) && agents.length > 0 && !selectedAgent) {
       setSelectedAgent(agents[0].id.toString());
     }
   }, [agents, selectedAgent]);
@@ -80,11 +80,8 @@ export default function QuickWhisperComposer() {
 
   const getTypeColor = (type: string) => {
     const colors = {
-      thought: 'bg-purple-100 text-purple-800',
-      question: 'bg-blue-100 text-blue-800',
-      idea: 'bg-green-100 text-green-800',
-      code: 'bg-red-100 text-red-800',
-      discovery: 'bg-orange-100 text-orange-800',
+      'create-post': 'bg-blue-100 text-blue-800',
+      'do-research': 'bg-purple-100 text-purple-800',
     };
     return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
@@ -110,29 +107,14 @@ export default function QuickWhisperComposer() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="thought">
+                <SelectItem value="create-post">
                   <div className="flex items-center gap-2">
-                    <Badge className={getTypeColor('thought')} size="sm">Thought</Badge>
+                    <Badge className={getTypeColor('create-post')}>✨ Create Post</Badge>
                   </div>
                 </SelectItem>
-                <SelectItem value="question">
+                <SelectItem value="do-research">
                   <div className="flex items-center gap-2">
-                    <Badge className={getTypeColor('question')} size="sm">Question</Badge>
-                  </div>
-                </SelectItem>
-                <SelectItem value="idea">
-                  <div className="flex items-center gap-2">
-                    <Badge className={getTypeColor('idea')} size="sm">Idea</Badge>
-                  </div>
-                </SelectItem>
-                <SelectItem value="code">
-                  <div className="flex items-center gap-2">
-                    <Badge className={getTypeColor('code')} size="sm">Code</Badge>
-                  </div>
-                </SelectItem>
-                <SelectItem value="discovery">
-                  <div className="flex items-center gap-2">
-                    <Badge className={getTypeColor('discovery')} size="sm">Discovery</Badge>
+                    <Badge className={getTypeColor('do-research')}>🔍 Do Research</Badge>
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -143,7 +125,7 @@ export default function QuickWhisperComposer() {
                 <SelectValue placeholder="Select agent" />
               </SelectTrigger>
               <SelectContent>
-                {agents.map((agent: any) => (
+                {Array.isArray(agents) && agents.map((agent: any) => (
                   <SelectItem key={agent.id} value={agent.id.toString()}>
                     <div className="flex items-center gap-2">
                       <div className={`w-6 h-6 bg-gradient-to-br ${agent.avatar || 'from-blue-500 to-purple-600'} rounded-md flex items-center justify-center text-white text-xs font-bold`}>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
@@ -11,12 +11,9 @@ import WhisperImpactWidget from "@/components/dashboard/whisper-impact-widget";
 import GlassCard from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, Brain, Clock, CheckCircle, XCircle, Search, Filter, Zap, Bot, TrendingUp } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
-import { isUnauthorizedError } from "@/lib/authUtils";
+import { MessageSquare, Brain, Clock, CheckCircle, XCircle, Search, Filter, Bot, TrendingUp } from "lucide-react";
 
 interface Whisper {
   id: number;
@@ -37,10 +34,6 @@ interface Agent {
 export default function Whispers() {
   const { user, isLoading } = useAuth();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [whisperContent, setWhisperContent] = useState("");
-  const [selectedAgent, setSelectedAgent] = useState<string>("");
-  const [whisperType, setWhisperType] = useState<string>("thought");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -50,49 +43,7 @@ export default function Whispers() {
     enabled: !!user,
   });
 
-  const { data: agents = [] } = useQuery({
-    queryKey: ["/api/agents"],
-    enabled: !!user,
-  });
 
-  // Auto-select the first agent when agents are loaded
-  useEffect(() => {
-    if (agents.length > 0 && !selectedAgent) {
-      setSelectedAgent(agents[0].id.toString());
-    }
-  }, [agents, selectedAgent]);
-
-  const createWhisperMutation = useMutation({
-    mutationFn: async (data: any) => {
-      await apiRequest("POST", "/api/whispers", data);
-    },
-    onSuccess: () => {
-      toast({
-        title: "Whisper Sent",
-        description: "Your whisper has been sent to your agent for processing.",
-      });
-      setWhisperContent("");
-      refetchWhispers();
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Error",
-        description: "Failed to send whisper. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -108,22 +59,7 @@ export default function Whispers() {
     }
   }, [user, isLoading, toast]);
 
-  const handleSubmitWhisper = () => {
-    if (!whisperContent.trim() || !selectedAgent) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter your whisper and select an agent.",
-        variant: "destructive",
-      });
-      return;
-    }
 
-    createWhisperMutation.mutate({
-      content: whisperContent,
-      type: whisperType,
-      agentId: parseInt(selectedAgent),
-    });
-  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -140,17 +76,10 @@ export default function Whispers() {
 
   const getTypeColor = (type: string) => {
     const colors = {
-      thought: 'bg-purple-100 text-purple-800 border-purple-200',
-      question: 'bg-blue-100 text-blue-800 border-blue-200',
-      idea: 'bg-green-100 text-green-800 border-green-200',
-      code: 'bg-red-100 text-red-800 border-red-200',
-      discovery: 'bg-orange-100 text-orange-800 border-orange-200',
+      'create-post': 'bg-blue-100 text-blue-800 border-blue-200',
+      'do-research': 'bg-purple-100 text-purple-800 border-purple-200',
     };
     return colors[type as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-200';
-  };
-
-  const getAgentById = (agentId: number) => {
-    return agents.find((agent: any) => agent.id === agentId);
   };
 
   const filteredWhispers = whispers.filter((whisper: any) => {
@@ -268,78 +197,26 @@ export default function Whispers() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="thought">Thought</SelectItem>
-                  <SelectItem value="question">Question</SelectItem>
-                  <SelectItem value="idea">Idea</SelectItem>
-                  <SelectItem value="code">Code</SelectItem>
-                  <SelectItem value="discovery">Discovery</SelectItem>
+                  <SelectItem value="create-post">Create Post</SelectItem>
+                  <SelectItem value="do-research">Do Research</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </GlassCard>
 
-          {/* Whisper Composer */}
+          {/* New Whisper Button */}
           <GlassCard className="p-6">
-            <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center">
-              <MessageSquare className="h-5 w-5 mr-2" />
-              Share a New Whisper
-            </h2>
-            <div className="space-y-4">
-              <Textarea
-                placeholder="Share a random thought, observation, or mental note with your AI agent..."
-                value={whisperContent}
-                onChange={(e) => setWhisperContent(e.target.value)}
-                className="min-h-32 resize-none border-2 focus:border-blue-500 bg-slate-50"
-              />
-              
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Select value={whisperType} onValueChange={setWhisperType}>
-                  <SelectTrigger className="w-full sm:w-48">
-                    <SelectValue placeholder="Whisper type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="thought">💭 Thought</SelectItem>
-                    <SelectItem value="question">❓ Question</SelectItem>
-                    <SelectItem value="idea">💡 Idea</SelectItem>
-                    <SelectItem value="code">💻 Code</SelectItem>
-                    <SelectItem value="discovery">🔍 Discovery</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={selectedAgent} onValueChange={setSelectedAgent}>
-                  <SelectTrigger className="w-full sm:w-48">
-                    <SelectValue placeholder="Select agent" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {agents.map((agent: any) => (
-                      <SelectItem key={agent.id} value={agent.id.toString()}>
-                        <div className="flex items-center gap-2">
-                          <Bot className="h-4 w-4" />
-                          {agent.name}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Button
-                  onClick={handleSubmitWhisper}
-                  disabled={createWhisperMutation.isPending || !whisperContent.trim() || !selectedAgent}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 w-full sm:w-auto"
-                >
-                  {createWhisperMutation.isPending ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Sending...
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Zap className="h-4 w-4" />
-                      Send Whisper
-                    </div>
-                  )}
-                </Button>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-slate-800 mb-2">Create New Whisper</h2>
+                <p className="text-slate-600">Share your thoughts and ideas with your AI assistant</p>
               </div>
+              <Link href="/">
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  New Whisper
+                </Button>
+              </Link>
             </div>
           </GlassCard>
 
