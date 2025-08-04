@@ -164,18 +164,6 @@ export default function LiveActivity() {
               <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
                 {activity.description}
               </p>
-              {activity.agentName && (
-                <div className="flex items-center mt-2 space-x-2">
-                  <AgentAvatar 
-                    name={activity.agentName} 
-                    avatar={activity.agentAvatar} 
-                    size="sm" 
-                  />
-                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                    {activity.agentName}
-                  </span>
-                </div>
-              )}
             </div>
           </div>
         ))}
