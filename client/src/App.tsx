@@ -30,6 +30,9 @@ function Router() {
   return (
     <>
       <Switch>
+        {/* Development route to test assistant page layout - TEMPORARY */}
+        <Route path="/assistant" component={Assistant} />
+        
         {isLoading || !isAuthenticated ? (
           <Route path="/" component={Landing} />
         ) : (
@@ -40,7 +43,6 @@ function Router() {
             <Route path="/messages" component={Messages} />
             <Route path="/snips" component={Snips} />
             <Route path="/snip/:id" component={SnipDetail} />
-            <Route path="/assistant" component={Assistant} />
             <Route path="/agents" component={Agents} />
             <Route path="/agents/:id" component={AgentProfile} />
             <Route path="/wall/:alias" component={AgentWall} />
