@@ -6,6 +6,7 @@ import NavigationSidebar from '@/components/layout/navigation-sidebar';
 import LiveActivity from '@/components/dashboard/live-activity';
 import TrendingTopics from '@/components/dashboard/trending-topics';
 import QuickActions from '@/components/dashboard/quick-actions';
+import GlassCard from '@/components/ui/glass-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -201,45 +202,45 @@ function Assistant() {
 
   // Update local config when assistant data loads
   useEffect(() => {
-    if (assistant) {
+    if (assistant && typeof assistant === 'object') {
       setConfig(prev => ({
         ...prev,
         personality: {
-          name: assistant.name || 'Watch Tower',
-          communicationStyle: assistant.communicationStyle || 'Professional & Analytical',
-          tone: assistant.tone || 70,
-          expertise: assistant.expertiseLevel || 80,
-          contentPreferences: assistant.contentPreferences || ['Industry Insights', 'Technical Deep Dives'],
-          interests: assistant.interests || ['AI', 'Machine Learning', 'Data Science']
+          name: (assistant as any).name || 'Watch Tower',
+          communicationStyle: (assistant as any).communicationStyle || 'Professional & Analytical',
+          tone: (assistant as any).tone || 70,
+          expertise: (assistant as any).expertiseLevel || 80,
+          contentPreferences: (assistant as any).contentPreferences || ['Industry Insights', 'Technical Deep Dives'],
+          interests: (assistant as any).interests || ['AI', 'Machine Learning', 'Data Science']
         },
         intelligence: {
-          socialMedia: assistant.socialMediaProfiles || {
+          socialMedia: (assistant as any).socialMediaProfiles || {
             linkedin: '',
             twitter: '',
             facebook: '',
             instagram: ''
           },
-          rssFeeds: assistant.rssFeeds || [],
-          keyPeople: assistant.keyPeopleToMonitor || [],
-          briefingSchedule: assistant.briefingSchedule || {
+          rssFeeds: (assistant as any).rssFeeds || [],
+          keyPeople: (assistant as any).keyPeopleToMonitor || [],
+          briefingSchedule: (assistant as any).briefingSchedule || {
             morning: '08:00',
             evening: '18:00',
             format: 'Executive Summary (2-3 key insights)'
           }
         },
         tasks: {
-          qualityThreshold: assistant.qualityThreshold || 80,
-          recencyWeight: assistant.recencyWeight || 30,
-          activeTasks: assistant.activeTasks || []
+          qualityThreshold: (assistant as any).qualityThreshold || 80,
+          recencyWeight: (assistant as any).recencyWeight || 30,
+          activeTasks: (assistant as any).activeTasks || []
         },
         engagement: {
-          autonomyLevel: assistant.autonomyLevel || 2,
-          postsPerDay: assistant.postsPerDay || '3-4 posts',
-          postVisibility: assistant.postVisibility || 'Draft for Review',
-          approvalPrompt: assistant.approvalPromptTemplate || '',
-          engagementStrategy: assistant.engagementStrategy || [],
-          contentGuidelines: assistant.contentGuidelines || '',
-          safetySettings: assistant.safetySettings || ['Fact-check before sharing', 'Maintain professional tone']
+          autonomyLevel: (assistant as any).autonomyLevel || 2,
+          postsPerDay: (assistant as any).postsPerDay || '3-4 posts',
+          postVisibility: (assistant as any).postVisibility || 'Draft for Review',
+          approvalPrompt: (assistant as any).approvalPromptTemplate || '',
+          engagementStrategy: (assistant as any).engagementStrategy || [],
+          contentGuidelines: (assistant as any).contentGuidelines || '',
+          safetySettings: (assistant as any).safetySettings || ['Fact-check before sharing', 'Maintain professional tone']
         }
       }));
     }
@@ -248,10 +249,7 @@ function Assistant() {
   // Save configuration mutation
   const saveConfigMutation = useMutation({
     mutationFn: async (configData: AssistantConfig) => {
-      return apiRequest('/api/assistant', {
-        method: 'POST',
-        body: JSON.stringify(configData),
-      });
+      return apiRequest('/api/assistant', 'POST', configData);
     },
     onSuccess: () => {
       toast({
@@ -354,8 +352,8 @@ function Assistant() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <div className="max-w-8xl mx-auto px-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
+      <div className="container mx-auto max-w-8xl px-6 py-6">
         <div className="grid grid-cols-12 gap-6">
           {/* Left Sidebar */}
           <div className="col-span-3">
@@ -363,17 +361,18 @@ function Assistant() {
           </div>
 
           {/* Main Content */}
-          <div className="col-span-6">
-            <div className="mb-8">
+          <div className="col-span-6 space-y-6">
+            {/* Header */}
+            <div className="glass-morphism rounded-3xl p-8 shadow-xl">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-4xl font-bold gradient-text mb-2">My Assistant</h1>
-                  <p className="text-slate-600">Configure your personal AI intelligence companion</p>
+                  <h1 className="text-4xl font-extrabold gradient-text mb-2">My Assistant</h1>
+                  <p className="text-slate-600 text-lg">Configure your personal AI intelligence companion</p>
                 </div>
                 <Button 
                   onClick={handleSave} 
                   disabled={saveConfigMutation.isPending}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-6"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   {saveConfigMutation.isPending ? 'Saving...' : 'Save Configuration'}
@@ -381,25 +380,39 @@ function Assistant() {
               </div>
             </div>
 
-            <Tabs defaultValue="personality" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="personality" className="flex items-center space-x-2">
-                  <Bot className="w-4 h-4" />
-                  <span>Personality</span>
-                </TabsTrigger>
-                <TabsTrigger value="intelligence" className="flex items-center space-x-2">
-                  <Brain className="w-4 h-4" />
-                  <span>Intelligence</span>
-                </TabsTrigger>
-                <TabsTrigger value="tasks" className="flex items-center space-x-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>Tasks</span>
-                </TabsTrigger>
-                <TabsTrigger value="engagement" className="flex items-center space-x-2">
-                  <Heart className="w-4 h-4" />
-                  <span>Engagement</span>
-                </TabsTrigger>
-              </TabsList>
+            {/* Configuration Tabs */}
+            <div className="glass-morphism rounded-3xl p-6 shadow-xl">
+              <Tabs defaultValue="personality" className="w-full">
+                <TabsList className="grid w-full grid-cols-4 mb-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 p-1 rounded-xl">
+                  <TabsTrigger 
+                    value="personality" 
+                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                  >
+                    <Bot className="w-4 h-4" />
+                    <span>Personality</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="intelligence" 
+                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                  >
+                    <Brain className="w-4 h-4" />
+                    <span>Intelligence</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="tasks" 
+                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                  >
+                    <Calendar className="w-4 h-4" />
+                    <span>Tasks</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="engagement" 
+                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                  >
+                    <Heart className="w-4 h-4" />
+                    <span>Engagement</span>
+                  </TabsTrigger>
+                </TabsList>
 
               {/* Personality Tab */}
               <TabsContent value="personality" className="space-y-6">
@@ -1104,7 +1117,8 @@ function Assistant() {
                   </CardContent>
                 </Card>
               </TabsContent>
-            </Tabs>
+              </Tabs>
+            </div>
           </div>
 
           {/* Right Sidebar */}
