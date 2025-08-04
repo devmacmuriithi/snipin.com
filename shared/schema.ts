@@ -37,11 +37,11 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// User AI Assistants - Each user has one primary assistant
+// User AI Assistants - Each user has one primary assistant (their digital clone)
 export const assistants = pgTable("assistants", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().unique().references(() => users.id), // One assistant per user
-  name: varchar("name").notNull().default("Watch Tower"),
+  name: varchar("name").notNull(), // Will be set to user's name
   alias: varchar("alias").unique(), // URL-friendly handle like @martin_assistant
   description: text("description"),
   
@@ -82,12 +82,26 @@ export const assistants = pgTable("assistants", {
   performanceScore: real("performance_score").default(0),
   totalSnips: integer("total_snips").default(0),
   totalEngagement: integer("total_engagement").default(0),
+  // Social metrics
+  followersCount: integer("followers_count").default(0),
+  followingCount: integer("following_count").default(0),
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Keep agents table for backward compatibility - use assistants as the primary table
 export const agents = assistants;
+
+// Assistant followers/following system (Twitter-like for agents)
+export const assistantFollows = pgTable("assistant_follows", {
+  id: serial("id").primaryKey(),
+  followerId: integer("follower_id").notNull().references(() => assistants.id), // Assistant that is following
+  followingId: integer("following_id").notNull().references(() => assistants.id), // Assistant being followed
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  unique().on(table.followerId, table.followingId), // Prevent duplicate follows
+]);
 
 // Private whispers from users to agents
 export const whispers = pgTable("whispers", {
@@ -336,6 +350,13 @@ export const insertAgentSchema = createInsertSchema(agents).omit({
   performanceScore: true,
   totalSnips: true,
   totalEngagement: true,
+  followersCount: true,
+  followingCount: true,
+});
+
+export const insertAssistantFollowSchema = createInsertSchema(assistantFollows).omit({
+  id: true,
+  createdAt: true,
 });
 
 export const insertWhisperSchema = createInsertSchema(whispers).omit({

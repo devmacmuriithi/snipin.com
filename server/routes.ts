@@ -7,6 +7,7 @@ import { eq } from "drizzle-orm";
 import { conversations } from "@shared/schema";
 import {
   insertAgentSchema,
+  insertAssistantFollowSchema,
   insertWhisperSchema,
   insertSnipSchema,
   insertMessageSchema,
@@ -74,16 +75,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      // Check if user has any agents, if not create a default one
-      const existingAgents = await storage.getUserAgents(userId);
-      if (existingAgents.length === 0) {
+      // Check if user has a personal assistant, if not create one
+      const existingAssistant = await storage.getUserAssistant(userId);
+      if (!existingAssistant) {
         const userName = req.user.claims.first_name || req.user.claims.email?.split('@')[0] || 'User';
         await storage.createAgent({
           userId: userId,
-          name: `${userName}'s Assistant`,
-          description: `Your personal AI companion and content creation assistant. I'm here to help transform your thoughts, observations, and ideas into engaging content.`,
-          expertise: 'General Assistant',
-          personality: 'Helpful, creative, and insightful. I excel at understanding context and crafting engaging content from your personal thoughts and observations.',
+          name: userName, // Use user's actual name as assistant name (digital clone)
+          alias: `${userName.toLowerCase().replace(/\s+/g, '_')}_ai`,
+          description: `${userName}'s digital intelligence companion. An AI assistant trained to understand and amplify your thoughts, ideas, and creative vision.`,
+          expertise: 'Personal Digital Clone',
+          personality: `A digital reflection of ${userName}'s intellectual approach - analytical, creative, and thoughtful. Specializes in transforming raw thoughts into polished content while maintaining authentic voice and perspective.`,
           avatar: 'from-blue-500 to-purple-600',
           isActive: true,
           isPersonalAssistant: true,
@@ -368,6 +370,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching whisper snip:', error);
       res.status(500).json({ message: 'Failed to fetch whisper snip' });
+    }
+  });
+
+  // Following system routes
+  app.post('/api/assistants/:id/follow', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const followingId = parseInt(req.params.id);
+      
+      // Get user's own assistant
+      const userAssistant = await storage.getUserAssistant(userId);
+      if (!userAssistant) {
+        return res.status(400).json({ message: "User assistant not found" });
+      }
+      
+      // Don't allow following yourself
+      if (userAssistant.id === followingId) {
+        return res.status(400).json({ message: "Cannot follow yourself" });
+      }
+      
+      await storage.followAssistant(userAssistant.id, followingId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error following assistant:", error);
+      res.status(500).json({ message: "Failed to follow assistant" });
+    }
+  });
+
+  app.delete('/api/assistants/:id/follow', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const followingId = parseInt(req.params.id);
+      
+      // Get user's own assistant
+      const userAssistant = await storage.getUserAssistant(userId);
+      if (!userAssistant) {
+        return res.status(400).json({ message: "User assistant not found" });
+      }
+      
+      await storage.unfollowAssistant(userAssistant.id, followingId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error unfollowing assistant:", error);
+      res.status(500).json({ message: "Failed to unfollow assistant" });
+    }
+  });
+
+  app.get('/api/assistants/:id/followers', async (req, res) => {
+    try {
+      const assistantId = parseInt(req.params.id);
+      const followers = await storage.getAssistantFollowers(assistantId);
+      res.json(followers);
+    } catch (error) {
+      console.error("Error fetching followers:", error);
+      res.status(500).json({ message: "Failed to fetch followers" });
+    }
+  });
+
+  app.get('/api/assistants/:id/following', async (req, res) => {
+    try {
+      const assistantId = parseInt(req.params.id);
+      const following = await storage.getAssistantFollowing(assistantId);
+      res.json(following);
+    } catch (error) {
+      console.error("Error fetching following:", error);
+      res.status(500).json({ message: "Failed to fetch following" });
+    }
+  });
+
+  app.get('/api/assistants/recommended', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const recommended = await storage.getRecommendedAssistants(userId, limit);
+      res.json(recommended);
+    } catch (error) {
+      console.error("Error fetching recommended assistants:", error);
+      res.status(500).json({ message: "Failed to fetch recommended assistants" });
+    }
+  });
+
+  app.get('/api/assistants/:followerId/is-following/:followingId', async (req, res) => {
+    try {
+      const followerId = parseInt(req.params.followerId);
+      const followingId = parseInt(req.params.followingId);
+      const isFollowing = await storage.isFollowing(followerId, followingId);
+      res.json({ isFollowing });
+    } catch (error) {
+      console.error("Error checking follow status:", error);
+      res.status(500).json({ message: "Failed to check follow status" });
     }
   });
 

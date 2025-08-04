@@ -1,6 +1,7 @@
 import {
   users,
   assistants,
+  assistantFollows,
   agents,
   whispers,
   snips,
@@ -60,6 +61,15 @@ export interface IStorage {
   getAgentByAlias(alias: string): Promise<Agent | undefined>;
   updateAgent(id: number, updates: Partial<InsertAgent>): Promise<Agent>;
   deleteAgent(id: number): Promise<void>;
+  
+  // Following system operations
+  followAssistant(followerId: number, followingId: number): Promise<void>;
+  unfollowAssistant(followerId: number, followingId: number): Promise<void>;
+  getAssistantFollowers(assistantId: number): Promise<Agent[]>;
+  getAssistantFollowing(assistantId: number): Promise<Agent[]>;
+  isFollowing(followerId: number, followingId: number): Promise<boolean>;
+  getRecommendedAssistants(userId: string, limit?: number): Promise<Agent[]>;
+  updateFollowCounts(assistantId: number): Promise<void>;
   
   // Whisper operations
   createWhisper(whisper: InsertWhisper): Promise<Whisper>;
@@ -189,6 +199,118 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAgent(id: number): Promise<void> {
     await db.delete(agents).where(eq(agents.id, id));
+  }
+
+  // Following system implementation
+  async followAssistant(followerId: number, followingId: number): Promise<void> {
+    // Insert follow relationship
+    await db.insert(assistantFollows).values({
+      followerId,
+      followingId,
+    }).onConflictDoNothing();
+
+    // Update follow counts
+    await Promise.all([
+      this.updateFollowCounts(followerId),
+      this.updateFollowCounts(followingId),
+    ]);
+  }
+
+  async unfollowAssistant(followerId: number, followingId: number): Promise<void> {
+    await db.delete(assistantFollows)
+      .where(and(
+        eq(assistantFollows.followerId, followerId),
+        eq(assistantFollows.followingId, followingId)
+      ));
+
+    // Update follow counts
+    await Promise.all([
+      this.updateFollowCounts(followerId),
+      this.updateFollowCounts(followingId),
+    ]);
+  }
+
+  async getAssistantFollowers(assistantId: number): Promise<Agent[]> {
+    const followers = await db
+      .select()
+      .from(assistantFollows)
+      .innerJoin(agents, eq(assistantFollows.followerId, agents.id))
+      .where(eq(assistantFollows.followingId, assistantId))
+      .orderBy(desc(assistantFollows.createdAt));
+
+    return followers.map(f => f.agents);
+  }
+
+  async getAssistantFollowing(assistantId: number): Promise<Agent[]> {
+    const following = await db
+      .select()
+      .from(assistantFollows)
+      .innerJoin(agents, eq(assistantFollows.followingId, agents.id))
+      .where(eq(assistantFollows.followerId, assistantId))
+      .orderBy(desc(assistantFollows.createdAt));
+
+    return following.map(f => f.agents);
+  }
+
+  async isFollowing(followerId: number, followingId: number): Promise<boolean> {
+    const result = await db
+      .select({ count: count() })
+      .from(assistantFollows)
+      .where(and(
+        eq(assistantFollows.followerId, followerId),
+        eq(assistantFollows.followingId, followingId)
+      ));
+
+    return result[0].count > 0;
+  }
+
+  async getRecommendedAssistants(userId: string, limit = 10): Promise<Agent[]> {
+    // Get user's own assistant to exclude from recommendations
+    const userAssistant = await this.getUserAssistant(userId);
+    const excludeIds = userAssistant ? [userAssistant.id] : [];
+
+    // Get assistants the user is already following
+    if (userAssistant) {
+      const following = await this.getAssistantFollowing(userAssistant.id);
+      excludeIds.push(...following.map(a => a.id));
+    }
+
+    // Get recommended assistants (most active, excluding already followed)
+    const recommended = await db
+      .select()
+      .from(agents)
+      .where(and(
+        eq(agents.isActive, true),
+        excludeIds.length > 0 ? sql`${agents.id} NOT IN (${excludeIds.join(',')})` : sql`1=1`
+      ))
+      .orderBy(desc(agents.followersCount), desc(agents.totalEngagement))
+      .limit(limit);
+
+    return recommended;
+  }
+
+  async updateFollowCounts(assistantId: number): Promise<void> {
+    // Count followers
+    const [followersResult] = await db
+      .select({ count: count() })
+      .from(assistantFollows)
+      .where(eq(assistantFollows.followingId, assistantId));
+
+    // Count following
+    const [followingResult] = await db
+      .select({ count: count() })
+      .from(assistantFollows)
+      .where(eq(assistantFollows.followerId, assistantId));
+
+    // Update the assistant record
+    await db
+      .update(agents)
+      .set({
+        followersCount: followersResult.count,
+        followingCount: followingResult.count,
+        updatedAt: new Date(),
+      })
+      .where(eq(agents.id, assistantId));
   }
 
   // Assistant operations (single assistant per user)

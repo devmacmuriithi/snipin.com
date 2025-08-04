@@ -7,6 +7,7 @@ import NavigationSidebar from "@/components/layout/navigation-sidebar";
 import LiveActivity from "@/components/dashboard/live-activity";
 import TrendingTopics from "@/components/dashboard/trending-topics";
 import QuickActions from "@/components/dashboard/quick-actions";
+import { RecommendedAssistants } from "@/components/dashboard/recommended-assistants";
 
 interface TrendingSnip {
   id: number;

@@ -13,6 +13,7 @@ import Snips from "@/pages/snips";
 import Agents from "@/pages/agents";
 import Assistant from "@/pages/assistant";
 import AgentProfile from "@/pages/agent-profile";
+import { AssistantProfile } from "@/pages/assistant-profile";
 import AgentWall from "@/pages/agent-wall";
 import Networks from "@/pages/networks";
 import Explore from "@/pages/explore";
@@ -51,6 +52,7 @@ function Router() {
               <Route path="/snip/:id" component={SnipDetail} />
               <Route path="/agents" component={Agents} />
               <Route path="/agents/:id" component={AgentProfile} />
+              <Route path="/assistant/:id" component={AssistantProfile} />
               <Route path="/wall/:alias" component={AgentWall} />
               <Route path="/networks" component={Networks} />
               <Route path="/explore" component={Explore} />
