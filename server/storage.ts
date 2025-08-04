@@ -166,39 +166,39 @@ export class DatabaseStorage implements IStorage {
 
   // Agent operations
   async createAgent(agent: InsertAgent): Promise<Agent> {
-    const [newAgent] = await db.insert(agents).values(agent).returning();
+    const [newAgent] = await db.insert(assistants).values(agent).returning();
     return newAgent;
   }
 
   async getUserAgents(userId: string): Promise<Agent[]> {
     return await db
       .select()
-      .from(agents)
-      .where(eq(agents.userId, userId))
-      .orderBy(desc(agents.createdAt));
+      .from(assistants)
+      .where(eq(assistants.userId, userId))
+      .orderBy(desc(assistants.createdAt));
   }
 
   async getAgent(id: number): Promise<Agent | undefined> {
-    const [agent] = await db.select().from(agents).where(eq(agents.id, id));
+    const [agent] = await db.select().from(assistants).where(eq(assistants.id, id));
     return agent;
   }
 
   async getAgentByAlias(alias: string): Promise<Agent | undefined> {
-    const [agent] = await db.select().from(agents).where(eq(agents.alias, alias));
+    const [agent] = await db.select().from(assistants).where(eq(assistants.alias, alias));
     return agent;
   }
 
   async updateAgent(id: number, updates: Partial<InsertAgent>): Promise<Agent> {
     const [agent] = await db
-      .update(agents)
+      .update(assistants)
       .set({ ...updates, updatedAt: new Date() })
-      .where(eq(agents.id, id))
+      .where(eq(assistants.id, id))
       .returning();
     return agent;
   }
 
   async deleteAgent(id: number): Promise<void> {
-    await db.delete(agents).where(eq(agents.id, id));
+    await db.delete(assistants).where(eq(assistants.id, id));
   }
 
   // Following system implementation
@@ -234,22 +234,22 @@ export class DatabaseStorage implements IStorage {
     const followers = await db
       .select()
       .from(assistantFollows)
-      .innerJoin(agents, eq(assistantFollows.followerId, agents.id))
+      .innerJoin(assistants, eq(assistantFollows.followerId, assistants.id))
       .where(eq(assistantFollows.followingId, assistantId))
       .orderBy(desc(assistantFollows.createdAt));
 
-    return followers.map(f => f.agents);
+    return followers.map(f => f.assistants);
   }
 
   async getAssistantFollowing(assistantId: number): Promise<Agent[]> {
     const following = await db
       .select()
       .from(assistantFollows)
-      .innerJoin(agents, eq(assistantFollows.followingId, agents.id))
+      .innerJoin(assistants, eq(assistantFollows.followingId, assistants.id))
       .where(eq(assistantFollows.followerId, assistantId))
       .orderBy(desc(assistantFollows.createdAt));
 
-    return following.map(f => f.agents);
+    return following.map(f => f.assistants);
   }
 
   async isFollowing(followerId: number, followingId: number): Promise<boolean> {
@@ -278,12 +278,12 @@ export class DatabaseStorage implements IStorage {
     // Get recommended assistants (most active, excluding already followed)
     const recommended = await db
       .select()
-      .from(agents)
+      .from(assistants)
       .where(and(
-        eq(agents.isActive, true),
-        excludeIds.length > 0 ? sql`${agents.id} NOT IN (${excludeIds.join(',')})` : sql`1=1`
+        eq(assistants.isActive, true),
+        excludeIds.length > 0 ? sql`${assistants.id} NOT IN (${excludeIds.join(',')})` : sql`1=1`
       ))
-      .orderBy(desc(agents.followersCount), desc(agents.totalEngagement))
+      .orderBy(desc(assistants.followersCount), desc(assistants.totalEngagement))
       .limit(limit);
 
     return recommended;
@@ -304,13 +304,13 @@ export class DatabaseStorage implements IStorage {
 
     // Update the assistant record
     await db
-      .update(agents)
+      .update(assistants)
       .set({
         followersCount: followersResult.count,
         followingCount: followingResult.count,
         updatedAt: new Date(),
       })
-      .where(eq(agents.id, assistantId));
+      .where(eq(assistants.id, assistantId));
   }
 
   // Assistant operations (single assistant per user)
@@ -481,16 +481,16 @@ export class DatabaseStorage implements IStorage {
         type: snips.type,
         createdAt: snips.createdAt,
         agent: {
-          id: agents.id,
-          name: agents.name,
-          alias: agents.alias,
-          avatar: agents.avatar,
-          personality: agents.personality,
-          expertise: agents.expertise
+          id: assistants.id,
+          name: assistants.name,
+          alias: assistants.alias,
+          avatar: assistants.avatar,
+          personality: assistants.personality,
+          expertise: assistants.expertise
         }
       })
       .from(snips)
-      .innerJoin(agents, eq(snips.agentId, agents.id))
+      .innerJoin(assistants, eq(snips.agentId, assistants.id))
       .where(eq(snips.id, id));
     
     if (!result) {
@@ -617,16 +617,16 @@ export class DatabaseStorage implements IStorage {
         views: snips.views,
         createdAt: snips.createdAt,
         agent: {
-          id: agents.id,
-          name: agents.name,
-          alias: agents.alias,
-          avatar: agents.avatar,
-          personality: agents.personality,
-          expertise: agents.expertise
+          id: assistants.id,
+          name: assistants.name,
+          alias: assistants.alias,
+          avatar: assistants.avatar,
+          personality: assistants.personality,
+          expertise: assistants.expertise
         }
       })
       .from(snips)
-      .innerJoin(agents, eq(snips.agentId, agents.id))
+      .innerJoin(assistants, eq(snips.agentId, assistants.id))
       .where(isNull(snips.parentId)) // Only root snips, not comments
       .orderBy(desc(snips.createdAt))
       .limit(limit)
@@ -662,11 +662,11 @@ export class DatabaseStorage implements IStorage {
         lastMessageAt: conversations.lastMessageAt,
         unreadCount: conversations.unreadCount,
         agent: {
-          id: agents.id,
-          name: agents.name,
-          alias: agents.alias,
-          avatar: agents.avatar,
-          isActive: agents.isActive,
+          id: assistants.id,
+          name: assistants.name,
+          alias: assistants.alias,
+          avatar: assistants.avatar,
+          isActive: assistants.isActive,
         },
         lastMessage: {
           id: messages.id,
@@ -676,7 +676,7 @@ export class DatabaseStorage implements IStorage {
         }
       })
       .from(conversations)
-      .leftJoin(agents, eq(conversations.agentId, agents.id))
+      .leftJoin(assistants, eq(conversations.agentId, assistants.id))
       .leftJoin(messages, eq(conversations.id, messages.conversationId))
       .where(eq(conversations.userId, userId))
       .orderBy(desc(conversations.lastMessageAt));
