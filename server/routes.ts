@@ -197,7 +197,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               content: `This is AI-generated content based on your whisper: "${whisper.content}". The agent ${agent.name} with expertise in ${agent.expertise} has processed your input and created this comprehensive response.`,
               excerpt: `AI response from ${agent.name}`,
               type: 'article' as const,
-              tags: [agent.expertise],
+              tags: JSON.stringify([agent.expertise]),
             };
 
             const snip = await storage.createSnip(snipData);
@@ -504,12 +504,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             // Build conversation context
             const conversationHistory = recentMessages.map(msg => 
-              `${msg.sender === 'user' ? (user?.name || 'User') : agent.name}: ${msg.content}`
+              `${msg.sender === 'user' ? (user?.firstName || 'User') : agent.name}: ${msg.content}`
             ).join('\n');
             
             // Build user context
             const userContext = `
-User Profile: ${user?.name || 'Unknown'} (${user?.email || 'no email'})
+User Profile: ${user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.firstName || 'Unknown'} (${user?.email || 'no email'})
 Recent Whispers: ${recentWhispers.map(w => w.content).join('; ')}
 Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metadata ? JSON.stringify(a.metadata) : 'N/A'}`).join('; ')}
             `.trim();
@@ -519,7 +519,7 @@ Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metad
               // User is asking about their name
               const userName = user?.firstName && user?.lastName 
                 ? `${user.firstName} ${user.lastName}`
-                : user?.firstName || user?.name || 'I don\'t have your name on file';
+                : user?.firstName || 'I don\'t have your name on file';
               response = `Your name is ${userName}. `;
               if (recentMessages.length > 1) {
                 response += `I remember our previous conversation, and I'm here to help you with anything you need. `;
@@ -538,7 +538,7 @@ Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metad
               // User is asking about themselves
               const userName = user?.firstName && user?.lastName 
                 ? `${user.firstName} ${user.lastName}`
-                : user?.firstName || user?.name || 'a valued user';
+                : user?.firstName || 'a valued user';
               response = `From what I know, you're ${userName}. `;
               if (recentWhispers.length > 0) {
                 response += `I can see you've been working on some interesting thoughts recently. `;
@@ -547,7 +547,7 @@ Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metad
               // User is asking about recent activities
               const userName = user?.firstName && user?.lastName 
                 ? `${user.firstName} ${user.lastName}`
-                : user?.firstName || user?.name || 'there';
+                : user?.firstName || 'there';
               response = `Hi ${userName}! Based on your recent activity, `;
               if (recentWhispers.length > 0) {
                 response += `I can see you've been working on some whispers: "${recentWhispers[0]?.content.substring(0, 50)}...". `;
@@ -571,14 +571,14 @@ Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metad
                   // First response but conversation exists
                   const userName = user?.firstName && user?.lastName 
                     ? `${user.firstName} ${user.lastName}`
-                    : user?.firstName || user?.name || 'there';
+                    : user?.firstName || 'there';
                   response = `Hi ${userName}! I'm ${agent.name}. `;
                 }
               } else {
                 // First message in conversation
                 const userName = user?.firstName && user?.lastName 
                   ? `${user.firstName} ${user.lastName}`
-                  : user?.firstName || user?.name || 'there';
+                  : user?.firstName || 'there';
                 response = `Hi ${userName}! I'm ${agent.name}. `;
               }
               
@@ -668,12 +668,12 @@ Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metad
           
           // Build conversation context
           const conversationHistory = recentMessages.map(msg => 
-            `${msg.sender === 'user' ? (user?.name || 'User') : agent.name}: ${msg.content}`
+            `${msg.sender === 'user' ? (user?.firstName || 'User') : agent.name}: ${msg.content}`
           ).join('\n');
           
           // Build user context
           const userContext = `
-User Profile: ${user?.name || 'Unknown'} (${user?.email || 'no email'})
+User Profile: ${user?.firstName || 'Unknown'} (${user?.email || 'no email'})
 Recent Whispers: ${recentWhispers.map(w => w.content).join('; ')}
 Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metadata ? JSON.stringify(a.metadata) : 'N/A'}`).join('; ')}
           `.trim();
@@ -683,7 +683,7 @@ Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metad
             // User is asking about their name
             const userName = user?.firstName && user?.lastName 
               ? `${user.firstName} ${user.lastName}`
-              : user?.firstName || user?.name || 'I don\'t have your name on file';
+              : user?.firstName || user?.firstName || 'I don\'t have your name on file';
             response = `Your name is ${userName}. `;
             if (recentMessages.length > 1) {
               response += `I remember our previous conversation, and I'm here to help you with anything you need. `;
@@ -702,7 +702,7 @@ Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metad
             // User is asking about themselves
             const userName = user?.firstName && user?.lastName 
               ? `${user.firstName} ${user.lastName}`
-              : user?.firstName || user?.name || 'a valued user';
+              : user?.firstName || user?.firstName || 'a valued user';
             response = `From what I know, you're ${userName}. `;
             if (recentWhispers.length > 0) {
               response += `I can see you've been working on some interesting thoughts recently. `;
@@ -711,7 +711,7 @@ Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metad
             // User is asking about recent activities
             const userName = user?.firstName && user?.lastName 
               ? `${user.firstName} ${user.lastName}`
-              : user?.firstName || user?.name || 'there';
+              : user?.firstName || user?.firstName || 'there';
             response = `Hi ${userName}! Based on your recent activity, `;
             if (recentWhispers.length > 0) {
               response += `I can see you've been working on some whispers: "${recentWhispers[0]?.content.substring(0, 50)}...". `;
@@ -735,14 +735,14 @@ Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metad
                 // First response but conversation exists
                 const userName = user?.firstName && user?.lastName 
                   ? `${user.firstName} ${user.lastName}`
-                  : user?.firstName || user?.name || 'there';
+                  : user?.firstName || user?.firstName || 'there';
                 response = `Hi ${userName}! I'm ${agent.name}. `;
               }
             } else {
               // First message in conversation
               const userName = user?.firstName && user?.lastName 
                 ? `${user.firstName} ${user.lastName}`
-                : user?.firstName || user?.name || 'there';
+                : user?.firstName || user?.firstName || 'there';
               response = `Hi ${userName}! I'm ${agent.name}. `;
             }
             
