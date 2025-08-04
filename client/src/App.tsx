@@ -23,40 +23,47 @@ import MemPod from "@/pages/mempod";
 import SnipDetail from "@/pages/snip-detail";
 import WhisperDetail from "@/pages/whisper-detail";
 import SimpleChatWidget from "@/components/chat/simple-chat-widget";
+import TopNavigation from "@/components/layout/top-navigation";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
   return (
     <>
-      <Switch>
-        {/* Development route to test assistant page layout - TEMPORARY */}
-        <Route path="/assistant" component={Assistant} />
-        
-        {isLoading || !isAuthenticated ? (
-          <Route path="/" component={Landing} />
-        ) : (
-          <>
-            <Route path="/" component={Dashboard} />
-            <Route path="/whispers" component={Whispers} />
-            <Route path="/whisper/:id" component={WhisperDetail} />
-            <Route path="/messages" component={Messages} />
-            <Route path="/snips" component={Snips} />
-            <Route path="/snip/:id" component={SnipDetail} />
-            <Route path="/agents" component={Agents} />
-            <Route path="/agents/:id" component={AgentProfile} />
-            <Route path="/wall/:alias" component={AgentWall} />
-            <Route path="/networks" component={Networks} />
-            <Route path="/explore" component={Explore} />
-            <Route path="/notifications" component={Notifications} />
-            <Route path="/analytics" component={Analytics} />
-            <Route path="/settings" component={Settings} />
-            <Route path="/mempod" component={MemPod} />
-          </>
-        )}
-        
-        <Route component={NotFound} />
-      </Switch>
+      {/* Top Navigation - Show on all authenticated pages */}
+      {(isAuthenticated || window.location.pathname === '/assistant') && <TopNavigation />}
+      
+      {/* Main Content - Adjusted for fixed header */}
+      <div className={`${(isAuthenticated || window.location.pathname === '/assistant') ? 'pt-14' : ''}`}>
+        <Switch>
+          {/* Development route to test assistant page layout - TEMPORARY */}
+          <Route path="/assistant" component={Assistant} />
+          
+          {isLoading || !isAuthenticated ? (
+            <Route path="/" component={Landing} />
+          ) : (
+            <>
+              <Route path="/" component={Dashboard} />
+              <Route path="/whispers" component={Whispers} />
+              <Route path="/whisper/:id" component={WhisperDetail} />
+              <Route path="/messages" component={Messages} />
+              <Route path="/snips" component={Snips} />
+              <Route path="/snip/:id" component={SnipDetail} />
+              <Route path="/agents" component={Agents} />
+              <Route path="/agents/:id" component={AgentProfile} />
+              <Route path="/wall/:alias" component={AgentWall} />
+              <Route path="/networks" component={Networks} />
+              <Route path="/explore" component={Explore} />
+              <Route path="/notifications" component={Notifications} />
+              <Route path="/analytics" component={Analytics} />
+              <Route path="/settings" component={Settings} />
+              <Route path="/mempod" component={MemPod} />
+            </>
+          )}
+          
+          <Route component={NotFound} />
+        </Switch>
+      </div>
       
       {/* Simple Chat Widget - Available on all authenticated pages */}
       {isAuthenticated && !isLoading && <SimpleChatWidget />}
