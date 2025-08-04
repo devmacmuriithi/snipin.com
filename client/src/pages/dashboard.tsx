@@ -109,7 +109,10 @@ export default function Dashboard() {
           {/* Right Sidebar */}
           <div className="col-span-3 space-y-6">
             <LiveActivity />
-            <WhoToFollow />
+            <div style={{border: '2px solid red', padding: '10px'}}>
+              <p style={{color: 'red'}}>DEBUG: WhoToFollow should be here</p>
+              <WhoToFollow />
+            </div>
             <TrendingTopics />
             <QuickActions />
           </div>
