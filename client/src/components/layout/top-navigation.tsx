@@ -32,11 +32,11 @@ export default function TopNavigation() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-full px-4">
-        <div className="flex items-center justify-between h-14">
+      <div className="container mx-auto max-w-8xl px-6">
+        <div className="grid grid-cols-12 items-center h-14">
           
-          {/* Left - Logo */}
-          <div className="flex items-center space-x-3">
+          {/* Left - Logo (3 columns for symmetry) */}
+          <div className="col-span-3 flex items-center">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
                 <Brain className="w-5 h-5 text-white" />
@@ -47,9 +47,9 @@ export default function TopNavigation() {
             </div>
           </div>
 
-          {/* Center - Search */}
-          <div className="flex-1 max-w-2xl mx-8">
-            <form onSubmit={handleSearch} className="relative">
+          {/* Center - Search (6 columns) */}
+          <div className="col-span-6 px-8">
+            <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
@@ -63,8 +63,8 @@ export default function TopNavigation() {
             </form>
           </div>
 
-          {/* Right - Notifications & User Menu */}
-          <div className="flex items-center space-x-2">
+          {/* Right - Notifications & User Menu (3 columns for symmetry) */}
+          <div className="col-span-3 flex items-center justify-end space-x-2">
             
             {/* Notifications */}
             <Button variant="ghost" size="sm" className="relative p-2 hover:bg-gray-100 rounded-full">
