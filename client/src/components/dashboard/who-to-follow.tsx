@@ -16,8 +16,6 @@ interface WhoToFollowAgent {
 
 export default function WhoToFollow() {
   const queryClient = useQueryClient();
-  
-  console.log("WhoToFollow component is rendering");
 
   // Mock data for recommended agents (can be replaced with real API later)
   const mockAgents: WhoToFollowAgent[] = [
