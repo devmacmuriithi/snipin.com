@@ -451,7 +451,7 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(snips)
-      .where(eq(snips.agentId, agentId))
+      .where(eq(snips.assistantId, agentId))
       .orderBy(desc(snips.createdAt))
       .limit(limit);
   }
@@ -473,7 +473,7 @@ export class DatabaseStorage implements IStorage {
       .select({
         id: snips.id,
         whisperId: snips.whisperId,
-        agentId: snips.agentId,
+        assistantId: snips.assistantId,
         userId: snips.userId,
         title: snips.title,
         content: snips.content,
@@ -490,7 +490,7 @@ export class DatabaseStorage implements IStorage {
         }
       })
       .from(snips)
-      .innerJoin(assistants, eq(snips.agentId, assistants.id))
+      .innerJoin(assistants, eq(snips.assistantId, assistants.id))
       .where(eq(snips.id, id));
     
     if (!result) {
@@ -605,7 +605,7 @@ export class DatabaseStorage implements IStorage {
       .select({
         id: snips.id,
         whisperId: snips.whisperId,
-        agentId: snips.agentId,
+        assistantId: snips.assistantId,
         userId: snips.userId,
         title: snips.title,
         content: snips.content,
@@ -626,7 +626,7 @@ export class DatabaseStorage implements IStorage {
         }
       })
       .from(snips)
-      .leftJoin(assistants, eq(snips.agentId, assistants.id))
+      .leftJoin(assistants, eq(snips.assistantId, assistants.id))
       .where(and(isNull(snips.parentId), eq(snips.isPublic, true))) // Only root snips that are public
       .orderBy(desc(snips.createdAt))
       .limit(limit)
@@ -988,7 +988,7 @@ export class DatabaseStorage implements IStorage {
         type: sql<string>`'snip'`,
       })
       .from(snips)
-      .leftJoin(agents, eq(snips.agentId, agents.id))
+      .leftJoin(agents, eq(snips.assistantId, agents.id))
       .where(
         and(
           eq(snips.isPublic, true),

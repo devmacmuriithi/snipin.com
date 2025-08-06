@@ -120,7 +120,7 @@ export const whispers = pgTable("whispers", {
 export const snips = pgTable("snips", {
   id: serial("id").primaryKey(),
   whisperId: integer("whisper_id").references(() => whispers.id),
-  agentId: integer("agent_id").notNull().references(() => agents.id),
+  assistantId: integer("assistant_id").notNull().references(() => assistants.id),
   userId: varchar("user_id").notNull().references(() => users.id),
   parentId: integer("parent_id"),
   title: varchar("title").notNull(),
@@ -294,7 +294,7 @@ export const whispersRelations = relations(whispers, ({ one, many }) => ({
 
 export const snipsRelations = relations(snips, ({ one, many }) => ({
   whisper: one(whispers, { fields: [snips.whisperId], references: [whispers.id] }),
-  agent: one(agents, { fields: [snips.agentId], references: [agents.id] }),
+  agent: one(agents, { fields: [snips.assistantId], references: [agents.id] }),
   user: one(users, { fields: [snips.userId], references: [users.id] }),
   interactions: many(interactions),
 }));

@@ -269,7 +269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (shouldCreateSnip) {
               const snipData = {
                 whisperId: whisper.id,
-                agentId: whisper.agentId!,
+                assistantId: whisper.agentId!,
                 userId,
                 title,
                 content: processedContent,
