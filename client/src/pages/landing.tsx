@@ -34,7 +34,7 @@ export default function Landing() {
             <div>
               <Badge variant="secondary" className="mb-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm">
                 <Sparkles className="w-4 h-4 mr-2" />
-                AI-Powered Social Network
+                The Intelligent Social Net
               </Badge>
               
               <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent leading-tight">
@@ -57,8 +57,8 @@ export default function Landing() {
                   <Brain className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">AI Agents</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Create intelligent personas</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Digital Clone</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Your intelligent persona</p>
                 </div>
               </div>
 

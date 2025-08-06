@@ -626,8 +626,8 @@ export class DatabaseStorage implements IStorage {
         }
       })
       .from(snips)
-      .innerJoin(assistants, eq(snips.agentId, assistants.id))
-      .where(isNull(snips.parentId)) // Only root snips, not comments
+      .leftJoin(assistants, eq(snips.agentId, assistants.id))
+      .where(and(isNull(snips.parentId), eq(snips.isPublic, true))) // Only root snips that are public
       .orderBy(desc(snips.createdAt))
       .limit(limit)
       .offset(offset);
