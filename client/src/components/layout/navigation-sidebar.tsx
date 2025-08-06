@@ -46,7 +46,6 @@ function NavigationSidebar() {
     { path: "/explore", icon: Compass, label: "Explore" },
     { path: "/notifications", icon: Bell, label: "Notifications", badge: unreadNotifications > 0 ? unreadNotifications : undefined },
     { path: "/assistant", icon: Bot, label: "My Assistant" },
-    { path: "/mempod", icon: Brain, label: "MemPod" },
   ];
 
   const isActive = (path: string) => {

@@ -7,7 +7,7 @@ import LiveActivity from '@/components/dashboard/live-activity';
 import TrendingTopics from '@/components/dashboard/trending-topics';
 import QuickActions from '@/components/dashboard/quick-actions';
 import GlassCard from '@/components/ui/glass-card';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,7 +38,9 @@ import {
   Eye,
   Edit,
   Pause,
-  Trash2
+  Trash2,
+  Database,
+  StickyNote
 } from 'lucide-react';
 
 interface AssistantConfig {
@@ -383,7 +385,7 @@ function Assistant() {
             {/* Configuration Tabs */}
             <div className="glass-morphism rounded-3xl p-6 shadow-xl">
               <Tabs defaultValue="personality" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 mb-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 p-1 rounded-xl">
+                <TabsList className="grid w-full grid-cols-5 mb-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 p-1 rounded-xl">
                   <TabsTrigger 
                     value="personality" 
                     className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
@@ -411,6 +413,13 @@ function Assistant() {
                   >
                     <Heart className="w-4 h-4" />
                     <span>Engagement</span>
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="mempod" 
+                    className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                  >
+                    <Brain className="w-4 h-4" />
+                    <span>Mempod</span>
                   </TabsTrigger>
                 </TabsList>
 
@@ -1117,6 +1126,81 @@ function Assistant() {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              {/* Mempod Tab */}
+              <TabsContent value="mempod" className="space-y-6">
+                <Tabs defaultValue="knowledge" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 p-1 rounded-xl">
+                    <TabsTrigger 
+                      value="knowledge" 
+                      className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                    >
+                      <Database className="w-4 h-4" />
+                      <span>Knowledge</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="notes" 
+                      className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                    >
+                      <StickyNote className="w-4 h-4" />
+                      <span>Notes</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="goals" 
+                      className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                    >
+                      <Target className="w-4 h-4" />
+                      <span>Goals</span>
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="knowledge" className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center space-x-2">
+                          <Database className="w-5 h-5" />
+                          <span>Knowledge Base</span>
+                        </CardTitle>
+                        <CardDescription>Store and organize information for your assistant to access</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-slate-600">Knowledge management features coming soon. This will allow you to build a comprehensive knowledge base for your assistant.</p>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="notes" className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center space-x-2">
+                          <StickyNote className="w-5 h-5" />
+                          <span>Notes</span>
+                        </CardTitle>
+                        <CardDescription>Quick notes and memos for reference</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-slate-600">Notes functionality coming soon. Keep track of important information and quick thoughts.</p>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="goals" className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center space-x-2">
+                          <Target className="w-5 h-5" />
+                          <span>Goals & Metrics</span>
+                        </CardTitle>
+                        <CardDescription>Set and track your personal and professional goals</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-slate-600">Goal tracking features coming soon. Set objectives and monitor your progress with detailed metrics.</p>
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
+              </TabsContent>
+
               </Tabs>
             </div>
           </div>
