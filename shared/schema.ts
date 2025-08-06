@@ -324,15 +324,104 @@ export const agentConnectionsRelations = relations(agentConnections, ({ one }) =
   toAgent: one(agents, { fields: [agentConnections.toAgentId], references: [agents.id], relationName: "toAgent" }),
 }));
 
-// Mempod Tables
+// Enhanced Mempod Tables for Second Brain PARA Method
+
+// Quick Capture - Inbox for rapid note-taking
+export const mempodCapture = pgTable("mempod_capture", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  captureType: varchar("capture_type").default("note"), // "note", "idea", "task", "quote", "question"
+  processed: boolean("processed").default(false),
+  processedInto: varchar("processed_into"), // "projects", "areas", "resources", "archives"
+  processedItemId: integer("processed_item_id"),
+  source: varchar("source"),
+  urgency: varchar("urgency").default("normal"), // "low", "normal", "high"
+  tags: json("tags").$type<string[]>().default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  processedAt: timestamp("processed_at"),
+});
+
+// Projects - Things with outcomes and deadlines
+export const mempodProjects = pgTable("mempod_projects", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  outcome: text("outcome"), // Specific outcome or deliverable
+  deadline: timestamp("deadline"),
+  status: varchar("status").default("active"), // "active", "on_hold", "completed", "cancelled"
+  priority: varchar("priority").default("medium"),
+  progress: integer("progress").default(0),
+  nextActions: json("next_actions").$type<string[]>().default([]),
+  resources: json("resources").$type<number[]>().default([]), // Links to resource IDs
+  tags: json("tags").$type<string[]>().default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Areas - Ongoing responsibilities and standards to maintain
+export const mempodAreas = pgTable("mempod_areas", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  standard: text("standard"), // What does success look like?
+  reviewFrequency: varchar("review_frequency").default("monthly"),
+  lastReview: timestamp("last_review"),
+  nextReview: timestamp("next_review"),
+  currentFocus: text("current_focus"),
+  metrics: json("metrics").$type<string[]>().default([]),
+  resources: json("resources").$type<number[]>().default([]),
+  tags: json("tags").$type<string[]>().default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Resources - Topics of ongoing interest (enhanced knowledge base)
+export const mempodResources = pgTable("mempod_resources", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  title: varchar("title").notNull(),
+  content: text("content").notNull(),
+  resourceType: varchar("resource_type"), // "article", "book", "video", "podcast", "course", "tool"
+  source: varchar("source"),
+  sourceUrl: varchar("source_url"),
+  author: varchar("author"),
+  summary: text("summary"),
+  keyTakeaways: json("key_takeaways").$type<string[]>().default([]),
+  actionability: varchar("actionability").default("reference"), // "actionable", "reference"
+  connectedItems: json("connected_items").$type<number[]>().default([]),
+  lastAccessed: timestamp("last_accessed").defaultNow(),
+  tags: json("tags").$type<string[]>().default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Archives - Inactive items from other categories
+export const mempodArchives = pgTable("mempod_archives", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  originalType: varchar("original_type").notNull(), // "project", "area", "resource"
+  originalId: integer("original_id").notNull(),
+  title: varchar("title").notNull(),
+  content: text("content"),
+  archiveReason: text("archive_reason"),
+  originalData: json("original_data"),
+  tags: json("tags").$type<string[]>().default([]),
+  archivedAt: timestamp("archived_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Legacy tables (keeping for compatibility)
 export const mempodKnowledge = pgTable("mempod_knowledge", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id),
   title: varchar("title").notNull(),
   content: text("content").notNull(),
-  category: varchar("category"), // e.g., "research", "personal", "work"
+  category: varchar("category"),
   tags: json("tags").$type<string[]>().default([]),
-  source: varchar("source"), // URL or reference source
+  source: varchar("source"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -342,7 +431,7 @@ export const mempodNotes = pgTable("mempod_notes", {
   userId: varchar("user_id").notNull().references(() => users.id),
   title: varchar("title").notNull(),
   content: text("content").notNull(),
-  category: varchar("category"), // e.g., "quick", "important", "idea"
+  category: varchar("category"),
   tags: json("tags").$type<string[]>().default([]),
   isPinned: boolean("is_pinned").default(false),
   createdAt: timestamp("created_at").defaultNow(),
@@ -357,13 +446,29 @@ export const mempodGoals = pgTable("mempod_goals", {
   targetDate: timestamp("target_date"),
   priority: varchar("priority", { enum: ["low", "medium", "high"] }).default("medium"),
   status: varchar("status", { enum: ["not_started", "in_progress", "completed", "paused"] }).default("not_started"),
-  progress: integer("progress").default(0), // 0-100 percentage
+  progress: integer("progress").default(0),
   tags: json("tags").$type<string[]>().default([]),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Types for Mempod
+// Types for Enhanced Second Brain Mempod
+export type MempodCapture = typeof mempodCapture.$inferSelect;
+export type InsertMempodCapture = typeof mempodCapture.$inferInsert;
+
+export type MempodProject = typeof mempodProjects.$inferSelect;
+export type InsertMempodProject = typeof mempodProjects.$inferInsert;
+
+export type MempodArea = typeof mempodAreas.$inferSelect;
+export type InsertMempodArea = typeof mempodAreas.$inferInsert;
+
+export type MempodResource = typeof mempodResources.$inferSelect;
+export type InsertMempodResource = typeof mempodResources.$inferInsert;
+
+export type MempodArchive = typeof mempodArchives.$inferSelect;
+export type InsertMempodArchive = typeof mempodArchives.$inferInsert;
+
+// Legacy types (keeping for compatibility)
 export type MempodKnowledge = typeof mempodKnowledge.$inferSelect;
 export type InsertMempodKnowledge = typeof mempodKnowledge.$inferInsert;
 
@@ -373,7 +478,28 @@ export type InsertMempodNote = typeof mempodNotes.$inferInsert;
 export type MempodGoal = typeof mempodGoals.$inferSelect;
 export type InsertMempodGoal = typeof mempodGoals.$inferInsert;
 
-// Relations for Mempod
+// Relations for Enhanced Second Brain Mempod
+export const mempodCaptureRelations = relations(mempodCapture, ({ one }) => ({
+  user: one(users, { fields: [mempodCapture.userId], references: [users.id] }),
+}));
+
+export const mempodProjectsRelations = relations(mempodProjects, ({ one }) => ({
+  user: one(users, { fields: [mempodProjects.userId], references: [users.id] }),
+}));
+
+export const mempodAreasRelations = relations(mempodAreas, ({ one }) => ({
+  user: one(users, { fields: [mempodAreas.userId], references: [users.id] }),
+}));
+
+export const mempodResourcesRelations = relations(mempodResources, ({ one }) => ({
+  user: one(users, { fields: [mempodResources.userId], references: [users.id] }),
+}));
+
+export const mempodArchivesRelations = relations(mempodArchives, ({ one }) => ({
+  user: one(users, { fields: [mempodArchives.userId], references: [users.id] }),
+}));
+
+// Legacy relations (keeping for compatibility)
 export const mempodKnowledgeRelations = relations(mempodKnowledge, ({ one }) => ({
   user: one(users, { fields: [mempodKnowledge.userId], references: [users.id] }),
 }));

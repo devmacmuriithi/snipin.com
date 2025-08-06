@@ -40,7 +40,8 @@ import {
   Pause,
   Trash2,
   Database,
-  StickyNote
+  StickyNote,
+  Archive
 } from 'lucide-react';
 
 interface AssistantConfig {
@@ -1130,33 +1131,49 @@ function Assistant() {
               {/* Mempod Tab */}
               <TabsContent value="mempod" className="space-y-6">
                 <Tabs defaultValue="knowledge" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3 mb-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 p-1 rounded-xl">
+                  <TabsList className="grid w-full grid-cols-5 mb-6 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-0 p-1 rounded-xl">
                     <TabsTrigger 
-                      value="knowledge" 
+                      value="capture" 
                       className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
                     >
-                      <Database className="w-4 h-4" />
-                      <span>Knowledge</span>
+                      <Plus className="w-4 h-4" />
+                      <span>Capture</span>
                     </TabsTrigger>
                     <TabsTrigger 
-                      value="notes" 
-                      className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
-                    >
-                      <StickyNote className="w-4 h-4" />
-                      <span>Notes</span>
-                    </TabsTrigger>
-                    <TabsTrigger 
-                      value="goals" 
+                      value="projects" 
                       className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
                     >
                       <Target className="w-4 h-4" />
-                      <span>Goals</span>
+                      <span>Projects</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="areas" 
+                      className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                    >
+                      <Monitor className="w-4 h-4" />
+                      <span>Areas</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="resources" 
+                      className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                    >
+                      <Database className="w-4 h-4" />
+                      <span>Resources</span>
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="archives" 
+                      className="flex items-center gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+                    >
+                      <Archive className="w-4 h-4" />
+                      <span>Archives</span>
                     </TabsTrigger>
                   </TabsList>
 
-                  <MempodKnowledge />
-                  <MempodNotes />
-                  <MempodGoals />
+                  <MempodCapture />
+                  <MempodProjects />
+                  <MempodAreas />
+                  <MempodResources />
+                  <MempodArchives />
                 </Tabs>
               </TabsContent>
 
@@ -2098,6 +2115,238 @@ function MempodGoals() {
           )}
         </DialogContent>
       </Dialog>
+    </TabsContent>
+  );
+}
+
+// Second Brain PARA Method Components
+
+// Quick Capture - Inbox for rapid note-taking
+function MempodCapture() {
+  return (
+    <TabsContent value="capture" className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Quick Capture</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Your inbox for rapid note-taking and idea capture</p>
+        </div>
+        <Button className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white border-0">
+          <Plus className="w-4 h-4 mr-2" />
+          Quick Capture
+        </Button>
+      </div>
+      <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+        <div className="text-center text-gray-600 dark:text-gray-400 space-y-4">
+          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-green-100 to-blue-100 rounded-2xl flex items-center justify-center">
+            <Plus className="w-8 h-8 text-green-600" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-lg mb-2">Quick Capture Inbox</h4>
+            <p className="text-sm">
+              Rapidly collect thoughts, ideas, and notes without worrying about organization. 
+              Everything captured here can later be processed into the appropriate PARA categories.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4 text-xs">
+            <div className="bg-white/50 rounded-lg p-3">
+              <strong>P</strong> → Projects
+            </div>
+            <div className="bg-white/50 rounded-lg p-3">
+              <strong>A</strong> → Areas
+            </div>
+            <div className="bg-white/50 rounded-lg p-3">
+              <strong>R</strong> → Resources
+            </div>
+            <div className="bg-white/50 rounded-lg p-3">
+              <strong>Archive</strong> → Inactive
+            </div>
+          </div>
+        </div>
+      </div>
+    </TabsContent>
+  );
+}
+
+// Projects - Things with outcomes and deadlines
+function MempodProjects() {
+  return (
+    <TabsContent value="projects" className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Projects</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Things with specific outcomes and deadlines</p>
+        </div>
+        <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0">
+          <Plus className="w-4 h-4 mr-2" />
+          New Project
+        </Button>
+      </div>
+      <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+        <div className="text-center text-gray-600 dark:text-gray-400 space-y-4">
+          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center">
+            <Target className="w-8 h-8 text-blue-600" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-lg mb-2">Active Projects</h4>
+            <p className="text-sm">
+              Projects are efforts with specific outcomes and deadlines. Examples: "Launch new website", "Complete certification", "Plan vacation".
+              Each project should have a clear deliverable and timeline.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-3 text-xs">
+            <div className="bg-blue-50 rounded-lg p-2">
+              <div className="font-medium">Outcome</div>
+              <div>Specific result</div>
+            </div>
+            <div className="bg-blue-50 rounded-lg p-2">
+              <div className="font-medium">Deadline</div>
+              <div>Clear timeline</div>
+            </div>
+            <div className="bg-blue-50 rounded-lg p-2">
+              <div className="font-medium">Actions</div>
+              <div>Next steps</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </TabsContent>
+  );
+}
+
+// Areas - Ongoing responsibilities and standards to maintain
+function MempodAreas() {
+  return (
+    <TabsContent value="areas" className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Areas of Responsibility</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Ongoing responsibilities and standards to maintain</p>
+        </div>
+        <Button className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white border-0">
+          <Plus className="w-4 h-4 mr-2" />
+          New Area
+        </Button>
+      </div>
+      <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+        <div className="text-center text-gray-600 dark:text-gray-400 space-y-4">
+          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-green-100 to-teal-100 rounded-2xl flex items-center justify-center">
+            <Monitor className="w-8 h-8 text-green-600" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-lg mb-2">Life Areas</h4>
+            <p className="text-sm">
+              Areas are ongoing responsibilities without end dates. Examples: "Health & Fitness", "Professional Development", "Family".
+              These require regular attention and have standards to maintain.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-3 text-xs">
+            <div className="bg-green-50 rounded-lg p-2">
+              <div className="font-medium">Standard</div>
+              <div>What good looks like</div>
+            </div>
+            <div className="bg-green-50 rounded-lg p-2">
+              <div className="font-medium">Review</div>
+              <div>Regular check-ins</div>
+            </div>
+            <div className="bg-green-50 rounded-lg p-2">
+              <div className="font-medium">Maintain</div>
+              <div>Ongoing effort</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </TabsContent>
+  );
+}
+
+// Resources - Topics of ongoing interest (enhanced knowledge base)
+function MempodResources() {
+  return (
+    <TabsContent value="resources" className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Resources</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Topics of ongoing interest for future reference</p>
+        </div>
+        <Button className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white border-0">
+          <Plus className="w-4 h-4 mr-2" />
+          Add Resource
+        </Button>
+      </div>
+      <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+        <div className="text-center text-gray-600 dark:text-gray-400 space-y-4">
+          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center">
+            <Database className="w-8 h-8 text-purple-600" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-lg mb-2">Knowledge Resources</h4>
+            <p className="text-sm">
+              Resources are topics you're interested in for future reference. Examples: "Web Design Trends", "Productivity Tools", "Investment Strategies".
+              These contain reference materials you might need someday.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-3 text-xs">
+            <div className="bg-purple-50 rounded-lg p-2">
+              <div className="font-medium">Articles</div>
+              <div>Saved reads</div>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-2">
+              <div className="font-medium">Tools</div>
+              <div>Useful software</div>
+            </div>
+            <div className="bg-purple-50 rounded-lg p-2">
+              <div className="font-medium">Learning</div>
+              <div>Future study</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </TabsContent>
+  );
+}
+
+// Archives - Inactive items from other categories
+function MempodArchives() {
+  return (
+    <TabsContent value="archives" className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Archives</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Completed or inactive items from other categories</p>
+        </div>
+        <Button variant="outline" className="border-gray-300 dark:border-gray-600">
+          <Archive className="w-4 h-4 mr-2" />
+          View All
+        </Button>
+      </div>
+      <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+        <div className="text-center text-gray-600 dark:text-gray-400 space-y-4">
+          <div className="w-16 h-16 mx-auto bg-gradient-to-br from-gray-100 to-slate-100 rounded-2xl flex items-center justify-center">
+            <Archive className="w-8 h-8 text-gray-600" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-lg mb-2">Archived Items</h4>
+            <p className="text-sm">
+              Archives contain inactive items from your Projects, Areas, and Resources. 
+              Completed projects, former responsibilities, and outdated resources live here for reference.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-3 text-xs">
+            <div className="bg-gray-50 rounded-lg p-2">
+              <div className="font-medium">Completed</div>
+              <div>Finished projects</div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-2">
+              <div className="font-medium">Former</div>
+              <div>Past responsibilities</div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-2">
+              <div className="font-medium">Outdated</div>
+              <div>Old resources</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </TabsContent>
   );
 }
