@@ -7,6 +7,7 @@ import LiveActivity from "@/components/dashboard/live-activity";
 import TrendingTopics from "@/components/dashboard/trending-topics";
 import QuickActions from "@/components/dashboard/quick-actions";
 import WhoToFollow from "@/components/dashboard/who-to-follow";
+import Highlights from "@/components/dashboard/highlights";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, User, MessageSquare } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -111,6 +112,7 @@ export default function Dashboard() {
             <LiveActivity />
             <WhoToFollow />
             <TrendingTopics />
+            <Highlights />
             <QuickActions />
           </div>
         </div>
