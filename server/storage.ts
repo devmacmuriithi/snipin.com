@@ -41,6 +41,15 @@ import {
   type InsertGoalMetric,
   type GoalProgress,
   type InsertGoalProgress,
+  mempodKnowledge,
+  type MempodKnowledge,
+  type InsertMempodKnowledge,
+  mempodNotes,
+  type MempodNote,
+  type InsertMempodNote,
+  mempodGoals,
+  type MempodGoal,
+  type InsertMempodGoal,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, sql, count, isNull, ilike } from "drizzle-orm";
@@ -140,6 +149,24 @@ export interface IStorage {
   // Search operations
   searchSnips(query: string): Promise<any[]>;
   searchWhispers(query: string): Promise<any[]>;
+
+  // Mempod Knowledge operations
+  getMempodKnowledge(userId: string): Promise<MempodKnowledge[]>;
+  createMempodKnowledge(knowledge: InsertMempodKnowledge): Promise<MempodKnowledge>;
+  updateMempodKnowledge(id: number, updates: Partial<InsertMempodKnowledge>): Promise<MempodKnowledge>;
+  deleteMempodKnowledge(id: number): Promise<void>;
+
+  // Mempod Notes operations
+  getMempodNotes(userId: string): Promise<MempodNote[]>;
+  createMempodNote(note: InsertMempodNote): Promise<MempodNote>;
+  updateMempodNote(id: number, updates: Partial<InsertMempodNote>): Promise<MempodNote>;
+  deleteMempodNote(id: number): Promise<void>;
+
+  // Mempod Goals operations
+  getMempodGoals(userId: string): Promise<MempodGoal[]>;
+  createMempodGoal(goal: InsertMempodGoal): Promise<MempodGoal>;
+  updateMempodGoal(id: number, updates: Partial<InsertMempodGoal>): Promise<MempodGoal>;
+  deleteMempodGoal(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1021,6 +1048,96 @@ export class DatabaseStorage implements IStorage {
       .limit(10);
 
     return results;
+  }
+
+  // Mempod Knowledge operations
+  async getMempodKnowledge(userId: string): Promise<MempodKnowledge[]> {
+    return await db
+      .select()
+      .from(mempodKnowledge)
+      .where(eq(mempodKnowledge.userId, userId))
+      .orderBy(desc(mempodKnowledge.createdAt));
+  }
+
+  async createMempodKnowledge(knowledge: InsertMempodKnowledge): Promise<MempodKnowledge> {
+    const [newKnowledge] = await db
+      .insert(mempodKnowledge)
+      .values({ ...knowledge, createdAt: new Date(), updatedAt: new Date() })
+      .returning();
+    return newKnowledge;
+  }
+
+  async updateMempodKnowledge(id: number, updates: Partial<InsertMempodKnowledge>): Promise<MempodKnowledge> {
+    const [updated] = await db
+      .update(mempodKnowledge)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(mempodKnowledge.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteMempodKnowledge(id: number): Promise<void> {
+    await db.delete(mempodKnowledge).where(eq(mempodKnowledge.id, id));
+  }
+
+  // Mempod Notes operations
+  async getMempodNotes(userId: string): Promise<MempodNote[]> {
+    return await db
+      .select()
+      .from(mempodNotes)
+      .where(eq(mempodNotes.userId, userId))
+      .orderBy(desc(mempodNotes.isPinned), desc(mempodNotes.createdAt));
+  }
+
+  async createMempodNote(note: InsertMempodNote): Promise<MempodNote> {
+    const [newNote] = await db
+      .insert(mempodNotes)
+      .values({ ...note, createdAt: new Date(), updatedAt: new Date() })
+      .returning();
+    return newNote;
+  }
+
+  async updateMempodNote(id: number, updates: Partial<InsertMempodNote>): Promise<MempodNote> {
+    const [updated] = await db
+      .update(mempodNotes)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(mempodNotes.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteMempodNote(id: number): Promise<void> {
+    await db.delete(mempodNotes).where(eq(mempodNotes.id, id));
+  }
+
+  // Mempod Goals operations
+  async getMempodGoals(userId: string): Promise<MempodGoal[]> {
+    return await db
+      .select()
+      .from(mempodGoals)
+      .where(eq(mempodGoals.userId, userId))
+      .orderBy(desc(mempodGoals.createdAt));
+  }
+
+  async createMempodGoal(goal: InsertMempodGoal): Promise<MempodGoal> {
+    const [newGoal] = await db
+      .insert(mempodGoals)
+      .values({ ...goal, createdAt: new Date(), updatedAt: new Date() })
+      .returning();
+    return newGoal;
+  }
+
+  async updateMempodGoal(id: number, updates: Partial<InsertMempodGoal>): Promise<MempodGoal> {
+    const [updated] = await db
+      .update(mempodGoals)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(mempodGoals.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteMempodGoal(id: number): Promise<void> {
+    await db.delete(mempodGoals).where(eq(mempodGoals.id, id));
   }
 }
 

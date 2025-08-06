@@ -486,6 +486,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mempod Knowledge routes
+  app.get('/api/mempod/knowledge', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const knowledge = await storage.getMempodKnowledge(userId);
+      res.json(knowledge);
+    } catch (error) {
+      console.error('Error fetching knowledge:', error);
+      res.status(500).json({ error: 'Failed to fetch knowledge' });
+    }
+  });
+
+  app.post('/api/mempod/knowledge', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const knowledge = await storage.createMempodKnowledge({
+        ...req.body,
+        userId
+      });
+      res.json(knowledge);
+    } catch (error) {
+      console.error('Error creating knowledge:', error);
+      res.status(500).json({ error: 'Failed to create knowledge' });
+    }
+  });
+
+  app.put('/api/mempod/knowledge/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const knowledge = await storage.updateMempodKnowledge(parseInt(id), req.body);
+      res.json(knowledge);
+    } catch (error) {
+      console.error('Error updating knowledge:', error);
+      res.status(500).json({ error: 'Failed to update knowledge' });
+    }
+  });
+
+  app.delete('/api/mempod/knowledge/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteMempodKnowledge(parseInt(id));
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting knowledge:', error);
+      res.status(500).json({ error: 'Failed to delete knowledge' });
+    }
+  });
+
+  // Mempod Notes routes
+  app.get('/api/mempod/notes', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const notes = await storage.getMempodNotes(userId);
+      res.json(notes);
+    } catch (error) {
+      console.error('Error fetching notes:', error);
+      res.status(500).json({ error: 'Failed to fetch notes' });
+    }
+  });
+
+  app.post('/api/mempod/notes', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const note = await storage.createMempodNote({
+        ...req.body,
+        userId
+      });
+      res.json(note);
+    } catch (error) {
+      console.error('Error creating note:', error);
+      res.status(500).json({ error: 'Failed to create note' });
+    }
+  });
+
+  app.put('/api/mempod/notes/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const note = await storage.updateMempodNote(parseInt(id), req.body);
+      res.json(note);
+    } catch (error) {
+      console.error('Error updating note:', error);
+      res.status(500).json({ error: 'Failed to update note' });
+    }
+  });
+
+  app.delete('/api/mempod/notes/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteMempodNote(parseInt(id));
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      res.status(500).json({ error: 'Failed to delete note' });
+    }
+  });
+
+  // Mempod Goals routes
+  app.get('/api/mempod/goals', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const goals = await storage.getMempodGoals(userId);
+      res.json(goals);
+    } catch (error) {
+      console.error('Error fetching goals:', error);
+      res.status(500).json({ error: 'Failed to fetch goals' });
+    }
+  });
+
+  app.post('/api/mempod/goals', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const goal = await storage.createMempodGoal({
+        ...req.body,
+        userId
+      });
+      res.json(goal);
+    } catch (error) {
+      console.error('Error creating goal:', error);
+      res.status(500).json({ error: 'Failed to create goal' });
+    }
+  });
+
+  app.put('/api/mempod/goals/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const goal = await storage.updateMempodGoal(parseInt(id), req.body);
+      res.json(goal);
+    } catch (error) {
+      console.error('Error updating goal:', error);
+      res.status(500).json({ error: 'Failed to update goal' });
+    }
+  });
+
+  app.delete('/api/mempod/goals/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteMempodGoal(parseInt(id));
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting goal:', error);
+      res.status(500).json({ error: 'Failed to delete goal' });
+    }
+  });
+
   // Snip routes
   app.get('/api/snips', async (req, res) => {
     try {

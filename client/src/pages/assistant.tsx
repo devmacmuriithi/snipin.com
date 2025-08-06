@@ -1154,50 +1154,9 @@ function Assistant() {
                     </TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="knowledge" className="space-y-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <Database className="w-5 h-5" />
-                          <span>Knowledge Base</span>
-                        </CardTitle>
-                        <CardDescription>Store and organize information for your assistant to access</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-slate-600">Knowledge management features coming soon. This will allow you to build a comprehensive knowledge base for your assistant.</p>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-
-                  <TabsContent value="notes" className="space-y-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <StickyNote className="w-5 h-5" />
-                          <span>Notes</span>
-                        </CardTitle>
-                        <CardDescription>Quick notes and memos for reference</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-slate-600">Notes functionality coming soon. Keep track of important information and quick thoughts.</p>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
-
-                  <TabsContent value="goals" className="space-y-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center space-x-2">
-                          <Target className="w-5 h-5" />
-                          <span>Goals & Metrics</span>
-                        </CardTitle>
-                        <CardDescription>Set and track your personal and professional goals</CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-slate-600">Goal tracking features coming soon. Set objectives and monitor your progress with detailed metrics.</p>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
+                  <MempodKnowledge />
+                  <MempodNotes />
+                  <MempodGoals />
                 </Tabs>
               </TabsContent>
 
@@ -1214,6 +1173,932 @@ function Assistant() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Mempod Knowledge Component
+function MempodKnowledge() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [newItem, setNewItem] = useState({
+    title: '',
+    content: '',
+    category: '',
+    source: '',
+    tags: []
+  });
+
+  // Fetch knowledge items
+  const { data: knowledge = [], isLoading } = useQuery({
+    queryKey: ['/api/mempod/knowledge'],
+    enabled: !!user,
+  });
+
+  // Create knowledge mutation
+  const createMutation = useMutation({
+    mutationFn: async (data: any) => apiRequest('/api/mempod/knowledge', 'POST', data),
+    onSuccess: () => {
+      toast({ title: "Knowledge Added", description: "New knowledge item has been created." });
+      queryClient.invalidateQueries({ queryKey: ['/api/mempod/knowledge'] });
+      setShowAddDialog(false);
+      setNewItem({ title: '', content: '', category: '', source: '', tags: [] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to create knowledge item.", variant: "destructive" });
+    }
+  });
+
+  // Update knowledge mutation
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, ...data }: any) => apiRequest(`/api/mempod/knowledge/${id}`, 'PUT', data),
+    onSuccess: () => {
+      toast({ title: "Knowledge Updated", description: "Knowledge item has been updated." });
+      queryClient.invalidateQueries({ queryKey: ['/api/mempod/knowledge'] });
+      setEditingItem(null);
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update knowledge item.", variant: "destructive" });
+    }
+  });
+
+  // Delete knowledge mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => apiRequest(`/api/mempod/knowledge/${id}`, 'DELETE'),
+    onSuccess: () => {
+      toast({ title: "Knowledge Deleted", description: "Knowledge item has been removed." });
+      queryClient.invalidateQueries({ queryKey: ['/api/mempod/knowledge'] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to delete knowledge item.", variant: "destructive" });
+    }
+  });
+
+  const handleSubmit = () => {
+    if (!newItem.title.trim() || !newItem.content.trim()) return;
+    createMutation.mutate(newItem);
+  };
+
+  const handleUpdate = () => {
+    if (!editingItem) return;
+    updateMutation.mutate(editingItem);
+  };
+
+  return (
+    <TabsContent value="knowledge" className="space-y-4">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center space-x-2">
+              <Database className="w-5 h-5" />
+              <span>Knowledge Base</span>
+            </CardTitle>
+            <CardDescription>Store and organize information for your assistant to access</CardDescription>
+          </div>
+          <Button onClick={() => setShowAddDialog(true)} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Add Knowledge
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          ) : knowledge.length === 0 ? (
+            <div className="text-center py-8 text-slate-600">
+              <Database className="w-12 h-12 mx-auto mb-4 text-slate-400" />
+              <p className="text-lg font-medium mb-2">No knowledge items yet</p>
+              <p className="text-sm">Start building your knowledge base by adding your first item.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {knowledge.map((item: any) => (
+                <div key={item.id} className="border rounded-lg p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-medium text-lg mb-2">{item.title}</h3>
+                      <p className="text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">{item.content}</p>
+                      <div className="flex items-center gap-4 text-sm text-slate-500">
+                        {item.category && (
+                          <Badge variant="secondary">{item.category}</Badge>
+                        )}
+                        {item.source && (
+                          <span className="flex items-center gap-1">
+                            <Globe className="w-3 h-3" />
+                            {item.source}
+                          </span>
+                        )}
+                        <span>{new Date(item.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingItem(item)}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteMutation.mutate(item.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Add Knowledge Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add Knowledge Item</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={newItem.title}
+                onChange={(e) => setNewItem(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Knowledge item title"
+              />
+            </div>
+            <div>
+              <Label htmlFor="content">Content</Label>
+              <Textarea
+                id="content"
+                value={newItem.content}
+                onChange={(e) => setNewItem(prev => ({ ...prev, content: e.target.value }))}
+                placeholder="Detailed information and insights"
+                rows={6}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="category">Category</Label>
+                <Input
+                  id="category"
+                  value={newItem.category}
+                  onChange={(e) => setNewItem(prev => ({ ...prev, category: e.target.value }))}
+                  placeholder="e.g., Research, Personal, Work"
+                />
+              </div>
+              <div>
+                <Label htmlFor="source">Source</Label>
+                <Input
+                  id="source"
+                  value={newItem.source}
+                  onChange={(e) => setNewItem(prev => ({ ...prev, source: e.target.value }))}
+                  placeholder="Source URL or reference"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSubmit} disabled={createMutation.isPending}>
+                {createMutation.isPending ? 'Adding...' : 'Add Knowledge'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Knowledge Dialog */}
+      <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Knowledge Item</DialogTitle>
+          </DialogHeader>
+          {editingItem && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-title">Title</Label>
+                <Input
+                  id="edit-title"
+                  value={editingItem.title}
+                  onChange={(e) => setEditingItem(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Knowledge item title"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-content">Content</Label>
+                <Textarea
+                  id="edit-content"
+                  value={editingItem.content}
+                  onChange={(e) => setEditingItem(prev => ({ ...prev, content: e.target.value }))}
+                  placeholder="Detailed information and insights"
+                  rows={6}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-category">Category</Label>
+                  <Input
+                    id="edit-category"
+                    value={editingItem.category || ''}
+                    onChange={(e) => setEditingItem(prev => ({ ...prev, category: e.target.value }))}
+                    placeholder="e.g., Research, Personal, Work"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-source">Source</Label>
+                  <Input
+                    id="edit-source"
+                    value={editingItem.source || ''}
+                    onChange={(e) => setEditingItem(prev => ({ ...prev, source: e.target.value }))}
+                    placeholder="Source URL or reference"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setEditingItem(null)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleUpdate} disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? 'Updating...' : 'Update Knowledge'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </TabsContent>
+  );
+}
+
+// Mempod Notes Component
+function MempodNotes() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [newItem, setNewItem] = useState({
+    title: '',
+    content: '',
+    category: '',
+    isPinned: false,
+    tags: []
+  });
+
+  // Fetch notes
+  const { data: notes = [], isLoading } = useQuery({
+    queryKey: ['/api/mempod/notes'],
+    enabled: !!user,
+  });
+
+  // Create note mutation
+  const createMutation = useMutation({
+    mutationFn: async (data: any) => apiRequest('/api/mempod/notes', 'POST', data),
+    onSuccess: () => {
+      toast({ title: "Note Added", description: "New note has been created." });
+      queryClient.invalidateQueries({ queryKey: ['/api/mempod/notes'] });
+      setShowAddDialog(false);
+      setNewItem({ title: '', content: '', category: '', isPinned: false, tags: [] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to create note.", variant: "destructive" });
+    }
+  });
+
+  // Update note mutation
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, ...data }: any) => apiRequest(`/api/mempod/notes/${id}`, 'PUT', data),
+    onSuccess: () => {
+      toast({ title: "Note Updated", description: "Note has been updated." });
+      queryClient.invalidateQueries({ queryKey: ['/api/mempod/notes'] });
+      setEditingItem(null);
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update note.", variant: "destructive" });
+    }
+  });
+
+  // Delete note mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => apiRequest(`/api/mempod/notes/${id}`, 'DELETE'),
+    onSuccess: () => {
+      toast({ title: "Note Deleted", description: "Note has been removed." });
+      queryClient.invalidateQueries({ queryKey: ['/api/mempod/notes'] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to delete note.", variant: "destructive" });
+    }
+  });
+
+  const handleSubmit = () => {
+    if (!newItem.title.trim() || !newItem.content.trim()) return;
+    createMutation.mutate(newItem);
+  };
+
+  const handleUpdate = () => {
+    if (!editingItem) return;
+    updateMutation.mutate(editingItem);
+  };
+
+  const togglePin = (note: any) => {
+    updateMutation.mutate({
+      ...note,
+      isPinned: !note.isPinned
+    });
+  };
+
+  return (
+    <TabsContent value="notes" className="space-y-4">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center space-x-2">
+              <StickyNote className="w-5 h-5" />
+              <span>Notes</span>
+            </CardTitle>
+            <CardDescription>Quick notes and memos for reference</CardDescription>
+          </div>
+          <Button onClick={() => setShowAddDialog(true)} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Add Note
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          ) : notes.length === 0 ? (
+            <div className="text-center py-8 text-slate-600">
+              <StickyNote className="w-12 h-12 mx-auto mb-4 text-slate-400" />
+              <p className="text-lg font-medium mb-2">No notes yet</p>
+              <p className="text-sm">Create your first note to start organizing your thoughts.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {notes.map((note: any) => (
+                <div key={note.id} className={`border rounded-lg p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 ${note.isPinned ? 'border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20' : ''}`}>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-medium text-lg">{note.title}</h3>
+                        {note.isPinned && (
+                          <Badge variant="outline" className="text-yellow-600 border-yellow-300">
+                            Pinned
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 mb-3 line-clamp-3">{note.content}</p>
+                      <div className="flex items-center gap-4 text-sm text-slate-500">
+                        {note.category && (
+                          <Badge variant="secondary">{note.category}</Badge>
+                        )}
+                        <span>{new Date(note.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => togglePin(note)}
+                        className={note.isPinned ? 'text-yellow-600' : ''}
+                      >
+                        <Heart className={`w-4 h-4 ${note.isPinned ? 'fill-current' : ''}`} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingItem(note)}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteMutation.mutate(note.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Add Note Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add Note</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="note-title">Title</Label>
+              <Input
+                id="note-title"
+                value={newItem.title}
+                onChange={(e) => setNewItem(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Note title"
+              />
+            </div>
+            <div>
+              <Label htmlFor="note-content">Content</Label>
+              <Textarea
+                id="note-content"
+                value={newItem.content}
+                onChange={(e) => setNewItem(prev => ({ ...prev, content: e.target.value }))}
+                placeholder="Note content and thoughts"
+                rows={5}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="note-category">Category</Label>
+                <Input
+                  id="note-category"
+                  value={newItem.category}
+                  onChange={(e) => setNewItem(prev => ({ ...prev, category: e.target.value }))}
+                  placeholder="e.g., Quick, Important, Idea"
+                />
+              </div>
+              <div className="flex items-center space-x-2 pt-6">
+                <Checkbox
+                  id="pin-note"
+                  checked={newItem.isPinned}
+                  onCheckedChange={(checked) => setNewItem(prev => ({ ...prev, isPinned: !!checked }))}
+                />
+                <Label htmlFor="pin-note">Pin this note</Label>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSubmit} disabled={createMutation.isPending}>
+                {createMutation.isPending ? 'Adding...' : 'Add Note'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Note Dialog */}
+      <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Note</DialogTitle>
+          </DialogHeader>
+          {editingItem && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-note-title">Title</Label>
+                <Input
+                  id="edit-note-title"
+                  value={editingItem.title}
+                  onChange={(e) => setEditingItem(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Note title"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-note-content">Content</Label>
+                <Textarea
+                  id="edit-note-content"
+                  value={editingItem.content}
+                  onChange={(e) => setEditingItem(prev => ({ ...prev, content: e.target.value }))}
+                  placeholder="Note content and thoughts"
+                  rows={5}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-note-category">Category</Label>
+                  <Input
+                    id="edit-note-category"
+                    value={editingItem.category || ''}
+                    onChange={(e) => setEditingItem(prev => ({ ...prev, category: e.target.value }))}
+                    placeholder="e.g., Quick, Important, Idea"
+                  />
+                </div>
+                <div className="flex items-center space-x-2 pt-6">
+                  <Checkbox
+                    id="edit-pin-note"
+                    checked={editingItem.isPinned}
+                    onCheckedChange={(checked) => setEditingItem(prev => ({ ...prev, isPinned: !!checked }))}
+                  />
+                  <Label htmlFor="edit-pin-note">Pin this note</Label>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setEditingItem(null)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleUpdate} disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? 'Updating...' : 'Update Note'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </TabsContent>
+  );
+}
+
+// Mempod Goals Component
+function MempodGoals() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [newItem, setNewItem] = useState({
+    title: '',
+    description: '',
+    targetDate: '',
+    priority: 'medium',
+    status: 'not_started',
+    progress: 0,
+    tags: []
+  });
+
+  // Fetch goals
+  const { data: goals = [], isLoading } = useQuery({
+    queryKey: ['/api/mempod/goals'],
+    enabled: !!user,
+  });
+
+  // Create goal mutation
+  const createMutation = useMutation({
+    mutationFn: async (data: any) => apiRequest('/api/mempod/goals', 'POST', data),
+    onSuccess: () => {
+      toast({ title: "Goal Added", description: "New goal has been created." });
+      queryClient.invalidateQueries({ queryKey: ['/api/mempod/goals'] });
+      setShowAddDialog(false);
+      setNewItem({ title: '', description: '', targetDate: '', priority: 'medium', status: 'not_started', progress: 0, tags: [] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to create goal.", variant: "destructive" });
+    }
+  });
+
+  // Update goal mutation
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, ...data }: any) => apiRequest(`/api/mempod/goals/${id}`, 'PUT', data),
+    onSuccess: () => {
+      toast({ title: "Goal Updated", description: "Goal has been updated." });
+      queryClient.invalidateQueries({ queryKey: ['/api/mempod/goals'] });
+      setEditingItem(null);
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to update goal.", variant: "destructive" });
+    }
+  });
+
+  // Delete goal mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => apiRequest(`/api/mempod/goals/${id}`, 'DELETE'),
+    onSuccess: () => {
+      toast({ title: "Goal Deleted", description: "Goal has been removed." });
+      queryClient.invalidateQueries({ queryKey: ['/api/mempod/goals'] });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "Failed to delete goal.", variant: "destructive" });
+    }
+  });
+
+  const handleSubmit = () => {
+    if (!newItem.title.trim()) return;
+    const goalData = {
+      ...newItem,
+      targetDate: newItem.targetDate ? new Date(newItem.targetDate).toISOString() : null
+    };
+    createMutation.mutate(goalData);
+  };
+
+  const handleUpdate = () => {
+    if (!editingItem) return;
+    const goalData = {
+      ...editingItem,
+      targetDate: editingItem.targetDate ? new Date(editingItem.targetDate).toISOString() : null
+    };
+    updateMutation.mutate(goalData);
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800 border-green-300';
+      case 'in_progress': return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'paused': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-800 border-red-300';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
+      case 'low': return 'bg-green-100 text-green-800 border-green-300';
+      default: return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  return (
+    <TabsContent value="goals" className="space-y-4">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center space-x-2">
+              <Target className="w-5 h-5" />
+              <span>Goals & Metrics</span>
+            </CardTitle>
+            <CardDescription>Set and track your personal and professional goals</CardDescription>
+          </div>
+          <Button onClick={() => setShowAddDialog(true)} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Add Goal
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          ) : goals.length === 0 ? (
+            <div className="text-center py-8 text-slate-600">
+              <Target className="w-12 h-12 mx-auto mb-4 text-slate-400" />
+              <p className="text-lg font-medium mb-2">No goals yet</p>
+              <p className="text-sm">Set your first goal to start tracking your progress.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {goals.map((goal: any) => (
+                <div key={goal.id} className="border rounded-lg p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-medium text-lg">{goal.title}</h3>
+                        <Badge variant="outline" className={getPriorityColor(goal.priority)}>
+                          {goal.priority}
+                        </Badge>
+                        <Badge variant="outline" className={getStatusColor(goal.status)}>
+                          {goal.status.replace('_', ' ')}
+                        </Badge>
+                      </div>
+                      {goal.description && (
+                        <p className="text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">{goal.description}</p>
+                      )}
+                      
+                      {/* Progress Bar */}
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between text-sm mb-1">
+                          <span>Progress</span>
+                          <span>{goal.progress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                            style={{ width: `${goal.progress}%` }}
+                          ></div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 text-sm text-slate-500">
+                        {goal.targetDate && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {new Date(goal.targetDate).toLocaleDateString()}
+                          </span>
+                        )}
+                        <span>Created {new Date(goal.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingItem(goal)}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteMutation.mutate(goal.id)}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Add Goal Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add Goal</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="goal-title">Title</Label>
+              <Input
+                id="goal-title"
+                value={newItem.title}
+                onChange={(e) => setNewItem(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="Goal title"
+              />
+            </div>
+            <div>
+              <Label htmlFor="goal-description">Description</Label>
+              <Textarea
+                id="goal-description"
+                value={newItem.description}
+                onChange={(e) => setNewItem(prev => ({ ...prev, description: e.target.value }))}
+                placeholder="Describe your goal in detail"
+                rows={3}
+              />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="goal-priority">Priority</Label>
+                <Select
+                  value={newItem.priority}
+                  onValueChange={(value) => setNewItem(prev => ({ ...prev, priority: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="goal-status">Status</Label>
+                <Select
+                  value={newItem.status}
+                  onValueChange={(value) => setNewItem(prev => ({ ...prev, status: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="not_started">Not Started</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="paused">Paused</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="goal-target-date">Target Date</Label>
+                <Input
+                  id="goal-target-date"
+                  type="date"
+                  value={newItem.targetDate}
+                  onChange={(e) => setNewItem(prev => ({ ...prev, targetDate: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="goal-progress">Progress (%)</Label>
+              <Slider
+                value={[newItem.progress]}
+                onValueChange={([value]) => setNewItem(prev => ({ ...prev, progress: value }))}
+                max={100}
+                step={5}
+                className="mt-2"
+              />
+              <div className="text-center text-sm text-slate-500 mt-1">{newItem.progress}%</div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSubmit} disabled={createMutation.isPending}>
+                {createMutation.isPending ? 'Adding...' : 'Add Goal'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Goal Dialog */}
+      <Dialog open={!!editingItem} onOpenChange={() => setEditingItem(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Goal</DialogTitle>
+          </DialogHeader>
+          {editingItem && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-goal-title">Title</Label>
+                <Input
+                  id="edit-goal-title"
+                  value={editingItem.title}
+                  onChange={(e) => setEditingItem(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="Goal title"
+                />
+              </div>
+              <div>
+                <Label htmlFor="edit-goal-description">Description</Label>
+                <Textarea
+                  id="edit-goal-description"
+                  value={editingItem.description || ''}
+                  onChange={(e) => setEditingItem(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Describe your goal in detail"
+                  rows={3}
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="edit-goal-priority">Priority</Label>
+                  <Select
+                    value={editingItem.priority}
+                    onValueChange={(value) => setEditingItem(prev => ({ ...prev, priority: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="edit-goal-status">Status</Label>
+                  <Select
+                    value={editingItem.status}
+                    onValueChange={(value) => setEditingItem(prev => ({ ...prev, status: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="not_started">Not Started</SelectItem>
+                      <SelectItem value="in_progress">In Progress</SelectItem>
+                      <SelectItem value="paused">Paused</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="edit-goal-target-date">Target Date</Label>
+                  <Input
+                    id="edit-goal-target-date"
+                    type="date"
+                    value={editingItem.targetDate ? new Date(editingItem.targetDate).toISOString().split('T')[0] : ''}
+                    onChange={(e) => setEditingItem(prev => ({ ...prev, targetDate: e.target.value }))}
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="edit-goal-progress">Progress (%)</Label>
+                <Slider
+                  value={[editingItem.progress]}
+                  onValueChange={([value]) => setEditingItem(prev => ({ ...prev, progress: value }))}
+                  max={100}
+                  step={5}
+                  className="mt-2"
+                />
+                <div className="text-center text-sm text-slate-500 mt-1">{editingItem.progress}%</div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setEditingItem(null)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleUpdate} disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? 'Updating...' : 'Update Goal'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </TabsContent>
   );
 }
 

@@ -4,6 +4,7 @@ import {
   varchar,
   timestamp,
   jsonb,
+  json,
   index,
   serial,
   integer,
@@ -321,6 +322,68 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 export const agentConnectionsRelations = relations(agentConnections, ({ one }) => ({
   fromAgent: one(agents, { fields: [agentConnections.fromAgentId], references: [agents.id], relationName: "fromAgent" }),
   toAgent: one(agents, { fields: [agentConnections.toAgentId], references: [agents.id], relationName: "toAgent" }),
+}));
+
+// Mempod Tables
+export const mempodKnowledge = pgTable("mempod_knowledge", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  title: varchar("title").notNull(),
+  content: text("content").notNull(),
+  category: varchar("category"), // e.g., "research", "personal", "work"
+  tags: json("tags").$type<string[]>().default([]),
+  source: varchar("source"), // URL or reference source
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const mempodNotes = pgTable("mempod_notes", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  title: varchar("title").notNull(),
+  content: text("content").notNull(),
+  category: varchar("category"), // e.g., "quick", "important", "idea"
+  tags: json("tags").$type<string[]>().default([]),
+  isPinned: boolean("is_pinned").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const mempodGoals = pgTable("mempod_goals", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  targetDate: timestamp("target_date"),
+  priority: varchar("priority", { enum: ["low", "medium", "high"] }).default("medium"),
+  status: varchar("status", { enum: ["not_started", "in_progress", "completed", "paused"] }).default("not_started"),
+  progress: integer("progress").default(0), // 0-100 percentage
+  tags: json("tags").$type<string[]>().default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Types for Mempod
+export type MempodKnowledge = typeof mempodKnowledge.$inferSelect;
+export type InsertMempodKnowledge = typeof mempodKnowledge.$inferInsert;
+
+export type MempodNote = typeof mempodNotes.$inferSelect;
+export type InsertMempodNote = typeof mempodNotes.$inferInsert;
+
+export type MempodGoal = typeof mempodGoals.$inferSelect;
+export type InsertMempodGoal = typeof mempodGoals.$inferInsert;
+
+// Relations for Mempod
+export const mempodKnowledgeRelations = relations(mempodKnowledge, ({ one }) => ({
+  user: one(users, { fields: [mempodKnowledge.userId], references: [users.id] }),
+}));
+
+export const mempodNotesRelations = relations(mempodNotes, ({ one }) => ({
+  user: one(users, { fields: [mempodNotes.userId], references: [users.id] }),
+}));
+
+export const mempodGoalsRelations = relations(mempodGoals, ({ one }) => ({
+  user: one(users, { fields: [mempodGoals.userId], references: [users.id] }),
 }));
 
 export const mempodItemsRelations = relations(mempodItems, ({ one, many }) => ({
