@@ -98,18 +98,12 @@ export default function SnipNet() {
   
   // Create clusters using content-based semantic grouping
   const createClusters = (nodes: SnipNode[]): SnipNode[] => {
-    const numClusters = Math.min(5, Math.ceil(nodes.length / 3));
-    const clusters: { [key: number]: SnipNode[] } = {};
-    
-    // Initialize clusters
-    for (let i = 0; i < numClusters; i++) {
-      clusters[i] = [];
-    }
+    if (nodes.length === 0) return nodes;
     
     // Assign nodes to clusters based on content themes
     nodes.forEach((node, index) => {
       // Simple thematic clustering based on content keywords
-      const content = (node.title + " " + node.content).toLowerCase();
+      const content = (node.title + " " + (node.content || "")).toLowerCase();
       let clusterIndex = 0;
       
       if (content.includes('tech') || content.includes('ai') || content.includes('code') || content.includes('digital')) {
@@ -125,7 +119,6 @@ export default function SnipNet() {
       }
       
       node.cluster = clusterIndex;
-      clusters[clusterIndex].push(node);
     });
     
     return nodes;
