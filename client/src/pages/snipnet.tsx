@@ -215,17 +215,23 @@ export default function SnipNet() {
 
     const g = container.append("g");
 
-    // Create links
+    // Create links with enhanced visibility
     const link = g.append("g")
       .selectAll("line")
       .data(links)
       .join("line")
       .attr("class", "link")
-      .attr("stroke", "#cbd5e1")
-      .attr("stroke-opacity", d => d.strength * 2)
-      .attr("stroke-width", d => Math.max(1, d.strength * 4))
-      .style("filter", "drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.1))")
-      .style("transition", "all 0.3s ease");
+      .attr("stroke", d => {
+        // Dynamic color based on connection strength
+        if (d.strength > 0.6) return "#8b5cf6"; // Strong purple
+        if (d.strength > 0.3) return "#6366f1"; // Medium indigo
+        return "#94a3b8"; // Light slate
+      })
+      .attr("stroke-opacity", d => Math.max(0.4, d.strength * 1.5)) // Minimum visibility
+      .attr("stroke-width", d => Math.max(2, d.strength * 6)) // Thicker lines
+      .style("filter", "drop-shadow(0px 1px 3px rgba(139, 92, 246, 0.2))")
+      .style("transition", "all 0.3s ease")
+      .attr("stroke-linecap", "round"); // Rounded line ends
 
     // Create nodes
     const node = g.append("g")
@@ -279,12 +285,18 @@ export default function SnipNet() {
           .attr("r", Math.max(12, Math.min(24, 12 + (d as SnipNode).engagement * 2)))
           .attr("stroke-width", 3);
 
-        // Add pulsing effect to connected links
+        // Add pulsing effect to connected links with enhanced visibility
         link
           .attr("stroke-opacity", (l: SnipLink) => 
-            (l.source === d || l.target === d) ? l.strength * 3 : 0.1)
+            (l.source === d || l.target === d) ? Math.min(1, l.strength * 2.5) : Math.max(0.2, l.strength * 0.8))
           .attr("stroke-width", (l: SnipLink) => 
-            (l.source === d || l.target === d) ? Math.max(2, l.strength * 6) : 1)
+            (l.source === d || l.target === d) ? Math.max(3, l.strength * 8) : Math.max(1, l.strength * 3))
+          .attr("stroke", (l: SnipLink) => {
+            if (l.source === d || l.target === d) {
+              return l.strength > 0.6 ? "#a855f7" : "#8b5cf6"; // Brighter purple for connected
+            }
+            return l.strength > 0.6 ? "#8b5cf6" : l.strength > 0.3 ? "#6366f1" : "#94a3b8";
+          })
           .style("animation", (l: SnipLink) => 
             (l.source === d || l.target === d) ? "pulse 1s infinite alternate" : "none");
 
@@ -311,8 +323,8 @@ export default function SnipNet() {
 
         // Reset link opacity and animation
         link
-          .attr("stroke-opacity", (l: SnipLink) => l.strength * 2)
-          .attr("stroke-width", (l: SnipLink) => Math.max(1, l.strength * 4))
+          .attr("stroke-opacity", (l: SnipLink) => Math.max(0.4, l.strength * 1.5))
+          .attr("stroke-width", (l: SnipLink) => Math.max(2, l.strength * 6))
           .style("animation", "none");
 
         // Remove focused pulse on mouseout
