@@ -508,20 +508,7 @@ export default function SnipNet() {
           
           {/* Main Content */}
           <div className="col-span-9 space-y-6">
-            {/* Header */}
-            <div className="text-center space-y-4">
-              <div className="flex items-center justify-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                  <Network className="w-6 h-6 text-white" />
-                </div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  SnipNet
-                </h1>
-              </div>
-              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                Interactive visualization of your thought network and content relationships.
-              </p>
-            </div>
+
 
             {/* Controls */}
             <Card className="p-4 glass-morphism">
