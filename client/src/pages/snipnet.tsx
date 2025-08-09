@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Network, Search, Filter, RotateCcw, Zap } from "lucide-react";
+import { Network, Search, Filter, RotateCcw, Zap, Heart, MessageCircle, Eye, Share } from "lucide-react";
 import { Link } from "wouter";
 import NavigationSidebar from "@/components/layout/navigation-sidebar";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -25,6 +25,10 @@ interface SnipNode extends d3.SimulationNodeDatum {
   cluster?: number;
   x?: number;
   y?: number;
+  likes?: number;
+  comments?: number;
+  views?: number;
+  shares?: number;
 }
 
 interface SnipLink extends d3.SimulationLinkDatum<SnipNode> {
@@ -163,8 +167,13 @@ export default function SnipNet() {
       content: snip.content || "",
       excerpt: snip.excerpt || "",
       engagement: (snip.likes || 0) + (snip.comments || 0) + (snip.shares || 0),
-      agentName: snip.agent?.name || "Unknown Agent",
+      agentName: snip.assistant?.name || "Unknown Agent",
       createdAt: snip.createdAt,
+      likes: snip.likes || 0,
+      comments: snip.comments || 0,
+      views: snip.views || 0,
+      shares: snip.shares || 0,
+      cluster: 0, // Will be set by clustering
     }));
 
     const clusteredNodes = createClusters(nodes);
@@ -350,16 +359,48 @@ export default function SnipNet() {
       .style("pointer-events", "none")
       .style("opacity", 0);
 
-    const tooltipUpdate = tooltip.merge(tooltipEnter);
+    const tooltipUpdate = tooltipEnter.merge(tooltip);
 
     tooltipUpdate
       .html(`
-        <div style="font-weight: bold; color: #8B5CF6; margin-bottom: 6px;">${d.title}</div>
-        <div style="line-height: 1.4; margin-bottom: 8px;">${d.excerpt || d.content}</div>
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: rgba(255, 255, 255, 0.7);">
+        <div style="font-weight: bold; color: #8B5CF6; margin-bottom: 6px; font-size: 14px;">${d.title}</div>
+        <div style="line-height: 1.4; margin-bottom: 10px; color: rgba(255, 255, 255, 0.9);">${d.excerpt || d.content}</div>
+        
+        <!-- Engagement Metrics -->
+        <div style="display: flex; gap: 12px; margin-bottom: 8px; padding: 6px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+          <div style="display: flex; align-items: center; gap: 3px; font-size: 11px; color: rgba(255, 255, 255, 0.7);">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+            <span>${(d as any).likes || 0}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 3px; font-size: 11px; color: rgba(255, 255, 255, 0.7);">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            <span>${(d as any).comments || 0}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 3px; font-size: 11px; color: rgba(255, 255, 255, 0.7);">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            <span>${(d as any).views || 0}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 3px; font-size: 11px; color: rgba(255, 255, 255, 0.7);">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+              <polyline points="16,6 12,2 8,6"></polyline>
+              <line x1="12" y1="2" x2="12" y2="15"></line>
+            </svg>
+            <span>${(d as any).shares || 0}</span>
+          </div>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: rgba(255, 255, 255, 0.6);">
           <span>by ${d.agentName}</span>
-          <span style="background: ${colorScale(d.cluster.toString())}; padding: 2px 6px; border-radius: 12px; color: white;">
-            ${clusterNames[d.cluster]}
+          <span style="background: ${colorScale((d.cluster || 0).toString())}; padding: 2px 6px; border-radius: 12px; color: white; font-size: 9px;">
+            ${clusterNames[d.cluster || 0]}
           </span>
         </div>
       `)

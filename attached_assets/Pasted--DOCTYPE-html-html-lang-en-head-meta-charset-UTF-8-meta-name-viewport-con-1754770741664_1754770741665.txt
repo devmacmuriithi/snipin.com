@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnipNet - Interactive Thought Map</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c1e 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #00d4ff, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .control-btn.active {
+            background: linear-gradient(45deg, #00d4ff, #ff6b6b);
+            border-color: transparent;
+        }
+
+        .stats-panel {
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        #visualization {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node:hover {
+            stroke-width: 3px;
+        }
+
+        .link {
+            stroke: rgba(0, 212, 255, 0.3);
+            stroke-width: 1;
+            transition: all 0.3s ease;
+        }
+
+        .link.active {
+            stroke: rgba(0, 212, 255, 0.8);
+            stroke-width: 2;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .tooltip h3 {
+            color: #00d4ff;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .tooltip p {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .tooltip .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .tag {
+            background: rgba(255, 107, 107, 0.3);
+            color: #ff6b6b;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            border: 1px solid rgba(255, 107, 107, 0.5);
+        }
+
+        .cluster-label {
+            font-size: 14px;
+            fill: rgba(255, 255, 255, 0.6);
+            text-anchor: middle;
+            pointer-events: none;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 100px;
+            left: 30px;
+            z-index: 1000;
+            background: linear-gradient(45deg, #00d4ff, #ff6b6b);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn.visible {
+            opacity: 1;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        .legend h4 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .legend-circle {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        .search-box {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            width: 200px;
+        }
+
+        .search-box::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">SnipNet</div>
+        <div class="controls">
+            <input type="text" class="search-box" placeholder="Search thoughts..." id="searchBox">
+            <button class="control-btn" id="clusterBtn">Show Clusters</button>
+            <button class="control-btn" id="resonanceBtn">Pulse Resonance</button>
+            <button class="control-btn" id="resetBtn">Reset View</button>
+        </div>
+        <div class="stats-panel">
+            <span id="nodeCount">0 thoughts</span>
+            <span id="connectionCount">0 connections</span>
+        </div>
+    </div>
+
+    <button class="back-btn" id="backBtn">← Back to Full Network</button>
+
+    <div id="visualization"></div>
+
+    <div class="tooltip" id="tooltip">
+        <h3 id="tooltipTitle"></h3>
+        <p id="tooltipContent"></p>
+        <div class="tags" id="tooltipTags"></div>
+    </div>
+
+    <div class="legend">
+        <h4>Thought Clusters</h4>
+        <div class="legend-item">
+            <div class="legend-circle" style="background: #ff6b6b;"></div>
+            <span>Personal Growth</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="background: #4ecdc4;"></div>
+            <span>Technology</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="background: #45b7d1;"></div>
+            <span>Philosophy</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="background: #f9ca24;"></div>
+            <span>Creativity</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-circle" style="background: #6c5ce7;"></div>
+            <span>Life Insights</span>
+        </div>
+    </div>
+
+    <script>
+        // Sample data representing user's snips with AI-generated clusters
+        const sampleData = {
+            nodes: [
+                // Personal Growth cluster
+                { id: 1, title: "Morning Routine", content: "The power of starting each day with intention. Small habits compound into massive changes.", tags: ["habits", "productivity", "mindfulness"], cluster: 0, size: 8, connections: 5 },
+                { id: 2, title: "Growth Mindset", content: "Challenges are opportunities in disguise. Every failure teaches us something valuable.", tags: ["mindset", "learning", "resilience"], cluster: 0, size: 6, connections: 4 },
+                { id: 3, title: "Self-Reflection", content: "Taking time to understand our thoughts and emotions leads to better decision-making.", tags: ["reflection", "awareness", "growth"], cluster: 0, size: 7, connections: 3 },
+                
+                // Technology cluster
+                { id: 4, title: "AI & Creativity", content: "Artificial intelligence augments human creativity rather than replacing it. We're entering a new renaissance.", tags: ["AI", "creativity", "future"], cluster: 1, size: 9, connections: 6 },
+                { id: 5, title: "Digital Minimalism", content: "Choosing technology intentionally can reduce overwhelm and increase focus.", tags: ["technology", "minimalism", "focus"], cluster: 1, size: 5, connections: 3 },
+                { id: 6, title: "Code as Poetry", content: "Well-written code is like poetry - elegant, purposeful, and beautiful in its simplicity.", tags: ["coding", "beauty", "craft"], cluster: 1, size: 4, connections: 2 },
+                
+                // Philosophy cluster
+                { id: 7, title: "Time Perception", content: "Time moves differently when we're fully present. Minutes can feel like hours, years like moments.", tags: ["time", "presence", "consciousness"], cluster: 2, size: 7, connections: 4 },
+                { id: 8, title: "Meaning Making", content: "We don't find meaning in life; we create it through our choices and connections.", tags: ["meaning", "purpose", "philosophy"], cluster: 2, size: 8, connections: 5 },
+                { id: 9, title: "Paradox of Choice", content: "Too many options can paralyze us. Sometimes constraints liberate creativity.", tags: ["choice", "creativity", "psychology"], cluster: 2, size: 6, connections: 4 },
+                
+                // Creativity cluster
+                { id: 10, title: "Creative Blocks", content: "Writer's block isn't about lack of ideas - it's about fear of imperfection.", tags: ["creativity", "fear", "perfectionism"], cluster: 3, size: 5, connections: 3 },
+                { id: 11, title: "Inspiration Sources", content: "The best ideas often come from connecting seemingly unrelated concepts.", tags: ["inspiration", "connections", "innovation"], cluster: 3, size: 7, connections: 5 },
+                { id: 12, title: "Art & Emotion", content: "True art moves us because it reflects universal human experiences back to us.", tags: ["art", "emotion", "humanity"], cluster: 3, size: 6, connections: 4 },
+                
+                // Life Insights cluster
+                { id: 13, title: "Friendship Depth", content: "Quality friendships require vulnerability. Surface-level connections don't sustain us.", tags: ["friendship", "vulnerability", "connection"], cluster: 4, size: 8, connections: 4 },
+                { id: 14, title: "Learning Unlearning", content: "Sometimes progress means unlearning what we thought we knew.", tags: ["learning", "growth", "humility"], cluster: 4, size: 7, connections: 3 },
+                { id: 15, title: "Present Moments", content: "The present moment is the only time we can actually influence anything.", tags: ["presence", "mindfulness", "action"], cluster: 4, size: 6, connections: 5 }
+            ],
+            links: []
+        };
+
+        // Generate connections based on shared tags and thematic similarity
+        function generateConnections(nodes) {
+            const connections = [];
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const node1 = nodes[i];
+                    const node2 = nodes[j];
+                    
+                    // Calculate similarity based on shared tags
+                    const sharedTags = node1.tags.filter(tag => node2.tags.includes(tag));
+                    const similarity = sharedTags.length / Math.max(node1.tags.length, node2.tags.length);
+                    
+                    // Create connection if similarity threshold is met or nodes are in same cluster
+                    if (similarity > 0.2 || (node1.cluster === node2.cluster && Math.random() > 0.3)) {
+                        connections.push({
+                            source: node1.id,
+                            target: node2.id,
+                            strength: similarity + (node1.cluster === node2.cluster ? 0.3 : 0),
+                            sharedTags: sharedTags
+                        });
+                    }
+                }
+            }
+            return connections;
+        }
+
+        sampleData.links = generateConnections(sampleData.nodes);
+
+        // Cluster colors
+        const clusterColors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#f9ca24', '#6c5ce7'];
+        const clusterNames = ['Personal Growth', 'Technology', 'Philosophy', 'Creativity', 'Life Insights'];
+
+        // Initialize visualization
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const svg = d3.select('#visualization')
+            .append('svg')
+            .attr('width', width)
+            .attr('height', height);
+
+        const g = svg.append('g');
+
+        // Add zoom and pan behavior
+        const zoom = d3.zoom()
+            .scaleExtent([0.3, 3])
+            .on('zoom', (event) => {
+                g.attr('transform', event.transform);
+            });
+
+        svg.call(zoom);
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(sampleData.nodes)
+            .force('link', d3.forceLink(sampleData.links).id(d => d.id).distance(d => 100 - d.strength * 50))
+            .force('charge', d3.forceManyBody().strength(-300))
+            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('collision', d3.forceCollide().radius(d => d.size * 3));
+
+        // Create links
+        const link = g.append('g')
+            .selectAll('line')
+            .data(sampleData.links)
+            .enter().append('line')
+            .attr('class', 'link')
+            .attr('stroke-width', d => d.strength * 3);
+
+        // Create nodes
+        const node = g.append('g')
+            .selectAll('g')
+            .data(sampleData.nodes)
+            .enter().append('g')
+            .attr('class', 'node')
+            .call(d3.drag()
+                .on('start', dragstarted)
+                .on('drag', dragged)
+                .on('end', dragended));
+
+        node.append('circle')
+            .attr('r', d => d.size * 2)
+            .attr('fill', d => clusterColors[d.cluster])
+            .attr('stroke', '#ffffff')
+            .attr('stroke-width', 2);
+
+        node.append('text')
+            .text(d => d.title)
+            .attr('text-anchor', 'middle')
+            .attr('dy', '.35em')
+            .style('font-size', '10px')
+            .style('font-weight', 'bold')
+            .style('fill', '#ffffff')
+            .style('pointer-events', 'none');
+
+        // Tooltip functionality
+        const tooltip = d3.select('#tooltip');
+
+        node.on('mouseover', (event, d) => {
+            tooltip.style('opacity', 1)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px');
+            
+            document.getElementById('tooltipTitle').textContent = d.title;
+            document.getElementById('tooltipContent').textContent = d.content;
+            
+            const tagsContainer = document.getElementById('tooltipTags');
+            tagsContainer.innerHTML = '';
+            d.tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.textContent = tag;
+                tagsContainer.appendChild(tagElement);
+            });
+        })
+        .on('mouseout', () => {
+            tooltip.style('opacity', 0);
+        });
+
+        // Click to explore functionality
+        let focusedNode = null;
+
+        node.on('click', (event, d) => {
+            if (focusedNode === d) {
+                resetView();
+                return;
+            }
+
+            focusedNode = d;
+            exploreNode(d);
+        });
+
+        function exploreNode(selectedNode) {
+            // Find connected nodes
+            const connectedNodeIds = new Set();
+            connectedNodeIds.add(selectedNode.id);
+
+            sampleData.links.forEach(link => {
+                if (link.source.id === selectedNode.id) {
+                    connectedNodeIds.add(link.target.id);
+                } else if (link.target.id === selectedNode.id) {
+                    connectedNodeIds.add(link.source.id);
+                }
+            });
+
+            // Fade out unconnected nodes and links
+            node.transition().duration(500)
+                .style('opacity', d => connectedNodeIds.has(d.id) ? 1 : 0.1);
+
+            link.transition().duration(500)
+                .style('opacity', d => 
+                    (connectedNodeIds.has(d.source.id) && connectedNodeIds.has(d.target.id)) ? 1 : 0.05
+                )
+                .classed('active', d => 
+                    (d.source.id === selectedNode.id || d.target.id === selectedNode.id)
+                );
+
+            // Show back button
+            document.getElementById('backBtn').classList.add('visible');
+        }
+
+        function resetView() {
+            focusedNode = null;
+            
+            node.transition().duration(500)
+                .style('opacity', 1);
+
+            link.transition().duration(500)
+                .style('opacity', 1)
+                .classed('active', false);
+
+            document.getElementById('backBtn').classList.remove('visible');
+        }
+
+        // Control buttons
+        document.getElementById('clusterBtn').addEventListener('click', () => {
+            // Toggle cluster highlighting
+            const isActive = document.getElementById('clusterBtn').classList.contains('active');
+            if (isActive) {
+                node.selectAll('circle').attr('stroke-width', 2);
+                document.getElementById('clusterBtn').classList.remove('active');
+            } else {
+                node.selectAll('circle').attr('stroke-width', 4);
+                document.getElementById('clusterBtn').classList.add('active');
+            }
+        });
+
+        document.getElementById('resonanceBtn').addEventListener('click', () => {
+            const isActive = document.getElementById('resonanceBtn').classList.contains('active');
+            if (isActive) {
+                link.classed('pulse', false);
+                document.getElementById('resonanceBtn').classList.remove('active');
+            } else {
+                link.classed('pulse', true);
+                document.getElementById('resonanceBtn').classList.add('active');
+            }
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            resetView();
+            svg.transition().duration(750).call(
+                zoom.transform,
+                d3.zoomIdentity
+            );
+        });
+
+        document.getElementById('backBtn').addEventListener('click', resetView);
+
+        // Search functionality
+        document.getElementById('searchBox').addEventListener('input', (event) => {
+            const searchTerm = event.target.value.toLowerCase();
+            
+            node.style('opacity', d => {
+                if (!searchTerm) return 1;
+                return (d.title.toLowerCase().includes(searchTerm) || 
+                        d.content.toLowerCase().includes(searchTerm) ||
+                        d.tags.some(tag => tag.toLowerCase().includes(searchTerm))) ? 1 : 0.2;
+            });
+        });
+
+        // Update stats
+        document.getElementById('nodeCount').textContent = `${sampleData.nodes.length} thoughts`;
+        document.getElementById('connectionCount').textContent = `${sampleData.links.length} connections`;
+
+        // Simulation tick
+        simulation.on('tick', () => {
+            link.attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            node.attr('transform', d => `translate(${d.x},${d.y})`);
+        });
+
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // Add some initial animation
+        node.style('opacity', 0)
+            .transition()
+            .duration(1000)
+            .delay((d, i) => i * 50)
+            .style('opacity', 1);
+
+        link.style('opacity', 0)
+            .transition()
+            .duration(1000)
+            .delay(500)
+            .style('opacity', 1);
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const newWidth = window.innerWidth;
+            const newHeight = window.innerHeight;
+            
+            svg.attr('width', newWidth).attr('height', newHeight);
+            simulation.force('center', d3.forceCenter(newWidth / 2, newHeight / 2));
+            simulation.alpha(0.3).restart();
+        });
+
+        // Add some dynamic behavior - simulate new thoughts appearing
+        setTimeout(() => {
+            // This could be triggered when user creates new snips
+            console.log("🧠 SnipNet is ready to visualize your thought resonance network!");
+        }, 2000);
+    </script>
+</body>
+</html>
