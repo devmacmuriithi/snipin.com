@@ -519,7 +519,7 @@ export default function SnipNet() {
                 </h1>
               </div>
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                Explore the resonance between your ideas. See how your thoughts connect and form clusters in your personal intelligence network.
+                Interactive visualization of your thought network and content relationships.
               </p>
             </div>
 
@@ -608,6 +608,13 @@ export default function SnipNet() {
 
                 {/* Side Panel */}
                 <div className="space-y-4">
+                  {/* Descriptive Note */}
+                  <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 backdrop-blur-sm border-purple-300/30">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                      Explore the resonance between your ideas. See how your thoughts connect and form clusters in your personal intelligence network.
+                    </p>
+                  </Card>
+
                   {selectedNode ? (
                     <Card className="p-4 bg-white/60 backdrop-blur-sm">
                       <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
