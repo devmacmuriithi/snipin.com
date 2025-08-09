@@ -84,6 +84,18 @@ export default function SnipNet() {
     "Personal Growth", "Technology", "Philosophy", "Creativity", "Life Insights"
   ];
   
+  // Color scale for clusters
+  const colorScale = (clusterIndex: string) => {
+    const colors = [
+      "#8B5CF6", // Purple for Personal Growth
+      "#06B6D4", // Cyan for Technology  
+      "#3B82F6", // Blue for Philosophy
+      "#F59E0B", // Amber for Creativity
+      "#10B981"  // Emerald for Life Insights
+    ];
+    return colors[parseInt(clusterIndex)] || colors[0];
+  };
+  
   // Create clusters using content-based semantic grouping
   const createClusters = (nodes: SnipNode[]): SnipNode[] => {
     const numClusters = Math.min(5, Math.ceil(nodes.length / 3));
