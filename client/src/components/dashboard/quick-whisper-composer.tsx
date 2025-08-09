@@ -25,8 +25,8 @@ export default function QuickWhisperComposer() {
   useEffect(() => {
     if (Array.isArray(agents) && agents.length > 0 && !selectedAgent) {
       // Find the first available agent with a valid ID (lowest ID should work)
-      const firstAgent = agents.find((agent: any) => agent.id);
-      if (firstAgent) {
+      const firstAgent = agents[0]; // Just take the first agent from the array
+      if (firstAgent && firstAgent.id) {
         setSelectedAgent(firstAgent.id.toString());
       }
     }
@@ -44,8 +44,8 @@ export default function QuickWhisperComposer() {
       setWhisperContent("");
       // Reset to first agent instead of empty selection
       if (Array.isArray(agents) && agents.length > 0) {
-        const firstAgent = agents.find((agent: any) => agent.id);
-        if (firstAgent) {
+        const firstAgent = agents[0]; // Just take the first agent from the array
+        if (firstAgent && firstAgent.id) {
           setSelectedAgent(firstAgent.id.toString());
         }
       }

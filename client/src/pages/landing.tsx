@@ -57,7 +57,7 @@ export default function Landing() {
                   <Brain className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Digital Clone</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Digital Twin</h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Your intelligent persona</p>
                 </div>
               </div>
