@@ -46,6 +46,7 @@ export default function SnipNet() {
   const [filterCluster, setFilterCluster] = useState<string>("all");
   const [simulation, setSimulation] = useState<d3.Simulation<SnipNode, SnipLink> | null>(null);
   const [pulseMode, setPulseMode] = useState(false);
+  const [pulseInterval, setPulseInterval] = useState<NodeJS.Timeout | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -219,22 +220,26 @@ export default function SnipNet() {
       .selectAll("line")
       .data(links)
       .join("line")
+      .attr("class", "link")
       .attr("stroke", "#cbd5e1")
       .attr("stroke-opacity", d => d.strength * 2)
       .attr("stroke-width", d => Math.max(1, d.strength * 4))
-      .style("filter", "drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.1))");
+      .style("filter", "drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.1))")
+      .style("transition", "all 0.3s ease");
 
     // Create nodes
     const node = g.append("g")
       .selectAll("circle")
       .data(clusteredNodes)
       .join("circle")
+      .attr("class", "node")
       .attr("r", d => Math.max(8, Math.min(20, 8 + d.engagement * 2)))
       .attr("fill", d => colorScale(d.cluster?.toString() || "0"))
       .attr("stroke", "#ffffff")
       .attr("stroke-width", 2)
       .style("filter", "drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.1))")
       .style("cursor", "pointer")
+      .style("transition", "all 0.3s ease")
       .call(d3.drag<any, any>()
         .on("start", (event, d) => {
           if (!event.active) sim.alphaTarget(0.3).restart();
@@ -285,6 +290,17 @@ export default function SnipNet() {
 
         // Show tooltip with snip content
         showTooltip(event, d);
+        
+        // If pulse mode is active, create focused resonance on hover
+        if (pulseMode) {
+          const svg = d3.select(svgRef.current);
+          svg.selectAll(".link").each(function(linkData: any) {
+            if (linkData.source.id === d.id || linkData.target.id === d.id) {
+              const link = d3.select(this);
+              link.classed("connection-pulse", true);
+            }
+          });
+        }
       })
       .on("mouseout", function(event, d) {
         d3.select(this)
@@ -298,6 +314,13 @@ export default function SnipNet() {
           .attr("stroke-opacity", (l: SnipLink) => l.strength * 2)
           .attr("stroke-width", (l: SnipLink) => Math.max(1, l.strength * 4))
           .style("animation", "none");
+
+        // Remove focused pulse on mouseout
+        if (pulseMode) {
+          const svg = d3.select(svgRef.current);
+          svg.selectAll(".link")
+            .classed("connection-pulse", false);
+        }
 
         // Hide tooltip
         hideTooltip();
@@ -333,6 +356,13 @@ export default function SnipNet() {
         .attr("x", d => d.x!)
         .attr("y", d => d.y!);
     });
+
+    // Reactivate pulse mode if it was active
+    setTimeout(() => {
+      if (pulseMode) {
+        activatePulseMode();
+      }
+    }, 500); // Wait for animation to settle
 
   }, [snips]);
 
@@ -420,6 +450,107 @@ export default function SnipNet() {
       .remove();
   };
 
+  // Pulse Mode Management
+  const activatePulseMode = () => {
+    if (!svgRef.current) return;
+    
+    const svg = d3.select(svgRef.current);
+    
+    // Apply pulse animations to links based on their strength
+    svg.selectAll(".link").each(function(d: any) {
+      const link = d3.select(this);
+      const strength = d.strength;
+      
+      if (strength > 0.6) {
+        link.classed("high-resonance", true);
+      } else if (strength > 0.3) {
+        link.classed("medium-resonance", true);
+      } else {
+        link.classed("low-resonance", true);
+      }
+    });
+    
+    // Apply pulse to nodes based on their engagement
+    svg.selectAll(".node").each(function(d: any) {
+      const node = d3.select(this);
+      if (d.engagement > 5) {
+        node.classed("node-pulse", true);
+      }
+    });
+    
+    // Create rhythmic pulse waves across the network
+    const interval = setInterval(() => {
+      const randomNodes = d3.selectAll(".node")
+        .nodes()
+        .sort(() => 0.5 - Math.random())
+        .slice(0, Math.ceil(Math.random() * 3) + 1); // 1-4 random nodes
+        
+      randomNodes.forEach((nodeElement, i) => {
+        setTimeout(() => {
+          const node = d3.select(nodeElement);
+          // Create ripple effect from this node
+          const nodeData = node.datum() as SnipNode;
+          
+          svg.selectAll(".link").each(function(linkData: any) {
+            if (linkData.source.id === nodeData.id || linkData.target.id === nodeData.id) {
+              const link = d3.select(this);
+              link.classed("connection-pulse", true);
+              
+              // Remove pulse after animation
+              setTimeout(() => {
+                link.classed("connection-pulse", false);
+              }, 2000);
+            }
+          });
+        }, i * 300); // Stagger the pulses
+      });
+    }, 4000); // Pulse wave every 4 seconds
+    
+    setPulseInterval(interval);
+  };
+  
+  const deactivatePulseMode = () => {
+    if (pulseInterval) {
+      clearInterval(pulseInterval);
+      setPulseInterval(null);
+    }
+    
+    if (!svgRef.current) return;
+    
+    const svg = d3.select(svgRef.current);
+    
+    // Remove all pulse classes
+    svg.selectAll(".link")
+      .classed("high-resonance", false)
+      .classed("medium-resonance", false)
+      .classed("low-resonance", false)
+      .classed("connection-pulse", false);
+      
+    svg.selectAll(".node")
+      .classed("node-pulse", false);
+  };
+  
+  // Toggle pulse mode
+  const togglePulseMode = () => {
+    const newPulseMode = !pulseMode;
+    setPulseMode(newPulseMode);
+    
+    if (newPulseMode) {
+      activatePulseMode();
+    } else {
+      deactivatePulseMode();
+    }
+  };
+  
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      if (pulseInterval) {
+        clearInterval(pulseInterval);
+      }
+    };
+  }, [pulseInterval]);
+
   const resetVisualization = () => {
     if (simulation) {
       simulation.alpha(1).restart();
@@ -431,6 +562,12 @@ export default function SnipNet() {
     const svg = d3.select(svgRef.current);
     svg.selectAll(".node").style("opacity", 1);
     svg.selectAll(".link").style("opacity", null).style("animation", "none");
+    
+    // Reset pulse mode if active
+    if (pulseMode) {
+      deactivatePulseMode();
+      setPulseMode(false);
+    }
   };
 
   const seedTestData = async () => {
@@ -540,9 +677,10 @@ export default function SnipNet() {
                 </Select>
                 <Button 
                   variant={pulseMode ? "default" : "outline"} 
-                  onClick={() => setPulseMode(!pulseMode)}
+                  onClick={togglePulseMode}
+                  className={pulseMode ? "bg-purple-600 hover:bg-purple-700" : ""}
                 >
-                  <Zap className="w-4 h-4 mr-2" />
+                  <Zap className={`w-4 h-4 mr-2 ${pulseMode ? "animate-pulse" : ""}`} />
                   {pulseMode ? "Stop Pulse" : "Pulse Resonance"}
                 </Button>
                 <Button variant="outline" onClick={resetVisualization}>
