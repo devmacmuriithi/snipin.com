@@ -25,9 +25,7 @@ import MemPod from "@/pages/mempod";
 import SnipNet from "@/pages/snipnet";
 import SnipDetail from "@/pages/snip-detail";
 import WhisperDetail from "@/pages/whisper-detail";
-import VentureServices from "@/pages/venture-services";
-import ConsultingApplication from "@/pages/consulting-application";
-import SupplierApplication from "@/pages/supplier-application";
+
 import SimpleChatWidget from "@/components/chat/simple-chat-widget";
 import TopNavigation from "@/components/layout/top-navigation";
 
@@ -70,10 +68,7 @@ function Router() {
             </>
           )}
           
-          {/* Public business pages - accessible without authentication */}
-          <Route path="/venture-services" component={VentureServices} />
-          <Route path="/consulting-application" component={ConsultingApplication} />
-          <Route path="/supplier-application" component={SupplierApplication} />
+
           
           <Route component={NotFound} />
         </Switch>
