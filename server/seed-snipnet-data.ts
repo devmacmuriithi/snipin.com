@@ -2,246 +2,303 @@ import { db } from "./db";
 import { whispers, snips, assistants } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
-const testSnipData = [
+const socialMediaTestData = [
   {
     whisper: {
-      content: "I've been thinking about how morning routines shape our entire day. The way we start sets the tone for everything that follows.",
-      mood: "contemplative" as const
-    },
-    snip: {
-      title: "Morning Rituals and Daily Flow",
-      content: "The power of starting each day with intention. Small habits compound into massive changes over time.",
-      excerpt: "Morning routines as catalysts for daily transformation"
-    }
-  },
-  {
-    whisper: {
-      content: "AI is changing how we think about creativity. It's not replacing artists - it's giving us new tools to express ideas we never could before.",
+      content: "Just finished reading 'Atomic Habits' and I'm blown away by how small changes compound over time. Starting my 30-day challenge tomorrow!",
       mood: "excited" as const
     },
     snip: {
-      title: "AI as Creative Amplifier",
-      content: "Artificial intelligence augments human creativity rather than replacing it. We're entering a new renaissance of human-AI collaboration.",
-      excerpt: "How AI tools expand the boundaries of creative expression"
+      title: "The Magic of Atomic Habits",
+      content: "Small daily improvements lead to remarkable transformations. James Clear's insights on habit formation are game-changing for anyone looking to build better systems.",
+      excerpt: "How 1% daily improvements create exponential growth"
     }
   },
   {
     whisper: {
-      content: "Time feels different when you're fully present. Minutes can stretch into eternities, while years vanish in what feels like moments.",
-      mood: "philosophical" as const
-    },
-    snip: {
-      title: "The Elasticity of Time",
-      content: "Time perception shifts dramatically with our level of presence and engagement. Consciousness shapes our experience of duration.",
-      excerpt: "How mindfulness transforms our relationship with time"
-    }
-  },
-  {
-    whisper: {
-      content: "Writer's block isn't really about running out of ideas. It's about being afraid our ideas aren't good enough.",
-      mood: "reflective" as const
-    },
-    snip: {
-      title: "Fear Behind Creative Blocks",
-      content: "Creative blocks often stem from perfectionism and fear of judgment rather than lack of inspiration.",
-      excerpt: "Understanding the psychology of creative resistance"
-    }
-  },
-  {
-    whisper: {
-      content: "Deep friendships require vulnerability. You can't build real connections on surface-level conversations.",
-      mood: "contemplative" as const
-    },
-    snip: {
-      title: "Vulnerability as Connection Gateway",
-      content: "Authentic relationships flourish when we share our genuine selves, including our struggles and uncertainties.",
-      excerpt: "Why surface connections never satisfy our deeper needs"
-    }
-  },
-  {
-    whisper: {
-      content: "The best code I write feels like poetry - every line has purpose, every function tells a story.",
+      content: "Coffee shop vibes hit different when you're working on something you're passionate about. This startup idea is keeping me up at night (in the best way).",
       mood: "inspired" as const
     },
     snip: {
-      title: "Code as Artistic Expression",
-      content: "Well-crafted code embodies elegance, clarity, and intentionality - much like poetry or fine art.",
-      excerpt: "When programming transcends utility to become art"
+      title: "Passion-Driven Productivity",
+      content: "There's something magical about working on projects that align with your purpose. When passion meets productivity, late nights become energizing rather than draining.",
+      excerpt: "How finding your ikigai transforms work into play"
     }
   },
   {
     whisper: {
-      content: "We don't find meaning in life - we create it through our choices and how we relate to others.",
-      mood: "philosophical" as const
+      content: "Had an amazing conversation with my mentor today about failure being data, not defeat. Completely shifted my perspective on my recent setback.",
+      mood: "grateful" as const
     },
     snip: {
-      title: "Meaning as Creative Act",
-      content: "Purpose isn't discovered but actively constructed through our decisions, relationships, and contributions.",
-      excerpt: "How we become authors of our own significance"
+      title: "Reframing Failure as Feedback",
+      content: "Every setback carries valuable information. When we view failures as data points rather than defeats, we unlock the growth mindset that drives innovation.",
+      excerpt: "Why your biggest failures often become your greatest teachers"
     }
   },
   {
     whisper: {
-      content: "Sometimes I think too many choices actually make us less free. Constraints can be liberating.",
-      mood: "thoughtful" as const
+      content: "The new GPT-4 features are incredible! Just built a prototype in 2 hours that would have taken me days before. AI is truly a game-changer.",
+      mood: "excited" as const
     },
     snip: {
-      title: "The Paradox of Choice",
-      content: "Unlimited options can paralyze decision-making, while thoughtful constraints often unlock creativity and action.",
-      excerpt: "When limitations become gateways to freedom"
+      title: "AI as a Creative Accelerator",
+      content: "Modern AI tools aren't replacing developers - they're amplifying our capabilities. What used to take days now takes hours, freeing us to focus on higher-level problem solving.",
+      excerpt: "How AI transforms development velocity and creativity"
     }
   },
   {
     whisper: {
-      content: "The best ideas come from connecting things that seem completely unrelated at first glance.",
-      mood: "curious" as const
+      content: "Deleted Instagram and TikTok last week. The mental clarity and extra time I have now is honestly life-changing. Best decision I've made this year.",
+      mood: "peaceful" as const
     },
     snip: {
-      title: "Innovation Through Synthesis",
-      content: "Breakthrough insights emerge from combining disparate concepts, creating novel connections across domains.",
-      excerpt: "How distant ideas converge into revolutionary thinking"
+      title: "Digital Detox Benefits",
+      content: "Stepping away from social media reveals how much mental bandwidth we lose to endless scrolling. Reclaiming that attention creates space for deeper thinking and genuine connections.",
+      excerpt: "Why less screen time leads to more life satisfaction"
     }
   },
   {
     whisper: {
-      content: "Art moves us because it reflects something universal back to us - our shared human experience.",
-      mood: "moved" as const
+      content: "Finally deployed my first full-stack app! Nothing beats that feeling when everything just works. React + Node.js + PostgreSQL = magic.",
+      mood: "accomplished" as const
     },
     snip: {
-      title: "Art as Mirror of Humanity",
-      content: "Great art resonates because it captures fundamental aspects of the human condition we all recognize.",
-      excerpt: "Why certain works speak across cultures and centuries"
+      title: "First Full-Stack Deployment Victory",
+      content: "There's no feeling quite like seeing your code come to life in production. Every bug fixed, every feature implemented - it all leads to this moment of pure accomplishment.",
+      excerpt: "The joy of building something from scratch to production"
     }
   },
   {
     whisper: {
-      content: "Learning often means unlearning what we thought we knew. Growth requires humility.",
-      mood: "humble" as const
-    },
-    snip: {
-      title: "Unlearning as Growth",
-      content: "Progress sometimes demands releasing old assumptions and embracing intellectual humility.",
-      excerpt: "The courage to let go of comfortable certainties"
-    }
-  },
-  {
-    whisper: {
-      content: "The present moment is literally the only time we can influence anything. Past and future exist only in our minds.",
+      content: "Meditation isn't about stopping thoughts - it's about changing your relationship with them. 100 days streak and still learning something new daily.",
       mood: "mindful" as const
     },
     snip: {
-      title: "Present as Point of Power",
-      content: "All agency exists in the now - our ability to shape reality happens exclusively in present moments.",
-      excerpt: "Why mindfulness is the foundation of all change"
+      title: "Mindfulness as Mental Training",
+      content: "Meditation transforms how we relate to our thoughts and emotions. It's not about achieving perfect calm, but developing awareness and compassion for our mental processes.",
+      excerpt: "How consistent meditation practice rewires your relationship with stress"
     }
   },
   {
     whisper: {
-      content: "Digital minimalism isn't about rejecting technology - it's about choosing it intentionally.",
-      mood: "balanced" as const
+      content: "Found my ikigai! That sweet spot where passion meets purpose. Teaching kids to code while building my own ed-tech platform feels surreal.",
+      mood: "fulfilled" as const
     },
     snip: {
-      title: "Intentional Technology Use",
-      content: "Mindful tech consumption reduces overwhelm while maximizing the tools that truly serve our goals.",
-      excerpt: "Curating digital experiences for focus and well-being"
+      title: "Finding Your Ikigai in Tech",
+      content: "When your skills align with your values and the world's needs, work becomes a form of service. Building technology that empowers the next generation feels like the perfect intersection.",
+      excerpt: "How teaching and building can merge into purposeful work"
     }
   },
   {
     whisper: {
-      content: "Every failure teaches us something valuable, but only if we're willing to pay attention to the lesson.",
+      content: "The paradox of choice is real in tech. 50+ JavaScript frameworks and I'm here paralyzed by analysis. Sometimes constraints breed creativity.",
+      mood: "contemplative" as const
+    },
+    snip: {
+      title: "Decision Fatigue in Development",
+      content: "Too many options can paralyze progress. The JavaScript ecosystem's abundance becomes overwhelming when you need to ship. Sometimes picking 'good enough' beats endless optimization.",
+      excerpt: "Why constraints often lead to better solutions than unlimited choices"
+    }
+  },
+  {
+    whisper: {
+      content: "Writer's block defeated! Turns out I wasn't blocked - I was just afraid my ideas weren't 'revolutionary' enough. Progress over perfection.",
+      mood: "relieved" as const
+    },
+    snip: {
+      title: "Overcoming Creative Perfectionism",
+      content: "The enemy of good writing isn't bad ideas - it's the fear that our ideas aren't groundbreaking enough. Sometimes the most profound insights come from expressing simple truths clearly.",
+      excerpt: "How perfectionism kills creativity and what to do about it"
+    }
+  },
+  {
+    whisper: {
+      content: "Best business ideas come from solving your own problems. My grocery list app idea came from forgetting milk for the 10th time this month.",
+      mood: "entrepreneurial" as const
+    },
+    snip: {
+      title: "Problem-First Entrepreneurship",
+      content: "The most successful startups solve real problems their founders experienced firsthand. When you're your own target customer, product-market fit becomes intuitive rather than abstract.",
+      excerpt: "Why personal pain points make the best business opportunities"
+    }
+  },
+  {
+    whisper: {
+      content: "Went to a local art gallery today. There's something about experiencing art in person that screens just can't capture. Soul food.",
+      mood: "inspired" as const
+    },
+    snip: {
+      title: "The Irreplaceable Value of Physical Art",
+      content: "Digital reproductions can't capture the texture, scale, and presence of original artwork. There's an intimacy in standing before a canvas that connects us to the artist's intentions.",
+      excerpt: "Why virtual experiences can't fully replace physical encounters with art"
+    }
+  },
+  {
+    whisper: {
+      content: "Real friendship is when someone calls you out on your BS because they care about your growth, not because they want to hurt you.",
+      mood: "grateful" as const
+    },
+    snip: {
+      title: "Accountability as Love Language",
+      content: "True friends don't just support your dreams - they challenge your excuses. The people who care enough to have difficult conversations are the ones worth keeping in your inner circle.",
+      excerpt: "How authentic feedback strengthens relationships rather than damaging them"
+    }
+  },
+  {
+    whisper: {
+      content: "Learning Python after years of JavaScript. Humbling to be a beginner again, but that's where the magic happens. Embrace the suck!",
+      mood: "humble" as const
+    },
+    snip: {
+      title: "The Beginner's Mind in Tech",
+      content: "Expertise in one language doesn't translate directly to another. Embracing beginner status again keeps us humble and opens us to new paradigms and possibilities.",
+      excerpt: "Why being bad at something new is actually a superpower"
+    }
+  },
+  {
+    whisper: {
+      content: "Present moment awareness during my morning run changed everything. Not thinking about my to-do list, just being here now. Pure bliss.",
+      mood: "peaceful" as const
+    },
+    snip: {
+      title: "Mindful Movement Practice",
+      content: "Exercise becomes meditation when we focus on the present moment rather than future goals. The rhythm of breath and footsteps creates a natural anchor for awareness.",
+      excerpt: "How mindful running transforms both body and mind"
+    }
+  },
+  {
+    whisper: {
+      content: "Climate change isn't just an environmental issue - it's the defining challenge of our generation. Time to build solutions, not just talk about problems.",
+      mood: "determined" as const
+    },
+    snip: {
+      title: "Climate Action Through Innovation",
+      content: "Our generation has both the responsibility and the tools to address climate change. Technology isn't just part of the problem - it's our most powerful solution toolkit.",
+      excerpt: "How developers can contribute to climate solutions through code"
+    }
+  },
+  {
+    whisper: {
+      content: "Remote work taught me that productivity isn't about hours logged - it's about impact created. Quality over quantity, always.",
       mood: "wise" as const
     },
     snip: {
-      title: "Failure as Curriculum",
-      content: "Setbacks become valuable teachers when we approach them with curiosity rather than self-judgment.",
-      excerpt: "Transforming defeats into stepping stones"
+      title: "Redefining Productivity in Remote Work",
+      content: "The shift to remote work revealed that presence doesn't equal productivity. Measuring output rather than input creates better outcomes for everyone involved.",
+      excerpt: "Why results matter more than hours when working remotely"
     }
   },
   {
     whisper: {
-      content: "Consciousness is the strangest thing - we're aware that we're aware, but we can't really explain how or why.",
-      mood: "wonderstruck" as const
+      content: "Investing in myself was the best ROI decision ever. That online course led to a promotion, which led to this new opportunity. Compound effects are real.",
+      mood: "grateful" as const
     },
     snip: {
-      title: "The Mystery of Awareness",
-      content: "Self-consciousness represents one of the deepest puzzles of existence - experience experiencing itself.",
-      excerpt: "Why the hard problem of consciousness remains unsolved"
+      title: "The Compound Returns of Self-Investment",
+      content: "Skills compound like interest. Every course, book, and learning experience builds on previous knowledge, creating exponential career growth over time.",
+      excerpt: "How continuous learning creates multiplicative career opportunities"
+    }
+  },
+  {
+    whisper: {
+      content: "Travel isn't just about seeing new places - it's about seeing yourself differently. Solo trip to Japan completely rewired my brain.",
+      mood: "reflective" as const
+    },
+    snip: {
+      title: "Travel as Self-Discovery",
+      content: "Immersing ourselves in different cultures reveals assumptions we didn't know we had. Travel doesn't just broaden horizons - it transforms perspectives.",
+      excerpt: "How foreign experiences reshape our understanding of ourselves"
+    }
+  },
+  {
+    whisper: {
+      content: "Burnout was my biggest teacher. Now I guard my energy like a treasure and say no to everything that doesn't align with my values.",
+      mood: "wise" as const
+    },
+    snip: {
+      title: "Burnout as Boundary Teacher",
+      content: "Sometimes we need to hit the wall to learn where our limits are. Burnout teaches us that saying no isn't selfish - it's essential for sustainable success.",
+      excerpt: "How experiencing burnout can lead to healthier work-life boundaries"
+    }
+  },
+  {
+    whisper: {
+      content: "Started a side project documenting my coding journey. Teaching others while learning myself - the ultimate win-win scenario.",
+      mood: "enthusiastic" as const
+    },
+    snip: {
+      title: "Learning in Public Benefits",
+      content: "Sharing your learning journey helps others while reinforcing your own understanding. Public documentation creates accountability and community around growth.",
+      excerpt: "Why teaching what you learn accelerates your own development"
     }
   }
 ];
 
 export async function seedSnipNetData(userId: string) {
-  console.log("Starting SnipNet data seeding...");
-  
   try {
-    // Get the user's assistant
+    // Get user's assistant
     const userAssistants = await db
       .select()
       .from(assistants)
       .where(eq(assistants.userId, userId))
       .limit(1);
-    
+
     if (userAssistants.length === 0) {
-      console.log("No assistant found for user, creating one...");
-      const [newAssistant] = await db
-        .insert(assistants)
-        .values({
-          userId,
-          name: "Your Digital Twin",
-          description: "A thoughtful AI assistant that helps users explore and develop their ideas.",
-        })
-        .returning();
-      
-      if (!newAssistant) {
-        throw new Error("Failed to create assistant");
-      }
-      
-      userAssistants.push(newAssistant);
+      throw new Error("No assistant found for user");
     }
-    
+
     const assistant = userAssistants[0];
-    
-    // Clear existing test data
+
+    // Clear existing test data for this user
     await db.delete(snips).where(eq(snips.userId, userId));
     await db.delete(whispers).where(eq(whispers.userId, userId));
-    
-    console.log("Creating whispers and snips...");
-    
-    for (const item of testSnipData) {
+
+    const results = {
+      whispers: [] as any[],
+      snips: [] as any[],
+      count: 0
+    };
+
+    // Create whispers and snips
+    for (const data of socialMediaTestData) {
       // Create whisper
       const [whisper] = await db
         .insert(whispers)
         .values({
+          content: data.whisper.content,
+          mood: data.whisper.mood,
           userId,
           agentId: assistant.id,
-          content: item.whisper.content,
-          type: "thought",
         })
         .returning();
-      
-      if (!whisper) {
-        console.error("Failed to create whisper");
-        continue;
-      }
-      
+
       // Create corresponding snip
-      await db
+      const [snip] = await db
         .insert(snips)
         .values({
-          whisperId: whisper.id,
-          assistantId: assistant.id,
+          title: data.snip.title,
+          content: data.snip.content,
+          excerpt: data.snip.excerpt,
           userId,
-          title: item.snip.title,
-          content: item.snip.content,
-          excerpt: item.snip.excerpt,
-          type: "article",
-          isPublic: true,
-        });
+          assistantId: assistant.id,
+          whisperId: whisper.id,
+          likes: Math.floor(Math.random() * 50) + 5,
+          comments: Math.floor(Math.random() * 20) + 1,
+          views: Math.floor(Math.random() * 200) + 20,
+          shares: Math.floor(Math.random() * 15) + 1,
+        })
+        .returning();
+
+      results.whispers.push(whisper);
+      results.snips.push(snip);
+      results.count++;
     }
-    
-    console.log(`Successfully seeded ${testSnipData.length} whispers and snips for SnipNet testing!`);
-    return { success: true, count: testSnipData.length };
-    
+
+    console.log(`Successfully seeded ${results.count} realistic social media posts`);
+    return results;
+
   } catch (error) {
     console.error("Error seeding SnipNet data:", error);
     throw error;
