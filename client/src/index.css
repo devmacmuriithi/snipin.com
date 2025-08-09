@@ -162,6 +162,24 @@
     background: linear-gradient(135deg, var(--primary-blue), var(--neural-purple));
     border-radius: 3px;
   }
+
+  /* SnipNet specific styles */
+  .snip-link {
+    transition: all 0.3s ease;
+  }
+
+  .snip-link.active {
+    animation: snipPulse 1s infinite alternate;
+  }
+
+  .snip-node {
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .snip-node:hover {
+    filter: drop-shadow(0px 0px 8px rgba(139, 92, 246, 0.5));
+  }
 }
 
 @keyframes fadeIn {
@@ -201,5 +219,16 @@
   }
   50% {
     opacity: 0.5;
+  }
+}
+
+@keyframes snipPulse {
+  0% { 
+    stroke-opacity: 0.6; 
+    stroke-width: 1px;
+  }
+  100% { 
+    stroke-opacity: 1; 
+    stroke-width: 2px;
   }
 }

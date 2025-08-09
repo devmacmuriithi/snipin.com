@@ -79,7 +79,12 @@ export default function SnipNet() {
     return intersection.length / union.length;
   };
 
-  // Create clusters using simple k-means-like approach
+  // Cluster names for better organization
+  const clusterNames = [
+    "Personal Growth", "Technology", "Philosophy", "Creativity", "Life Insights"
+  ];
+  
+  // Create clusters using content-based semantic grouping
   const createClusters = (nodes: SnipNode[]): SnipNode[] => {
     const numClusters = Math.min(5, Math.ceil(nodes.length / 3));
     const clusters: { [key: number]: SnipNode[] } = {};
@@ -89,9 +94,24 @@ export default function SnipNet() {
       clusters[i] = [];
     }
     
-    // Assign nodes to clusters based on content similarity
+    // Assign nodes to clusters based on content themes
     nodes.forEach((node, index) => {
-      const clusterIndex = index % numClusters;
+      // Simple thematic clustering based on content keywords
+      const content = (node.title + " " + node.content).toLowerCase();
+      let clusterIndex = 0;
+      
+      if (content.includes('tech') || content.includes('ai') || content.includes('code') || content.includes('digital')) {
+        clusterIndex = 1; // Technology
+      } else if (content.includes('meaning') || content.includes('philosophy') || content.includes('time') || content.includes('consciousness')) {
+        clusterIndex = 2; // Philosophy
+      } else if (content.includes('creative') || content.includes('art') || content.includes('inspiration') || content.includes('design')) {
+        clusterIndex = 3; // Creativity
+      } else if (content.includes('life') || content.includes('friend') || content.includes('relationship') || content.includes('insight')) {
+        clusterIndex = 4; // Life Insights
+      } else {
+        clusterIndex = 0; // Personal Growth (default)
+      }
+      
       node.cluster = clusterIndex;
       clusters[clusterIndex].push(node);
     });
@@ -239,12 +259,14 @@ export default function SnipNet() {
           .attr("r", Math.max(12, Math.min(24, 12 + (d as SnipNode).engagement * 2)))
           .attr("stroke-width", 3);
 
-        // Highlight connected links
+        // Add pulsing effect to connected links
         link
           .attr("stroke-opacity", (l: SnipLink) => 
             (l.source === d || l.target === d) ? l.strength * 3 : 0.1)
           .attr("stroke-width", (l: SnipLink) => 
-            (l.source === d || l.target === d) ? Math.max(2, l.strength * 6) : 1);
+            (l.source === d || l.target === d) ? Math.max(2, l.strength * 6) : 1)
+          .style("animation", (l: SnipLink) => 
+            (l.source === d || l.target === d) ? "pulse 1s infinite alternate" : "none");
       })
       .on("mouseout", function(event, d) {
         d3.select(this)
@@ -253,13 +275,25 @@ export default function SnipNet() {
           .attr("r", Math.max(8, Math.min(20, 8 + (d as SnipNode).engagement * 2)))
           .attr("stroke-width", 2);
 
-        // Reset link opacity
+        // Reset link opacity and animation
         link
           .attr("stroke-opacity", (l: SnipLink) => l.strength * 2)
-          .attr("stroke-width", (l: SnipLink) => Math.max(1, l.strength * 4));
+          .attr("stroke-width", (l: SnipLink) => Math.max(1, l.strength * 4))
+          .style("animation", "none");
       })
       .on("click", (event, d) => {
         setSelectedNode(d);
+        
+        // Focus mode: highlight connected nodes and fade others
+        const connectedNodeIds = new Set([d.id]);
+        links.forEach((l: any) => {
+          if (l.source.id === d.id) connectedNodeIds.add(l.target.id);
+          if (l.target.id === d.id) connectedNodeIds.add(l.source.id);
+        });
+        
+        node.style("opacity", (n: SnipNode) => connectedNodeIds.has(n.id) ? 1 : 0.2);
+        link.style("opacity", (l: SnipLink) => 
+          (l.source.id === d.id || l.target.id === d.id) ? 1 : 0.1);
       });
 
     // Update positions on simulation tick
@@ -285,6 +319,12 @@ export default function SnipNet() {
     if (simulation) {
       simulation.alpha(1).restart();
     }
+    setSelectedNode(null);
+    
+    // Reset all visual states
+    const svg = d3.select(svgRef.current);
+    svg.selectAll(".node").style("opacity", 1);
+    svg.selectAll(".link").style("opacity", null).style("animation", "none");
   };
 
   const filteredSnips = snips.filter((snip: any) => {
@@ -365,11 +405,11 @@ export default function SnipNet() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Clusters</SelectItem>
-                    <SelectItem value="0">Cluster 1</SelectItem>
-                    <SelectItem value="1">Cluster 2</SelectItem>
-                    <SelectItem value="2">Cluster 3</SelectItem>
-                    <SelectItem value="3">Cluster 4</SelectItem>
-                    <SelectItem value="4">Cluster 5</SelectItem>
+                    <SelectItem value="0">Personal Growth</SelectItem>
+                    <SelectItem value="1">Technology</SelectItem>
+                    <SelectItem value="2">Philosophy</SelectItem>
+                    <SelectItem value="3">Creativity</SelectItem>
+                    <SelectItem value="4">Life Insights</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button variant="outline" onClick={resetVisualization}>
@@ -424,7 +464,7 @@ export default function SnipNet() {
                         <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                           <span>by {selectedNode.agentName}</span>
                           <Badge variant="secondary">
-                            Cluster {(selectedNode.cluster || 0) + 1}
+                            {clusterNames[selectedNode.cluster || 0]}
                           </Badge>
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -456,16 +496,24 @@ export default function SnipNet() {
 
                   <Card className="p-4 bg-white/60 backdrop-blur-sm">
                     <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
-                      How to Use
+                      Cluster Guide
                     </h3>
-                    <ul className="text-xs text-gray-600 dark:text-gray-300 space-y-2">
-                      <li>• Hover over nodes to see connections</li>
-                      <li>• Click nodes to view details</li>
-                      <li>• Drag nodes to explore</li>
-                      <li>• Zoom and pan to navigate</li>
-                      <li>• Larger nodes = more engagement</li>
-                      <li>• Colors represent idea clusters</li>
-                    </ul>
+                    <div className="space-y-2 text-xs">
+                      {clusterNames.map((name, index) => (
+                        <div key={index} className="flex items-center space-x-2">
+                          <div 
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: colorScale(index.toString()) }}
+                          ></div>
+                          <span className="text-gray-600 dark:text-gray-300">{name}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-600">
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Nodes = your snips. Edges = semantic similarity. Click a node to focus on related snips. Use filters to refine.
+                      </p>
+                    </div>
                   </Card>
                 </div>
               </div>
