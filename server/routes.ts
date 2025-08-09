@@ -1466,6 +1466,19 @@ Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metad
     }
   });
 
+  // Seed SnipNet test data
+  app.post("/api/seed-snipnet", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { seedSnipNetData } = await import("./seed-snipnet-data");
+      const result = await seedSnipNetData(userId);
+      res.json(result);
+    } catch (error) {
+      console.error("Error seeding SnipNet data:", error);
+      res.status(500).json({ message: "Failed to seed SnipNet data" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -41,6 +41,7 @@ export default function SnipNet() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCluster, setFilterCluster] = useState<string>("all");
   const [simulation, setSimulation] = useState<d3.Simulation<SnipNode, SnipLink> | null>(null);
+  const [pulseMode, setPulseMode] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -272,6 +273,9 @@ export default function SnipNet() {
             (l.source === d || l.target === d) ? Math.max(2, l.strength * 6) : 1)
           .style("animation", (l: SnipLink) => 
             (l.source === d || l.target === d) ? "pulse 1s infinite alternate" : "none");
+
+        // Show tooltip with snip content
+        showTooltip(event, d);
       })
       .on("mouseout", function(event, d) {
         d3.select(this)
@@ -285,6 +289,9 @@ export default function SnipNet() {
           .attr("stroke-opacity", (l: SnipLink) => l.strength * 2)
           .attr("stroke-width", (l: SnipLink) => Math.max(1, l.strength * 4))
           .style("animation", "none");
+
+        // Hide tooltip
+        hideTooltip();
       })
       .on("click", (event, d) => {
         setSelectedNode(d);
@@ -320,16 +327,102 @@ export default function SnipNet() {
 
   }, [snips]);
 
+  // Tooltip functions
+  const showTooltip = (event: any, d: SnipNode) => {
+    const tooltip = d3.select("body")
+      .selectAll(".snip-tooltip")
+      .data([d]);
+
+    const tooltipEnter = tooltip.enter()
+      .append("div")
+      .attr("class", "snip-tooltip")
+      .style("position", "absolute")
+      .style("background", "rgba(0, 0, 0, 0.9)")
+      .style("color", "white")
+      .style("padding", "12px")
+      .style("border-radius", "8px")
+      .style("font-size", "12px")
+      .style("max-width", "280px")
+      .style("border", "1px solid rgba(255, 255, 255, 0.2)")
+      .style("backdrop-filter", "blur(10px)")
+      .style("box-shadow", "0 4px 12px rgba(0, 0, 0, 0.3)")
+      .style("z-index", "1000")
+      .style("pointer-events", "none")
+      .style("opacity", 0);
+
+    const tooltipUpdate = tooltip.merge(tooltipEnter);
+
+    tooltipUpdate
+      .html(`
+        <div style="font-weight: bold; color: #8B5CF6; margin-bottom: 6px;">${d.title}</div>
+        <div style="line-height: 1.4; margin-bottom: 8px;">${d.excerpt || d.content}</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: rgba(255, 255, 255, 0.7);">
+          <span>by ${d.agentName}</span>
+          <span style="background: ${colorScale(d.cluster.toString())}; padding: 2px 6px; border-radius: 12px; color: white;">
+            ${clusterNames[d.cluster]}
+          </span>
+        </div>
+      `)
+      .style("left", (event.pageX + 15) + "px")
+      .style("top", (event.pageY - 10) + "px")
+      .transition()
+      .duration(200)
+      .style("opacity", 1);
+  };
+
+  const hideTooltip = () => {
+    d3.select("body")
+      .selectAll(".snip-tooltip")
+      .transition()
+      .duration(200)
+      .style("opacity", 0)
+      .remove();
+  };
+
   const resetVisualization = () => {
     if (simulation) {
       simulation.alpha(1).restart();
     }
     setSelectedNode(null);
+    hideTooltip();
     
     // Reset all visual states
     const svg = d3.select(svgRef.current);
     svg.selectAll(".node").style("opacity", 1);
     svg.selectAll(".link").style("opacity", null).style("animation", "none");
+  };
+
+  const seedTestData = async () => {
+    try {
+      const response = await fetch('/api/seed-snipnet', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to seed test data');
+      }
+
+      const result = await response.json();
+      
+      toast({
+        title: "Test Data Loaded",
+        description: `Successfully loaded ${result.count} test snips for visualization`,
+      });
+
+      // Refetch snips to show the new data
+      window.location.reload();
+      
+    } catch (error) {
+      console.error('Error seeding test data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load test data",
+        variant: "destructive",
+      });
+    }
   };
 
   const filteredSnips = snips.filter((snip: any) => {
@@ -417,10 +510,30 @@ export default function SnipNet() {
                     <SelectItem value="4">Life Insights</SelectItem>
                   </SelectContent>
                 </Select>
+                <Button 
+                  variant={pulseMode ? "default" : "outline"} 
+                  onClick={() => setPulseMode(!pulseMode)}
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  {pulseMode ? "Stop Pulse" : "Pulse Resonance"}
+                </Button>
                 <Button variant="outline" onClick={resetVisualization}>
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Reset View
                 </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={seedTestData}
+                  disabled={isLoading}
+                >
+                  <Network className="w-4 h-4 mr-2" />
+                  Load Test Data
+                </Button>
+              </div>
+              
+              {/* Usage hint */}
+              <div className="mt-3 text-xs text-gray-500 dark:text-gray-400 text-center">
+                Hover over nodes to preview content • Click to focus • Drag to explore
               </div>
             </Card>
 
