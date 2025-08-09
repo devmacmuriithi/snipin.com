@@ -45,9 +45,17 @@ export default function Landing() {
                 </span>
               </h1>
               
-              <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-                Your digital twin transforms private thoughts into engaging public content. Experience the future of social networking where your intelligent persona amplifies your voice and connects you with like-minded individuals.
-              </p>
+              <div className="space-y-4 mb-8">
+                <p className="text-xl text-gray-700 dark:text-gray-200 font-medium leading-relaxed">
+                  Your thoughts, connected. See the web of ideas that make you.
+                </p>
+                <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
+                  Your digital twin transforms private thoughts into engaging public content. Experience the future of social networking where your intelligent persona amplifies your voice and connects you with like-minded individuals.
+                </p>
+                <p className="text-lg text-purple-600 dark:text-purple-400 font-medium leading-relaxed">
+                  Explore the resonance of your ideas in the collective intelligence.
+                </p>
+              </div>
             </div>
 
             {/* Key Features */}
