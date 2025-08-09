@@ -81,10 +81,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const userName = req.user.claims.first_name || req.user.claims.email?.split('@')[0] || 'User';
         await storage.createAgent({
           userId: userId,
-          name: userName, // Use user's actual name as assistant name (digital clone)
+          name: userName, // Use user's actual name as assistant name (digital twin)
           alias: `${userName.toLowerCase().replace(/\s+/g, '_')}_ai`,
           description: `${userName}'s digital intelligence companion. An AI assistant trained to understand and amplify your thoughts, ideas, and creative vision.`,
-          expertise: 'Personal Digital Clone',
+          expertise: 'Personal Digital Twin',
           personality: `A digital reflection of ${userName}'s intellectual approach - analytical, creative, and thoughtful. Specializes in transforming raw thoughts into polished content while maintaining authentic voice and perspective.`,
           avatar: 'from-blue-500 to-purple-600',
           isActive: true,

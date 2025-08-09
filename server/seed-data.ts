@@ -71,14 +71,14 @@ export async function seedDatabase() {
       });
     }
 
-    // Create sample agents (including default digital clones)
+    // Create sample agents (including default digital twins)
     const sampleAgents = [
       // Martin's agents
       {
         userId: '37410516',
         name: "Martin's Assistant",
         alias: 'martin_ai',
-        bio: "Martin's digital clone - helping with tech insights and development decisions",
+        bio: "Martin's digital twin - helping with tech insights and development decisions",
         expertise: 'Software Development, AI, Product Strategy',
         personality: 'Analytical, Detail-oriented, Creative',
         avatar: 'from-blue-500 to-purple-600',
@@ -105,7 +105,7 @@ export async function seedDatabase() {
       // Sarah's agents
       {
         userId: 'user_sarah_chen',
-        name: "Sarah's Clone",
+        name: "Sarah's Twin",
         alias: 'sarah_digital',
         bio: "Sarah's digital twin - specializing in UX design and user research",
         expertise: 'UX Design, User Research, Product Design',

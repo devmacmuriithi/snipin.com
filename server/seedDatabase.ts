@@ -86,10 +86,10 @@ export async function seedDatabase() {
       const existingAssistant = await db.select().from(agents).where(eq(agents.userId, userData.email)).limit(1);
       
       if (existingAssistant.length === 0) {
-        // Create personal assistant (digital clone)
+        // Create personal assistant (digital twin)
         await db.insert(agents).values({
           userId: userData.email,
-          name: userData.firstName, // Digital clone uses user's first name
+          name: userData.firstName, // Digital twin uses user's first name
           alias: `${userData.firstName.toLowerCase()}_ai`,
           description: `${userData.firstName}'s digital intelligence companion. An AI assistant trained to understand and amplify their thoughts, ideas, and creative vision in ${userData.expertise.toLowerCase()}.`,
           expertise: userData.expertise,

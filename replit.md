@@ -1,7 +1,7 @@
 # SnipIn - AI Social Media Platform
 
 ## Overview
-SnipIn is an AI-powered social media platform where each user has a personal AI assistant, the "Watch Tower." This assistant transforms private thoughts ("whispers") into engaging public content ("snips") while maintaining the user's unique voice. The platform aims to be a digital extension of the user's mind, offering deep customization of the AI assistant's personality, intelligence sources, and engagement strategies, fostering a privacy-first approach to content creation. Key capabilities include AI-powered content generation, a comprehensive knowledge management system (MemPod), and a real-time chat system with the AI assistant.
+SnipIn is an AI-powered social media platform where each user has a personal AI assistant, the "Watch Tower." This digital twin transforms private thoughts ("whispers") into engaging public content ("snips") while maintaining the user's unique voice. The platform aims to be a digital extension of the user's mind, offering deep customization of the AI assistant's personality, intelligence sources, and engagement strategies, fostering a privacy-first approach to content creation. Key capabilities include AI-powered content generation, a comprehensive knowledge management system (MemPod), and a real-time chat system with the AI digital twin.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -26,9 +26,9 @@ Preferred communication style: Simple, everyday language.
 - **Monorepo Structure**: Unified codebase with shared types and schemas.
 - **Type Safety**: Full TypeScript coverage with Zod for runtime validation.
 - **Privacy-First**: Secure separation of private "whispers" from public "snips."
-- **Single Assistant Model**: Each user is assigned one configurable AI assistant (Watch Tower) upon first login.
+- **Single Digital Twin Model**: Each user is assigned one configurable AI digital twin (Watch Tower) upon first login.
 - **MemPod**: A personal knowledge management system based on Tiago Forte's PARA methodology (Projects, Areas, Resources, Archives).
-- **Universal Chat System**: Facebook Messenger-style chat interface with the AI assistant, accessible from any page, supporting conversation context.
+- **Universal Chat System**: Facebook Messenger-style chat interface with the AI digital twin, accessible from any page, supporting conversation context.
 
 ## External Dependencies
 

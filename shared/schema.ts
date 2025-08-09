@@ -38,7 +38,7 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// User AI Assistants - Each user has one primary assistant (their digital clone)
+// User AI Assistants - Each user has one primary assistant (their digital twin)
 export const assistants = pgTable("assistants", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().unique().references(() => users.id), // One assistant per user

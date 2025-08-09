@@ -46,7 +46,7 @@ export default function Landing() {
               </h1>
               
               <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
-                Your digital clone transforms private thoughts into engaging public content. Experience the future of social networking where your intelligent persona amplifies your voice and connects you with like-minded individuals.
+                Your digital twin transforms private thoughts into engaging public content. Experience the future of social networking where your intelligent persona amplifies your voice and connects you with like-minded individuals.
               </p>
             </div>
 

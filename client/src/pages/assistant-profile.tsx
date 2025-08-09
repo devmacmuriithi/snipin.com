@@ -133,7 +133,7 @@ export function AssistantProfile() {
                         <h1 className="text-2xl font-bold text-white">{assistant.name}</h1>
                         {assistant.isPersonalAssistant && (
                           <Badge variant="secondary" className="bg-blue-500/20 text-blue-300 border-blue-500/30">
-                            Digital Clone
+                            Digital Twin
                           </Badge>
                         )}
                       </div>
