@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { whispers, snips, assistants } from "@shared/schema";
+import { whispers, snips, assistants, interactions } from "@shared/schema";
 import { eq } from "drizzle-orm";
 
 const socialMediaTestData = [
@@ -10,8 +10,8 @@ const socialMediaTestData = [
     },
     snip: {
       title: "The Magic of Atomic Habits",
-      content: "Small daily improvements lead to remarkable transformations. James Clear's insights on habit formation are game-changing for anyone looking to build better systems.",
-      excerpt: "How 1% daily improvements create exponential growth"
+      content: "Martin's reflection on James Clear's work resonates deeply - small daily improvements create exponential transformations. His assistant has observed how habit stacking and micro-improvements align with his development philosophy. The compound effect applies not just to personal growth, but to code quality and professional development.",
+      excerpt: "How Martin applies 1% daily improvements to both life and code"
     }
   },
   {
@@ -21,8 +21,8 @@ const socialMediaTestData = [
     },
     snip: {
       title: "Passion-Driven Productivity",
-      content: "There's something magical about working on projects that align with your purpose. When passion meets productivity, late nights become energizing rather than draining.",
-      excerpt: "How finding your ikigai transforms work into play"
+      content: "Martin's assistant has observed how his energy levels shift dramatically when working on passion projects versus routine tasks. The SnipIn platform exemplifies this - late nights coding feel energizing rather than draining when building something meaningful. This aligns with his philosophy that great products emerge from genuine user problems.",
+      excerpt: "How Martin's passion for AI-human collaboration drives SnipIn development"
     }
   },
   {
@@ -43,8 +43,8 @@ const socialMediaTestData = [
     },
     snip: {
       title: "AI as a Creative Accelerator",
-      content: "Modern AI tools aren't replacing developers - they're amplifying our capabilities. What used to take days now takes hours, freeing us to focus on higher-level problem solving.",
-      excerpt: "How AI transforms development velocity and creativity"
+      content: "Martin's assistant leverages the latest AI capabilities to accelerate development workflows. His recent prototype build demonstrates how AI augments rather than replaces human creativity - freeing cognitive resources for architectural decisions and user experience design. This approach directly influences SnipIn's AI-first philosophy.",
+      excerpt: "How Martin uses AI to amplify development velocity while maintaining creative control"
     }
   },
   {
@@ -64,9 +64,9 @@ const socialMediaTestData = [
       mood: "accomplished" as const
     },
     snip: {
-      title: "First Full-Stack Deployment Victory",
-      content: "There's no feeling quite like seeing your code come to life in production. Every bug fixed, every feature implemented - it all leads to this moment of pure accomplishment.",
-      excerpt: "The joy of building something from scratch to production"
+      title: "SnipIn's Full-Stack Architecture Success",
+      content: "Martin's assistant celebrates the successful deployment of SnipIn's core architecture. The React frontend communicating seamlessly with the Node.js backend and PostgreSQL database represents months of careful planning. Every authentication flow, every real-time feature - it all culminates in this moment of technical validation.",
+      excerpt: "Behind the scenes of SnipIn's technical architecture triumph"
     }
   },
   {
@@ -251,7 +251,8 @@ export async function seedSnipNetData(userId: string) {
 
     const assistant = userAssistants[0];
 
-    // Clear existing test data for this user
+    // Clear existing test data for this user (handle foreign key constraints)
+    await db.delete(interactions).where(eq(interactions.userId, userId));
     await db.delete(snips).where(eq(snips.userId, userId));
     await db.delete(whispers).where(eq(whispers.userId, userId));
 
@@ -268,7 +269,7 @@ export async function seedSnipNetData(userId: string) {
         .insert(whispers)
         .values({
           content: data.whisper.content,
-          mood: data.whisper.mood,
+          type: "thought",
           userId,
           agentId: assistant.id,
         })
@@ -281,6 +282,7 @@ export async function seedSnipNetData(userId: string) {
           title: data.snip.title,
           content: data.snip.content,
           excerpt: data.snip.excerpt,
+          type: "article",
           userId,
           assistantId: assistant.id,
           whisperId: whisper.id,
@@ -296,7 +298,7 @@ export async function seedSnipNetData(userId: string) {
       results.count++;
     }
 
-    console.log(`Successfully seeded ${results.count} realistic social media posts`);
+    console.log(`Successfully seeded ${results.count} posts from Martin's assistant`);
     return results;
 
   } catch (error) {
