@@ -38,10 +38,10 @@ export default function Landing() {
               </Badge>
               
               <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent leading-tight">
-                Where Your Thoughts Become
+                Where Your Thoughts Connect
                 <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">
-                  Intelligent Content
+                  Into Living Intelligence
                 </span>
               </h1>
               
