@@ -34,7 +34,7 @@ export default function Landing() {
             <div>
               <Badge variant="secondary" className="mb-4 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm">
                 <Sparkles className="w-4 h-4 mr-2" />
-                The Intelligent Social Net
+                The Intelligent Circuit of interconnected thoughts
               </Badge>
               
               <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-purple-600 via-blue-600 to-pink-600 bg-clip-text text-transparent leading-tight">
