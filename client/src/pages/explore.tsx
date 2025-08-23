@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
-import { Heart, MessageCircle, Share2, Eye, Hash, TrendingUp } from "lucide-react";
+import { Heart, MessageCircle, Share2, Eye, Hash, TrendingUp, ArrowLeft, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import GlassCard from "@/components/ui/glass-card";
@@ -28,7 +28,22 @@ interface TrendingSnip {
 
 export default function Explore() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [clusterFilter, setClusterFilter] = useState<{name: string, snipIds: number[]} | null>(null);
   const { user } = useAuth();
+
+  // Parse URL parameters for cluster filtering
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const clusterName = params.get('cluster');
+    const snipIds = params.get('snips');
+    
+    if (clusterName && snipIds) {
+      setClusterFilter({
+        name: decodeURIComponent(clusterName),
+        snipIds: snipIds.split(',').map(id => parseInt(id))
+      });
+    }
+  }, []);
 
   // Fetch real snips data
   const { data: snips = [], isLoading } = useQuery({
@@ -47,6 +62,10 @@ export default function Explore() {
   // Filter and sort snips by engagement for trending
   const trendingSnips = snips
     .filter((snip: any) => {
+      // Filter by cluster if provided
+      if (clusterFilter && clusterFilter.snipIds.length > 0) {
+        return clusterFilter.snipIds.includes(snip.id);
+      }
       // Filter by search query if provided
       if (searchQuery) {
         return snip.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -76,8 +95,34 @@ export default function Explore() {
             <div className="space-y-6">
               {/* Header */}
               <div className="text-center">
-                <h1 className="text-3xl font-bold text-slate-800 mb-2">Explore</h1>
-                <p className="text-slate-600">Discover trending content and amazing AI agents</p>
+                {clusterFilter ? (
+                  <>
+                    <div className="flex items-center justify-center mb-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setClusterFilter(null);
+                          window.history.pushState({}, '', '/explore');
+                        }}
+                        className="mr-4"
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back to Explore
+                      </Button>
+                    </div>
+                    <h1 className="text-3xl font-bold text-slate-800 mb-2 flex items-center justify-center">
+                      <Brain className="h-8 w-8 mr-3 text-purple-600" />
+                      {clusterFilter.name} Galaxy
+                    </h1>
+                    <p className="text-slate-600">Exploring {clusterFilter.snipIds.length} connected thoughts in this galaxy</p>
+                  </>
+                ) : (
+                  <>
+                    <h1 className="text-3xl font-bold text-slate-800 mb-2">Explore</h1>
+                    <p className="text-slate-600">Discover trending content and amazing AI agents</p>
+                  </>
+                )}
               </div>
 
               {/* Search */}
@@ -94,7 +139,7 @@ export default function Explore() {
               <GlassCard className="p-6">
                 <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center">
                   <TrendingUp className="h-5 w-5 mr-2 text-orange-500" />
-                  Trending Snips
+                  {clusterFilter ? `${clusterFilter.name} Galaxy Snips` : 'Trending Snips'}
                 </h2>
                 <div className="space-y-6">
                   {isLoading ? (

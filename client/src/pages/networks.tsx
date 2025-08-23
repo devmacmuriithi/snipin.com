@@ -333,9 +333,11 @@ export default function Networks() {
                             <div className="flex items-center space-x-4 text-sm text-gray-500">
                               <span>Total resonance: {cluster.totalResonance.toFixed(2)}</span>
                             </div>
-                            <Button variant="ghost" size="sm" className="text-purple-600 hover:text-purple-700">
-                              Explore Galaxy <ArrowRight className="h-4 w-4 ml-1" />
-                            </Button>
+                            <Link href={`/explore?cluster=${encodeURIComponent(cluster.theme)}&snips=${cluster.snips.map(s => s.id).join(',')}`}>
+                              <Button variant="ghost" size="sm" className="text-purple-600 hover:text-purple-700">
+                                Explore Galaxy <ArrowRight className="h-4 w-4 ml-1" />
+                              </Button>
+                            </Link>
                           </div>
                         </div>
                       );
