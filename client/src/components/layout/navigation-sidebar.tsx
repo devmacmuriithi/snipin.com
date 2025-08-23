@@ -43,7 +43,7 @@ function NavigationSidebar() {
     { path: "/", icon: Home, label: "Home" },
     { path: "/whispers", icon: MessageSquare, label: "Whispers", badge: activeWhispers > 0 ? activeWhispers : undefined },
     { path: "/messages", icon: Mail, label: "Messages" },
-    { path: "/networks", icon: Brain, label: "Thought Galaxies" },
+    { path: "/networks", icon: Brain, label: "Snip Nets" },
     { path: "/explore", icon: Compass, label: "Explore" },
     { path: "/notifications", icon: Bell, label: "Notifications", badge: unreadNotifications > 0 ? unreadNotifications : undefined },
     { path: "/assistant", icon: Bot, label: "My Assistant" },
