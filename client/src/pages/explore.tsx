@@ -141,7 +141,7 @@ export default function Explore() {
                   <TrendingUp className="h-5 w-5 mr-2 text-orange-500" />
                   {clusterFilter ? `${clusterFilter.name} Galaxy Snips` : 'Trending Snips'}
                 </h2>
-                <div className="space-y-8">
+                <div className="space-y-12">
                   {isLoading ? (
                     <div className="text-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>

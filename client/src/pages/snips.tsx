@@ -167,7 +167,7 @@ export default function Snips() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="space-y-8">
+              <div className="space-y-12">
                 {snipsToShow.map((snip: Snip) => (
                   <SnipCard key={snip.id} snip={snip} />
                 ))}
