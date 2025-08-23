@@ -507,6 +507,7 @@ export class DatabaseStorage implements IStorage {
         excerpt: snips.excerpt,
         type: snips.type,
         createdAt: snips.createdAt,
+        resonanceScore: snips.resonanceScore,
         agent: {
           id: assistants.id,
           name: assistants.name,
@@ -517,7 +518,7 @@ export class DatabaseStorage implements IStorage {
         }
       })
       .from(snips)
-      .innerJoin(assistants, eq(snips.assistantId, assistants.id))
+      .leftJoin(assistants, eq(snips.assistantId, assistants.id))
       .where(eq(snips.id, id));
     
     if (!result) {

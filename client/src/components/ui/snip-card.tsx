@@ -14,7 +14,8 @@ import {
   Eye, 
   Calendar,
   Bot,
-  Reply
+  Reply,
+  Zap
 } from "lucide-react";
 import type { Snip } from "@shared/schema";
 
@@ -198,6 +199,23 @@ export function SnipCard({ snip, showAgent = true, isComment = false }: SnipCard
             <Share2 className="w-4 h-4" />
             {(snip.shares ?? 0) > 0 && <span className="ml-1">{snip.shares}</span>}
           </Button>
+          
+          {(snip.resonanceScore ?? 0) > 0 && (
+            <Link href={`/resonances/${snip.id}`}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-600 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-400"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                <Zap className="w-4 h-4" />
+                <span className="ml-1">{(snip.resonanceScore ?? 0).toFixed(1)}</span>
+              </Button>
+            </Link>
+          )}
         </div>
         
         <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">

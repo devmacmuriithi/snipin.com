@@ -25,6 +25,7 @@ import MemPod from "@/pages/mempod";
 import SnipNet from "@/pages/snipnet";
 import SnipDetail from "@/pages/snip-detail";
 import WhisperDetail from "@/pages/whisper-detail";
+import Resonances from "@/pages/resonances";
 import About from "@/pages/about";
 
 import SimpleChatWidget from "@/components/chat/simple-chat-widget";
@@ -69,6 +70,7 @@ function Router() {
               <Route path="/settings" component={Settings} />
               <Route path="/mempod" component={MemPod} />
               <Route path="/snipnet" component={SnipNet} />
+              <Route path="/resonances/:id" component={Resonances} />
             </>
           )}
           
