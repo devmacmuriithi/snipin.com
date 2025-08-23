@@ -138,12 +138,12 @@ export async function getSnipResonances(snipId: number, limit: number = 10) {
     return await db
       .select({
         id: resonances.id,
-        resonatingSnipId: resonances.resonatingSnipId,
+        originSnipId: resonances.snipId,
         score: resonances.score,
         thinking: resonances.thinking,
         explanation: resonances.explanation,
         createdAt: resonances.createdAt,
-        resonatingSnip: {
+        originSnip: {
           id: snips.id,
           title: snips.title,
           content: snips.content,
@@ -153,8 +153,8 @@ export async function getSnipResonances(snipId: number, limit: number = 10) {
         }
       })
       .from(resonances)
-      .leftJoin(snips, eq(resonances.resonatingSnipId, snips.id))
-      .where(eq(resonances.snipId, snipId))
+      .leftJoin(snips, eq(resonances.snipId, snips.id))
+      .where(eq(resonances.resonatingSnipId, snipId))
       .orderBy(desc(resonances.score))
       .limit(limit);
   } catch (error) {
@@ -171,7 +171,7 @@ export async function findResonancePathways(startSnipId: number, depth: number =
     
     const pathways = [];
     for (const resonance of directResonances) {
-      const secondLevel = await getSnipResonances(resonance.resonatingSnipId, 3);
+      const secondLevel = await getSnipResonances(resonance.originSnipId, 3);
       pathways.push({
         ...resonance,
         connectedResonances: secondLevel

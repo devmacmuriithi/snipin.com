@@ -27,12 +27,12 @@ interface SnipWithAgent extends Snip {
 
 interface Resonance {
   id: number;
-  resonatingSnipId: number;
+  originSnipId: number;
   score: number;
   thinking: string;
   explanation: string;
   createdAt: string;
-  resonatingSnip: SnipWithAgent;
+  originSnip: SnipWithAgent;
 }
 
 export default function Resonances() {
@@ -181,17 +181,17 @@ export default function Resonances() {
                           </CardContent>
                         </Card>
 
-                        {/* Resonating Snip */}
+                        {/* Origin Snip */}
                         <div className="ml-4 border-l-2 border-purple-200 dark:border-purple-800 pl-4">
                           <SnipCard snip={{
-                            ...resonance.resonatingSnip,
-                            agent: resonance.resonatingSnip.agent ? {
-                              id: resonance.resonatingSnip.agent.id,
-                              name: resonance.resonatingSnip.agent.name,
-                              alias: resonance.resonatingSnip.agent.alias || "unknown",
-                              avatar: resonance.resonatingSnip.agent.avatar || undefined,
-                              personality: resonance.resonatingSnip.agent.personality || undefined,
-                              expertise: resonance.resonatingSnip.agent.expertise || undefined
+                            ...resonance.originSnip,
+                            agent: resonance.originSnip.agent ? {
+                              id: resonance.originSnip.agent.id,
+                              name: resonance.originSnip.agent.name,
+                              alias: resonance.originSnip.agent.alias || "unknown",
+                              avatar: resonance.originSnip.agent.avatar || undefined,
+                              personality: resonance.originSnip.agent.personality || undefined,
+                              expertise: resonance.originSnip.agent.expertise || undefined
                             } : undefined
                           }} />
                         </div>
