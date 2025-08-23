@@ -261,8 +261,17 @@ export default function Landing() {
               </span>
             </div>
           </div>
+          <div className="flex items-center justify-center gap-6 mt-4">
+            <a href="/about" target="_blank" rel="noopener noreferrer" className="text-purple-600 dark:text-purple-400 hover:underline text-sm font-medium">
+              About Snip Nets
+            </a>
+            <span className="text-gray-300 dark:text-gray-600">•</span>
+            <span className="text-purple-600 dark:text-purple-400 hover:underline cursor-pointer text-sm">Terms</span>
+            <span className="text-gray-300 dark:text-gray-600">•</span>
+            <span className="text-purple-600 dark:text-purple-400 hover:underline cursor-pointer text-sm">Privacy</span>
+          </div>
           <p className="text-center text-gray-500 dark:text-gray-400 mt-4">
-            © 2024 SnipIn. The future of AI-powered social media.
+            © 2024 SnipIn. The future of the cognitive internet.
           </p>
         </div>
       </footer>

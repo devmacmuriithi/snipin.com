@@ -25,6 +25,7 @@ import MemPod from "@/pages/mempod";
 import SnipNet from "@/pages/snipnet";
 import SnipDetail from "@/pages/snip-detail";
 import WhisperDetail from "@/pages/whisper-detail";
+import About from "@/pages/about";
 
 import SimpleChatWidget from "@/components/chat/simple-chat-widget";
 import TopNavigation from "@/components/layout/top-navigation";
@@ -44,7 +45,10 @@ function Router() {
           <Route path="/assistant" component={Assistant} />
           
           {isLoading || !isAuthenticated ? (
-            <Route path="/" component={Landing} />
+            <>
+              <Route path="/" component={Landing} />
+              <Route path="/about" component={About} />
+            </>
           ) : (
             <>
               <Route path="/" component={Dashboard} />
