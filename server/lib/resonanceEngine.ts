@@ -25,7 +25,7 @@ export async function processSnipResonance(snipId: number) {
         .set({ embedding: sql`${JSON.stringify(embedding)}::vector` })
         .where(eq(snips.id, snipId));
       
-      snip.embedding = JSON.stringify(embedding);
+      snip.embedding = embedding;
     }
 
     // Find similar snips using pgvector cosine similarity

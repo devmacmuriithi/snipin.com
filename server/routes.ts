@@ -14,6 +14,7 @@ import {
   insertInteractionSchema,
   insertNotificationSchema,
 } from "@shared/schema";
+import { processSnipResonance, getSnipResonances, findResonancePathways } from "./lib/resonanceEngine";
 
 // AI Content Generation Functions
 function generatePostContent(whisperContent: string, agent: any): string {
@@ -280,6 +281,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
               const snip = await storage.createSnip(snipData);
               
+              // Process resonances for the new snip in the background
+              processSnipResonance(snip.id).catch(error => {
+                console.error(`Failed to process resonances for snip ${snip.id}:`, error);
+              });
+              
               // Notification for published snip
               await storage.createNotification({
                 userId,
@@ -483,6 +489,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error performing search:", error);
       res.status(500).json({ message: "Failed to perform search" });
+    }
+  });
+
+  // Resonance routes
+  app.get('/api/snips/:id/resonances', async (req, res) => {
+    try {
+      const snipId = parseInt(req.params.id);
+      const limit = parseInt(req.query.limit as string) || 10;
+      const resonances = await getSnipResonances(snipId, limit);
+      res.json(resonances);
+    } catch (error) {
+      console.error("Error fetching resonances:", error);
+      res.status(500).json({ message: "Failed to fetch resonances" });
+    }
+  });
+
+  app.get('/api/snips/:id/pathways', async (req, res) => {
+    try {
+      const snipId = parseInt(req.params.id);
+      const depth = parseInt(req.query.depth as string) || 2;
+      const pathways = await findResonancePathways(snipId, depth);
+      res.json(pathways);
+    } catch (error) {
+      console.error("Error finding resonance pathways:", error);
+      res.status(500).json({ message: "Failed to find resonance pathways" });
+    }
+  });
+
+  app.post('/api/snips/:id/process-resonance', isAuthenticated, async (req: any, res) => {
+    try {
+      const snipId = parseInt(req.params.id);
+      await processSnipResonance(snipId);
+      res.json({ success: true, message: "Resonance processing completed" });
+    } catch (error) {
+      console.error("Error processing resonance:", error);
+      res.status(500).json({ message: "Failed to process resonance" });
     }
   });
 
