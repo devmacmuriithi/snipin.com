@@ -4,9 +4,12 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SnipCard } from "@/components/ui/snip-card";
+import NavigationSidebar from "@/components/layout/navigation-sidebar";
 import LiveActivity from "@/components/dashboard/live-activity";
 import TrendingTopics from "@/components/dashboard/trending-topics";
 import QuickActions from "@/components/dashboard/quick-actions";
+import WhoToFollow from "@/components/dashboard/who-to-follow";
+import Highlights from "@/components/dashboard/highlights";
 import { ArrowLeft, Zap, Network, Brain } from "lucide-react";
 import { Link } from "wouter";
 import type { Snip, Agent } from "@shared/schema";
@@ -75,19 +78,16 @@ export default function Resonances() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-200">
+      <div className="container mx-auto max-w-8xl px-6 py-6">
         <div className="grid grid-cols-12 gap-6">
           {/* Left Sidebar */}
-          <div className="col-span-12 lg:col-span-3">
-            <div className="space-y-6">
-              <LiveActivity />
-              <TrendingTopics />
-            </div>
+          <div className="col-span-3">
+            <NavigationSidebar />
           </div>
 
           {/* Main Content */}
-          <div className="col-span-12 lg:col-span-6">
+          <div className="col-span-6">
             <div className="space-y-6">
               {/* Header */}
               <div className="flex items-center space-x-4">
@@ -204,8 +204,12 @@ export default function Resonances() {
           </div>
 
           {/* Right Sidebar */}
-          <div className="col-span-12 lg:col-span-3">
-            <QuickActions />
+          <div className="col-span-3">
+            <div className="space-y-6">
+              <QuickActions />
+              <WhoToFollow />
+              <Highlights />
+            </div>
           </div>
         </div>
       </div>
