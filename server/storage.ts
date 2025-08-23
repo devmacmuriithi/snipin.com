@@ -495,7 +495,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(snips.id, id));
   }
 
-  async getSnipWithAgent(id: number): Promise<any> {
+  async getSnipWithAssistant(id: number): Promise<any> {
     const [result] = await db
       .select({
         id: snips.id,
@@ -643,6 +643,7 @@ export class DatabaseStorage implements IStorage {
         comments: snips.comments,
         shares: snips.shares,
         views: snips.views,
+        resonanceScore: snips.resonanceScore,
         createdAt: snips.createdAt,
         agent: {
           id: assistants.id,

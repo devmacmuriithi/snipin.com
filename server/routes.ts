@@ -700,7 +700,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/snips/:id', async (req: any, res) => {
     try {
       const snipId = parseInt(req.params.id);
-      const snip = await storage.getSnipWithAgent(snipId);
+      const snip = await storage.getSnipWithAssistant(snipId);
       
       if (!snip) {
         return res.status(404).json({ message: "Snip not found" });
