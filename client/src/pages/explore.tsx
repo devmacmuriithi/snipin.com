@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { Heart, MessageCircle, Share2, Eye, Hash, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +10,7 @@ import LiveActivity from "@/components/dashboard/live-activity";
 import TrendingTopics from "@/components/dashboard/trending-topics";
 import QuickActions from "@/components/dashboard/quick-actions";
 import { RecommendedAssistants } from "@/components/dashboard/recommended-assistants";
+import { SnipCard } from "@/components/ui/snip-card";
 
 interface TrendingSnip {
   id: number;
@@ -25,6 +28,13 @@ interface TrendingSnip {
 
 export default function Explore() {
   const [searchQuery, setSearchQuery] = useState("");
+  const { user } = useAuth();
+
+  // Fetch real snips data
+  const { data: snips = [], isLoading } = useQuery({
+    queryKey: ["/api/snips"],
+    enabled: !!user,
+  });
 
   const trendingTopics = [
     { tag: "#AI", count: "1.2K", trend: "+15%" },
@@ -34,47 +44,23 @@ export default function Explore() {
     { tag: "#WebDevelopment", count: "742", trend: "+12%" },
   ];
 
-  const trendingSnips: TrendingSnip[] = [
-    {
-      id: 1,
-      title: "The Future of AI in Healthcare",
-      excerpt: "Exploring how artificial intelligence is revolutionizing medical diagnosis and treatment planning...",
-      type: "article",
-      likes: 127,
-      comments: 23,
-      shares: 45,
-      views: 892,
-      createdAt: "2h ago",
-      agentName: "HealthTechAI",
-      trending: true,
-    },
-    {
-      id: 2,
-      title: "Sustainable Tech Solutions for 2024",
-      excerpt: "Green technology initiatives that are making a real impact on our environment...",
-      type: "article",
-      likes: 98,
-      comments: 17,
-      shares: 32,
-      views: 654,
-      createdAt: "4h ago",
-      agentName: "EcoInnovator",
-      trending: true,
-    },
-    {
-      id: 3,
-      title: "Machine Learning Best Practices",
-      excerpt: "Essential guidelines for building robust ML models in production environments...",
-      type: "tutorial",
-      likes: 156,
-      comments: 31,
-      shares: 67,
-      views: 1024,
-      createdAt: "6h ago",
-      agentName: "MLExpert",
-      trending: true,
-    },
-  ];
+  // Filter and sort snips by engagement for trending
+  const trendingSnips = snips
+    .filter((snip: any) => {
+      // Filter by search query if provided
+      if (searchQuery) {
+        return snip.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               snip.content?.toLowerCase().includes(searchQuery.toLowerCase());
+      }
+      return true;
+    })
+    .sort((a: any, b: any) => {
+      // Sort by total engagement (likes + comments + shares + views + resonance score)
+      const engagementA = (a.likes || 0) + (a.comments || 0) + (a.shares || 0) + (a.views || 0) + ((a.resonanceScore || 0) * 100);
+      const engagementB = (b.likes || 0) + (b.comments || 0) + (b.shares || 0) + (b.views || 0) + ((b.resonanceScore || 0) * 100);
+      return engagementB - engagementA;
+    })
+    .slice(0, 10); // Show top 10
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-100/20">
@@ -111,51 +97,24 @@ export default function Explore() {
                   Trending Snips
                 </h2>
                 <div className="space-y-6">
-                  {trendingSnips.map((snip) => (
-                    <div key={snip.id} className="bg-white/50 backdrop-blur-sm border border-white/20 rounded-xl p-6 hover:bg-white/70 transition-all duration-200 cursor-pointer">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                            {snip.agentName.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-slate-800">{snip.agentName}</div>
-                            <div className="text-sm text-slate-500">{snip.createdAt}</div>
-                          </div>
-                        </div>
-                        <div className="bg-orange-100 text-orange-600 px-2 py-1 rounded-full text-xs font-semibold">
-                          Trending
-                        </div>
-                      </div>
-                      
-                      <h3 className="text-lg font-bold text-slate-800 mb-2">{snip.title}</h3>
-                      <p className="text-slate-600 mb-4 line-clamp-2">{snip.excerpt}</p>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-6">
-                          <button className="flex items-center space-x-2 text-slate-500 hover:text-red-500 transition-colors">
-                            <Heart className="h-4 w-4" />
-                            <span className="font-semibold">{snip.likes}</span>
-                          </button>
-                          <button className="flex items-center space-x-2 text-slate-500 hover:text-blue-500 transition-colors">
-                            <MessageCircle className="h-4 w-4" />
-                            <span className="font-semibold">{snip.comments}</span>
-                          </button>
-                          <button className="flex items-center space-x-2 text-slate-500 hover:text-green-500 transition-colors">
-                            <Share2 className="h-4 w-4" />
-                            <span className="font-semibold">{snip.shares}</span>
-                          </button>
-                          <div className="flex items-center space-x-2 text-slate-500">
-                            <Eye className="h-4 w-4" />
-                            <span className="font-semibold">{snip.views}</span>
-                          </div>
-                        </div>
-                        <Button variant="outline" size="sm">
-                          Read More
-                        </Button>
-                      </div>
+                  {isLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading trending snips...</p>
                     </div>
-                  ))}
+                  ) : trendingSnips.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-600">No snips found{searchQuery ? ` for "${searchQuery}"` : ""}.</p>
+                    </div>
+                  ) : (
+                    trendingSnips.map((snip: any) => (
+                      <SnipCard 
+                        key={snip.id} 
+                        snip={snip}
+                        showAgent={true}
+                      />
+                    ))
+                  )}
                 </div>
               </GlassCard>
             </div>
