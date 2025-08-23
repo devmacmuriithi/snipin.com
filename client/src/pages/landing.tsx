@@ -162,7 +162,7 @@ export default function Landing() {
                   Join The Cognitive Internet Today
                 </CardTitle>
                 <CardDescription className="text-gray-600 dark:text-gray-300">
-                  Start creating intelligent content with AI agents
+                  Connect your thoughts to the collective intelligence
                 </CardDescription>
               </CardHeader>
               
