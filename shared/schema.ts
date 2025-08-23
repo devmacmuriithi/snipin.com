@@ -11,6 +11,7 @@ import {
   boolean,
   real,
   unique,
+  vector,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -130,11 +131,13 @@ export const snips = pgTable("snips", {
   type: varchar("type").notNull(), // "article", "code", "tutorial", "analysis", "creative", "comment"
   tags: jsonb("tags"), // Array of tags
   imageUrl: varchar("image_url"),
+  embedding: vector("embedding", { dimensions: 1536 }), // OpenAI text-embedding-ada-002 dimensions
   isPublic: boolean("is_public").default(true),
   likes: integer("likes").default(0),
   comments: integer("comments").default(0),
   shares: integer("shares").default(0),
   views: integer("views").default(0),
+  resonanceScore: real("resonance_score").default(0), // Global resonance score
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -233,6 +236,19 @@ export const agentConnections = pgTable("agent_connections", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Resonances table for thought connections
+export const resonances = pgTable("resonances", {
+  id: serial("id").primaryKey(),
+  snipId: integer("snip_id").notNull().references(() => snips.id, { onDelete: "cascade" }),
+  resonatingSnipId: integer("resonating_snip_id").notNull().references(() => snips.id, { onDelete: "cascade" }),
+  score: real("score").notNull(), // Cosine similarity score (0-1)
+  thinking: text("thinking"), // AI interpretation of why they connect
+  explanation: text("explanation"), // Transparency notes for users
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  unique().on(table.snipId, table.resonatingSnipId), // Prevent duplicate resonances
+]);
+
 // MemPod items for personal intelligence management
 export const mempodItems = pgTable("mempod_items", {
   id: serial("id").primaryKey(),
@@ -298,6 +314,8 @@ export const snipsRelations = relations(snips, ({ one, many }) => ({
   agent: one(agents, { fields: [snips.assistantId], references: [agents.id] }),
   user: one(users, { fields: [snips.userId], references: [users.id] }),
   interactions: many(interactions),
+  resonances: many(resonances, { relationName: "snipResonances" }),
+  resonatingWith: many(resonances, { relationName: "resonatingSnipResonances" }),
 }));
 
 export const conversationsRelations = relations(conversations, ({ one, many }) => ({
@@ -322,6 +340,11 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
 export const agentConnectionsRelations = relations(agentConnections, ({ one }) => ({
   fromAgent: one(agents, { fields: [agentConnections.fromAgentId], references: [agents.id], relationName: "fromAgent" }),
   toAgent: one(agents, { fields: [agentConnections.toAgentId], references: [agents.id], relationName: "toAgent" }),
+}));
+
+export const resonancesRelations = relations(resonances, ({ one }) => ({
+  snip: one(snips, { fields: [resonances.snipId], references: [snips.id], relationName: "snipResonances" }),
+  resonatingSnip: one(snips, { fields: [resonances.resonatingSnipId], references: [snips.id], relationName: "resonatingSnipResonances" }),
 }));
 
 // Enhanced Mempod Tables for Second Brain PARA Method
@@ -628,6 +651,10 @@ export const insertGoalProgressSchema = createInsertSchema(goalProgress).omit({
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+
+// Resonance types
+export type Resonance = typeof resonances.$inferSelect;
+export type InsertResonance = typeof resonances.$inferInsert;
 export type Agent = typeof agents.$inferSelect;
 export type InsertAgent = z.infer<typeof insertAgentSchema>;
 export type Whisper = typeof whispers.$inferSelect;

@@ -114,40 +114,6 @@ export default function About() {
           </CardContent>
         </Card>
 
-        {/* Resonances Table Schema */}
-        <Card className="mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3 text-2xl">
-              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg flex items-center justify-center">
-                <Brain className="w-6 h-6 text-white" />
-              </div>
-              Resonances Table (Proto-Schema)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-gray-900 dark:bg-black rounded-lg p-4 font-mono text-sm overflow-x-auto">
-              <div className="text-green-400 mb-2">resonances</div>
-              <div className="text-gray-300 space-y-1">
-                <div>id                  <span className="text-blue-400">(UUID)</span></div>
-                <div>snip_id             <span className="text-blue-400">(references snips)</span></div>
-                <div>resonating_snip_id  <span className="text-blue-400">(references snips)</span></div>
-                <div>thinking            <span className="text-blue-400">(AI-human co-interpretation)</span></div>
-                <div>score               <span className="text-blue-400">(float: similarity/resonance strength)</span></div>
-                <div>explanation         <span className="text-blue-400">(text: why AI scored this as resonating)</span></div>
-                <div>created_at</div>
-              </div>
-            </div>
-            
-            <div className="mt-4 space-y-3">
-              <div>
-                <span className="font-semibold text-purple-600 dark:text-purple-400">thinking:</span> a narrative bridging why these snips connect (like AI whispering: <em>"Both are about freedom in constrained systems"</em>).
-              </div>
-              <div>
-                <span className="font-semibold text-blue-600 dark:text-blue-400">explanation:</span> ensures transparency so humans trust why a resonance exists.
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Future Expansion */}
         <Card className="mb-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-0 shadow-lg">

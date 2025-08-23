@@ -1,0 +1,99 @@
+Great — let’s walk through the **workflow of a “thought post”** in this resonance-driven network. Imagine you, as a human, post a snip (a raw thought). What happens next:
+
+---
+
+## 🌀 Workflow of a Thought Post (Snip)
+
+### 1. **Creation**
+
+* User (or neural interface in future) creates a snip:
+
+  ```plaintext
+  "What if cities could breathe like forests?"
+  ```
+* This snip gets a **unique ID** and metadata (user, timestamp, context).
+
+---
+
+### 2. **Embedding & Enrichment**
+
+* AI converts the snip into a **vector embedding** (semantic fingerprint).
+* Additional enrichment:
+
+  * **Contextualization**: AI expands the meaning (“urban sustainability, biomimicry, adaptive architecture”).
+  * **Tags / Categories** auto-generated.
+  * **Emotional tone** detected (curiosity, hope).
+
+---
+
+### 3. **Resonance Detection**
+
+* The snip embedding is compared against all existing snips.
+* System finds **nearest neighbors** (other thoughts semantically aligned).
+* A **Resonance Score** is computed for each connection (cosine similarity, threshold filtering).
+* Example:
+
+  * Resonates 0.88 with: *“Buildings that act like living organisms”*
+  * Resonates 0.74 with: *“Smart cities learning from ecosystems”*
+
+---
+
+### 4. **Resonances Table Update**
+
+* Each resonance creates an entry:
+
+  ```plaintext
+  snip_id: 123
+  resonating_snip_id: 456
+  score: 0.88
+  thinking: "Both explore architecture as biology-inspired"
+  explanation: "High similarity in themes of biomimicry + sustainability"
+  ```
+* Stored in the **resonances table**, forming a *thought web*.
+
+---
+
+### 5. **Resonance Metrics & Feedback**
+
+* The snip’s **Resonance Score (global)** = aggregate measure of how many strong connections it has + their intensities.
+* Shown to the user like:
+
+  * “🌌 Your thought resonated with 37 other thoughts.”
+  * “🔥 Strong resonance with biomimicry thinkers.”
+
+---
+
+### 6. **Discovery & Surfacing**
+
+* Other users with resonating snips are notified:
+
+  * *“Your thought about living buildings resonated with Martin’s new snip.”*
+* The snip becomes part of **snip nets** (clusters).
+* Users can explore **resonance pathways**: follow how one thought leads to others.
+
+---
+
+### 7. **Evolution of the Snip**
+
+* Snips can evolve:
+
+  * AI can **generate derivative snips** (expansions, counterpoints, creative riffs).
+  * Human can **merge resonances** into larger thought threads.
+  * Collective resonance may cause **new nodes (subnets)** to emerge.
+
+---
+
+### 🚀 Example in Motion:
+
+1. You post: *“What if cities could breathe like forests?”*
+2. AI embeds → finds resonance with biomimicry snips.
+3. Resonances table logs those links.
+4. You see: *“Resonated with 37 thoughts, strongest on biomimicry & smart cities.”*
+5. Others with related thoughts get pinged.
+6. A **biomimicry subnet** grows stronger, with you at its frontier.
+
+---
+
+This is **like posting on Twitter**, except instead of counting likes, you’re **growing resonance waves** across thought space.
+
+👉 Do you want me to design a **visual diagram workflow (nodes, embeddings, resonance scoring)** so you can literally *see* how a thought ripples into a snip net?
