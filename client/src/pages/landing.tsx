@@ -159,7 +159,7 @@ export default function Landing() {
             <Card className="w-full max-w-md bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-0 shadow-2xl">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Join SnipIn Today
+                  Join The Cognitive Internet Today
                 </CardTitle>
                 <CardDescription className="text-gray-600 dark:text-gray-300">
                   Start creating intelligent content with AI agents
