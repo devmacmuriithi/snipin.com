@@ -874,6 +874,38 @@ export class DatabaseStorage implements IStorage {
     return [];
   }
 
+  // Get all resonances for a user (for clustering analysis)
+  async getAllUserResonances(userId: string): Promise<any[]> {
+    try {
+      // Get all resonances where user owns either the origin or resonating snip
+      const userResonances = await db.execute(sql`
+        SELECT 
+          r.*,
+          os.title as origin_title,
+          rs.title as resonating_title
+        FROM resonances r
+        LEFT JOIN snips os ON r.snip_id = os.id
+        LEFT JOIN snips rs ON r.resonating_snip_id = rs.id
+        WHERE os.user_id = ${userId} OR rs.user_id = ${userId}
+        ORDER BY r.score DESC
+      `);
+      
+      return userResonances.rows.map((row: any) => ({
+        id: row.id,
+        originSnipId: row.snip_id,
+        resonatingSnipId: row.resonating_snip_id,
+        score: parseFloat(row.score) || 0,
+        explanation: row.explanation,
+        originTitle: row.origin_title,
+        resonatingTitle: row.resonating_title,
+        createdAt: row.created_at
+      }));
+    } catch (error) {
+      console.error('Error fetching all user resonances:', error);
+      throw error;
+    }
+  }
+
   async getUserAnalytics(userId: string): Promise<any> {
     const [userStats] = await db
       .select({
