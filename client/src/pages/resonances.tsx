@@ -148,7 +148,7 @@ export default function Resonances() {
                     Thoughts that vibrate with similar frequencies, ordered by resonance strength
                   </p>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-8">
                   {resonancesLoading ? (
                     <div className="text-center py-8">Loading resonances...</div>
                   ) : resonances.length === 0 ? (

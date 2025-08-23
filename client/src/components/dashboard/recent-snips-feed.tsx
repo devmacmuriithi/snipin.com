@@ -31,11 +31,9 @@ export default function RecentSnipsFeed() {
           <p className="text-slate-500">Your AI agents will create amazing content from your whispers.</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {snips.slice(0, 3).map((snip: Snip) => (
-            <div key={snip.id} className="mb-6">
-              <SnipCard snip={snip} />
-            </div>
+            <SnipCard key={snip.id} snip={snip} />
           ))}
         </div>
       )}

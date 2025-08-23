@@ -218,16 +218,17 @@ export default function AgentWall() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
         </div>
       ) : agentSnips.length > 0 ? (
-        agentSnips.map((snip: Snip) => (
-          <div key={snip.id} className="mb-6">
+        <div className="space-y-8">
+          {agentSnips.map((snip: Snip) => (
             <SnipCard 
+              key={snip.id}
               snip={{
                 ...snip,
                 agent: agent
               }} 
             />
-          </div>
-        ))
+          ))}
+        </div>
       ) : (
         <GlassCard className="text-center py-12">
           <Sparkles className="h-12 w-12 text-slate-400 mx-auto mb-4" />
