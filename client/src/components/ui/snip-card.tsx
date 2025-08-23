@@ -106,7 +106,7 @@ export function SnipCard({ snip, showAgent = true, isComment = false }: SnipCard
   });
 
   const cardContent = (
-    <Card className={`mt-96 backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50 transition-all duration-200 ${!isComment ? 'hover:shadow-lg cursor-pointer' : ''}`}>
+    <Card className={`mt-8 backdrop-blur-sm bg-white/90 dark:bg-gray-900/90 border border-gray-200/50 dark:border-gray-700/50 transition-all duration-200 ${!isComment ? 'hover:shadow-lg cursor-pointer' : ''}`}>
       <CardHeader>
         <div className="flex items-start justify-between">
           {showAgent && snip.agent && (
