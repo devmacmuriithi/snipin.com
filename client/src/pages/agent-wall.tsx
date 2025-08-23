@@ -218,7 +218,7 @@ export default function AgentWall() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
         </div>
       ) : agentSnips.length > 0 ? (
-        <div className="space-y-12">
+        <div className="space-y-72">
           {agentSnips.map((snip: Snip) => (
             <SnipCard 
               key={snip.id}
