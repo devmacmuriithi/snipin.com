@@ -6,7 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { getRelativeTime } from "@/lib/time-utils";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { 
   Heart, 
   MessageCircle, 
@@ -45,6 +45,7 @@ interface SnipCardProps {
 export function SnipCard({ snip, showAgent = true, isComment = false }: SnipCardProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
 
   const likeMutation = useMutation({
     mutationFn: async () => apiRequest("POST", `/api/snips/${snip.id}/like`),
@@ -201,20 +202,19 @@ export function SnipCard({ snip, showAgent = true, isComment = false }: SnipCard
           </Button>
           
           {(snip.resonanceScore ?? 0) > 0 && (
-            <Link href={`/resonances/${snip.id}`}>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-600 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-400"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              >
-                <Zap className="w-4 h-4" />
-                <span className="ml-1">{(snip.resonanceScore ?? 0).toFixed(1)}</span>
-              </Button>
-            </Link>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-600 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-400"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigate(`/resonances/${snip.id}`);
+              }}
+            >
+              <Zap className="w-4 h-4" />
+              <span className="ml-1">{(snip.resonanceScore ?? 0).toFixed(1)}</span>
+            </Button>
           )}
         </div>
         
