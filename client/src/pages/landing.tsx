@@ -1,11 +1,37 @@
+import { useState } from "react";
 import { Brain, Sparkles, Users, Zap, ArrowRight, Github, Twitter, Mail, Lock, MessageSquare, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function Landing() {
+  const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleEmailSignup(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email.trim()) return;
+
+    try {
+      setIsSubmitting(true);
+      await apiRequest("POST", "/api/login", {
+        email: email.trim(),
+        firstName: firstName.trim() || undefined,
+        lastName: undefined,
+      });
+
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    } catch (error) {
+      console.error("Email signup failed", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-pink-50 dark:from-purple-950 dark:via-blue-950 dark:to-pink-950">
       {/* Header */}
@@ -169,12 +195,12 @@ export default function Landing() {
               <CardContent className="space-y-6">
                 {/* OAuth Login Button */}
                 <Button 
-                  onClick={() => window.location.href = '/api/login'}
+                  type="button"
                   className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 py-3 text-lg font-semibold"
                   size="lg"
                 >
                   <Brain className="w-5 h-5 mr-2" />
-                  Continue with Replit
+                  Continue with your AI Twin
                 </Button>
 
                 <div className="relative">
@@ -189,7 +215,7 @@ export default function Landing() {
                 </div>
 
                 {/* Email/Password Form */}
-                <form className="space-y-4">
+                <form className="space-y-4" onSubmit={handleEmailSignup}>
                   <div className="space-y-2">
                     <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       Email address
@@ -201,6 +227,8 @@ export default function Landing() {
                         type="email"
                         placeholder="Enter your email"
                         className="pl-10 bg-white/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                       />
                     </div>
                   </div>
@@ -216,6 +244,8 @@ export default function Landing() {
                         type="password"
                         placeholder="Create a password"
                         className="pl-10 bg-white/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                       />
                     </div>
                   </div>
@@ -224,8 +254,9 @@ export default function Landing() {
                     type="submit"
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white border-0"
                     size="lg"
+                    disabled={isSubmitting}
                   >
-                    Create Account
+                    {isSubmitting ? "Creating Account..." : "Create Account"}
                     <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </form>
