@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./simpleAuth";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { conversations } from "@shared/schema";
@@ -73,13 +73,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       
       // Check if user has a personal assistant, if not create one
       const existingAssistant = await storage.getUserAssistant(userId);
       if (!existingAssistant) {
-        const userName = req.user.claims.first_name || req.user.claims.email?.split('@')[0] || 'User';
+        const userName = req.user.firstName || req.user.email?.split('@')[0] || 'User';
         await storage.createAgent({
           userId: userId,
           name: userName, // Use user's actual name as assistant name (digital twin)
@@ -103,7 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Agent routes
   app.post('/api/agents', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const agentData = insertAgentSchema.parse({ ...req.body, userId });
       const agent = await storage.createAgent(agentData);
       res.json(agent);
@@ -115,7 +115,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/agents', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const agents = await storage.getUserAgents(userId);
       res.json(agents);
     } catch (error) {
@@ -144,7 +144,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/agents/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const agent = await storage.getAgent(parseInt(req.params.id));
       if (!agent || agent.userId !== userId) {
         return res.status(404).json({ message: "Agent not found" });
@@ -158,7 +158,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/agents/:id/snips', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const agentId = parseInt(req.params.id);
       
       // Verify agent ownership
@@ -230,7 +230,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Whisper routes
   app.post('/api/whispers', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const whisperData = insertWhisperSchema.parse({ ...req.body, userId });
       const whisper = await storage.createWhisper(whisperData);
 
@@ -322,7 +322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/whispers', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const limit = parseInt(req.query.limit as string) || 50;
       const whispers = await storage.getUserWhispers(userId, limit);
       res.json(whispers);
@@ -335,7 +335,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get specific whisper
   app.get('/api/whispers/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const whisper = await storage.getWhisper(parseInt(req.params.id));
       if (!whisper) {
         return res.status(404).json({ message: 'Whisper not found' });
@@ -354,7 +354,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get snip generated from whisper
   app.get('/api/whispers/:id/snip', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const whisper = await storage.getWhisper(parseInt(req.params.id));
       if (!whisper) {
         return res.status(404).json({ message: 'Whisper not found' });
@@ -382,7 +382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Following system routes
   app.post('/api/assistants/:id/follow', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const followingId = parseInt(req.params.id);
       
       // Get user's own assistant
@@ -406,7 +406,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/assistants/:id/follow', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const followingId = parseInt(req.params.id);
       
       // Get user's own assistant
@@ -447,7 +447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/assistants/recommended', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const limit = parseInt(req.query.limit as string) || 10;
       const recommended = await storage.getRecommendedAssistants(userId, limit);
       res.json(recommended);
@@ -531,7 +531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all resonances for clustering analysis
   app.get('/api/resonances/all', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const resonances = await storage.getAllUserResonances(userId);
       res.json(resonances);
     } catch (error) {
@@ -543,7 +543,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mempod Knowledge routes
   app.get('/api/mempod/knowledge', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const knowledge = await storage.getMempodKnowledge(userId);
       res.json(knowledge);
     } catch (error) {
@@ -554,7 +554,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/mempod/knowledge', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const knowledge = await storage.createMempodKnowledge({
         ...req.body,
         userId
@@ -591,7 +591,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mempod Notes routes
   app.get('/api/mempod/notes', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const notes = await storage.getMempodNotes(userId);
       res.json(notes);
     } catch (error) {
@@ -602,7 +602,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/mempod/notes', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const note = await storage.createMempodNote({
         ...req.body,
         userId
@@ -639,7 +639,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mempod Goals routes
   app.get('/api/mempod/goals', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const goals = await storage.getMempodGoals(userId);
       res.json(goals);
     } catch (error) {
@@ -650,7 +650,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/mempod/goals', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const goal = await storage.createMempodGoal({
         ...req.body,
         userId
@@ -699,7 +699,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/snips/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const limit = parseInt(req.query.limit as string) || 20;
       const snips = await storage.getUserSnips(userId, limit);
       res.json(snips);
@@ -719,8 +719,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Track view if user is authenticated
-      if (req.user?.claims?.sub) {
-        await storage.addSnipView(req.user.claims.sub, snipId);
+      if (req.user?.id) {
+        await storage.addSnipView(req.user.id, snipId);
       }
       
       res.json(snip);
@@ -733,7 +733,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/snips/:id/like', isAuthenticated, async (req: any, res) => {
     try {
       const snipId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
 
       // Check if already liked
       const existingLike = await storage.getUserSnipInteraction(userId, snipId, 'like');
@@ -758,7 +758,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/snips/:id/comment', isAuthenticated, async (req: any, res) => {
     try {
       const snipId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { content } = req.body;
 
       if (!content || !content.trim()) {
@@ -789,7 +789,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/snips/:id/share', isAuthenticated, async (req: any, res) => {
     try {
       const snipId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
 
       await storage.addSnipShare(userId, snipId);
       await storage.updateSnipEngagement(snipId, 'shares', 1);
@@ -804,7 +804,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Conversation routes
   app.get('/api/conversations', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const conversations = await storage.getUserConversations(userId);
       res.json(conversations);
     } catch (error) {
@@ -816,7 +816,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create or get existing conversation
   app.post('/api/conversations', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { agentId } = req.body;
       
       if (!agentId) {
@@ -848,7 +848,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/conversations/:id/messages', isAuthenticated, async (req: any, res) => {
     try {
       const conversationId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { content, isFromUser } = req.body;
       
       const message = await storage.addMessage({
