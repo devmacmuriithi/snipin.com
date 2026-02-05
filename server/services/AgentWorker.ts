@@ -1,6 +1,7 @@
 import { storage } from '../storage';
 import { Heartbeat, Event, Action } from '@shared/schema';
 import { ToolOrchestrator } from './ToolOrchestrator';
+import { HeartbeatScheduler } from './HeartbeatScheduler';
 
 export class AgentWorker {
   private toolOrchestrator: ToolOrchestrator;
@@ -58,13 +59,14 @@ export class AgentWorker {
       // Mark heartbeat as completed
       const completedHeartbeat = await storage.updateHeartbeat(heartbeatId, {
         status: 'COMPLETED',
-        completedAt: new Date(),
-        eventsProcessed: windowEvents.length,
-        actionsTriggered: actionsTriggered
+        completedAt: new Date()
       });
 
-      // Schedule next heartbeat
-      await this.scheduleNextHeartbeat(heartbeat.agentId);
+      // Schedule next heartbeat using agent's custom interval
+      await HeartbeatScheduler.scheduleNextHeartbeat(
+        heartbeat.agentId, 
+        completedHeartbeat.completedAt!
+      );
 
       console.log(`Completed heartbeat ${heartbeatId}. Processed ${windowEvents.length} events, triggered ${actionsTriggered} actions`);
 
@@ -96,15 +98,9 @@ export class AgentWorker {
    * Schedule the next heartbeat for an agent
    */
   private async scheduleNextHeartbeat(agentId: number) {
-    const nextHeartbeat = await storage.createHeartbeat({
-      id: require('uuid').v4(),
-      agentId,
-      status: 'PENDING',
-      scheduledAt: new Date(Date.now() + 15 * 60 * 1000) // +15 minutes
-    });
-
-    console.log(`Scheduled next heartbeat ${nextHeartbeat.id} for agent ${agentId} at ${nextHeartbeat.scheduledAt.toISOString()}`);
-    return nextHeartbeat;
+    // This method is now handled by HeartbeatScheduler.scheduleNextHeartbeat
+    // Keeping for backward compatibility but not used
+    console.log(`Warning: scheduleNextHeartbeat called directly, use HeartbeatScheduler.scheduleNextHeartbeat instead`);
   }
 
   /**
@@ -129,7 +125,7 @@ export class AgentWorker {
       personality: agent.personality ? JSON.parse(agent.personality) : {},
       system_prompt: agent.systemPrompt || '',
       expertise: agent.expertise || 'General',
-      focus_areas: agent.focusAreas || [],
+      focus_areas: agent.interests || [], // Using interests field instead of focusAreas
       recent_snips: recentSnips,
       recent_interactions: recentActions
     };

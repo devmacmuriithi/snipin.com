@@ -75,12 +75,13 @@ export const assistants = pgTable("assistants", {
   contentGuidelines: text("content_guidelines"), // User-defined content restrictions
   safetySettings: text("safety_settings").array(), // Array of safety options
   
+  // Event System Configuration
+  heartbeatInterval: integer("heartbeat_interval").default(15), // Heartbeat interval in minutes (5-1440)
   // Legacy fields for backward compatibility
   expertise: varchar("expertise").default("Personal Assistant"), 
   personality: text("personality"), // JSON string of personality traits
   systemPrompt: text("system_prompt"), // AI behavior instructions
   avatar: varchar("avatar"), // Avatar identifier/color scheme
-  isActive: boolean("is_active").default(true),
   isPersonalAssistant: boolean("is_personal_assistant").default(false),
   performanceScore: real("performance_score").default(0),
   totalSnips: integer("total_snips").default(0),

@@ -1,6 +1,5 @@
 import { storage } from '../storage';
-import { Heartbeat, Event } from '@shared/schema';
-import { v4 as uuidv4 } from 'uuid';
+import { Heartbeat, Event, InsertHeartbeat, InsertEvent } from '@shared/schema';
 
 export class HeartbeatScheduler {
   private isRunning = false;
@@ -75,8 +74,7 @@ export class HeartbeatScheduler {
       });
 
       // Publish HEARTBEAT event
-      await storage.createEvent({
-        id: uuidv4(),
+      const eventData: InsertEvent = {
         agentId: heartbeat.agentId,
         eventType: 'HEARTBEAT',
         payload: { 
@@ -85,7 +83,8 @@ export class HeartbeatScheduler {
         },
         source: 'system',
         priority: 1 // High priority for heartbeat events
-      });
+      };
+      await storage.createEvent(eventData);
 
       // Trigger agent worker (this would be implemented separately)
       await this.triggerAgentWorker(heartbeat.id);
@@ -114,7 +113,7 @@ export class HeartbeatScheduler {
     const worker = new AgentWorker();
     
     // Process asynchronously
-    worker.processHeartbeat(heartbeatId).catch(error => {
+    worker.processHeartbeat(heartbeatId).catch((error: Error) => {
       console.error(`Agent worker failed for heartbeat ${heartbeatId}:`, error);
     });
   }
@@ -123,14 +122,47 @@ export class HeartbeatScheduler {
    * Create initial heartbeat for a new agent
    */
   static async createInitialHeartbeat(agentId: number): Promise<Heartbeat> {
-    const heartbeat = await storage.createHeartbeat({
-      id: uuidv4(),
+    const heartbeatData: InsertHeartbeat = {
       agentId,
       status: 'PENDING',
       scheduledAt: new Date() // Execute immediately
-    });
+    };
+    
+    const heartbeat = await storage.createHeartbeat(heartbeatData);
 
     console.log(`Created initial heartbeat ${heartbeat.id} for agent ${agentId}`);
+    return heartbeat;
+  }
+
+  /**
+   * Schedule the next heartbeat for an agent based on their custom interval
+   */
+  static async scheduleNextHeartbeat(agentId: number, previousHeartbeatCompletedAt: Date): Promise<Heartbeat> {
+    // Get the agent to find their custom heartbeat interval
+    const agent = await storage.getAgent(agentId);
+    if (!agent) {
+      throw new Error(`Agent ${agentId} not found`);
+    }
+
+    // Use agent's custom interval or default to 15 minutes
+    const intervalMinutes = agent.heartbeatInterval || 15;
+    
+    // Validate interval is within reasonable bounds (5 minutes to 24 hours)
+    const validInterval = Math.max(5, Math.min(1440, intervalMinutes));
+    
+    const nextScheduledAt = new Date(
+      previousHeartbeatCompletedAt.getTime() + validInterval * 60 * 1000
+    );
+
+    const heartbeatData: InsertHeartbeat = {
+      agentId,
+      status: 'PENDING',
+      scheduledAt: nextScheduledAt
+    };
+
+    const heartbeat = await storage.createHeartbeat(heartbeatData);
+
+    console.log(`Scheduled next heartbeat ${heartbeat.id} for agent ${agentId} in ${validInterval} minutes at ${nextScheduledAt.toISOString()}`);
     return heartbeat;
   }
 }

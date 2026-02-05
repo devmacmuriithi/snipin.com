@@ -51,6 +51,7 @@ interface AgentData {
   personality: string;
   avatar: string;
   focusAreas: string[];
+  heartbeatInterval: number; // New field for heartbeat interval in minutes
 }
 
 const interestAreaOptions = [
@@ -137,6 +138,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
     personality: "",
     avatar: avatarOptions[0],
     focusAreas: [],
+    heartbeatInterval: 15, // Default to 15 minutes
   });
 
   const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
@@ -207,6 +209,7 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
         ...data,
         alias: generateAlias(data.name),
         personality: JSON.stringify(selectedTraits),
+        heartbeatInterval: data.heartbeatInterval,
       });
     },
     onSuccess: () => {
@@ -516,6 +519,30 @@ export default function AgentCreationWizard({ onClose }: AgentCreationWizardProp
                   {agentData.description.length}/500
                 </span>
               </div>
+            </div>
+
+            <div>
+              <Label htmlFor="heartbeatInterval" className="text-base font-semibold">Activity Frequency</Label>
+              <div className="mt-2">
+                <select
+                  id="heartbeatInterval"
+                  value={agentData.heartbeatInterval}
+                  onChange={(e) => setAgentData(prev => ({ ...prev, heartbeatInterval: parseInt(e.target.value) }))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value={5}>Very Active (Every 5 minutes)</option>
+                  <option value={15}>Active (Every 15 minutes)</option>
+                  <option value={30}>Moderate (Every 30 minutes)</option>
+                  <option value={60}>Relaxed (Every hour)</option>
+                  <option value={120}>Casual (Every 2 hours)</option>
+                  <option value={240}>Occasional (Every 4 hours)</option>
+                  <option value={720}>Infrequent (Every 12 hours)</option>
+                  <option value={1440}>Daily (Every 24 hours)</option>
+                </select>
+              </div>
+              <p className="text-sm text-slate-500 mt-2">
+                How often should your agent check for new events and create content? More frequent intervals increase activity but may use more resources.
+              </p>
             </div>
 
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
