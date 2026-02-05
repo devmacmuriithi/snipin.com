@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./simpleAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { conversations } from "@shared/schema";
@@ -15,6 +15,8 @@ import {
   insertNotificationSchema,
 } from "@shared/schema";
 import { processSnipResonance, getSnipResonances, findResonancePathways } from "./lib/resonanceEngine";
+import { detectAndPublishMentions, getUserName } from "./services/MentionService";
+import { RssFeedScheduler } from "./services/RssFeedScheduler";
 
 // AI Content Generation Functions
 function generatePostContent(whisperContent: string, agent: any): string {
@@ -70,11 +72,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
-  // Auth routes
+  // Auth routes (handled by auth.ts setup)
+  // GET /api/auth/me - Get current user
+  // POST /api/auth/register - Register new user  
+  // POST /api/auth/login - Login user
+  // POST /api/auth/logout - Logout user
+
+  // Get current user with assistant creation
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
       
       // Check if user has a personal assistant, if not create one
       const existingAssistant = await storage.getUserAssistant(userId);
@@ -234,6 +246,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const whisperData = insertWhisperSchema.parse({ ...req.body, userId });
       const whisper = await storage.createWhisper(whisperData);
 
+      // Publish WHISPER_RECEIVED event for the agent
+      await storage.createEvent({
+        id: `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        agentId: whisper.agentId!,
+        eventType: 'WHISPER_RECEIVED',
+        payload: {
+          whisper_id: whisper.id,
+          user_id: userId,
+          content: whisper.content,
+          type: whisper.type
+        },
+        source: 'user_action',
+        priority: 2  // High priority
+      });
+
       // Process whisper based on type
       setTimeout(async () => {
         try {
@@ -280,6 +307,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               };
 
               const snip = await storage.createSnip(snipData);
+              
+              // Detect and publish mentions in the snip
+              await detectAndPublishMentions(
+                processedContent,
+                'snip',
+                snip.id,
+                whisper.agentId!
+              );
               
               // Process resonances for the new snip in the background
               processSnipResonance(snip.id).catch(error => {
@@ -747,6 +782,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Like the snip
         await storage.addSnipLike(userId, snipId);
         await storage.updateSnipEngagement(snipId, 'likes', 1);
+
+        // Get the snip to find the agent for event publishing
+        const snip = await storage.getSnip(snipId);
+        if (snip && snip.assistantId) {
+          // Publish SNIP_LIKED event for the agent
+          await storage.createEvent({
+            id: `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            agentId: snip.assistantId,
+            eventType: 'SNIP_LIKED',
+            payload: {
+              snip_id: snipId,
+              liker_id: userId,
+              liker_name: req.user.firstName || 'User',
+              liked_at: new Date()
+            },
+            source: 'user_action',
+            priority: 7
+          });
+        }
+
         res.json({ message: "Snip liked successfully", action: "liked" });
       }
     } catch (error) {
@@ -765,8 +820,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Comment content is required" });
       }
 
+      // Add the comment
       await storage.addSnipComment(userId, snipId, content.trim());
       await storage.updateSnipEngagement(snipId, 'comments', 1);
+
+      // Detect and publish mentions in the comment
+      await detectAndPublishMentions(
+        content.trim(),
+        'comment',
+        // Note: We'd need the actual comment ID here
+        Date.now(), // Temporary - would need actual comment ID
+        userId
+      );
+
+      // Get the snip to find the agent for event publishing
+      const snip = await storage.getSnip(snipId);
+      if (snip && snip.assistantId) {
+        // Publish COMMENT_RECEIVED event for the agent
+        await storage.createEvent({
+          id: `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          agentId: snip.assistantId,
+          eventType: 'COMMENT_RECEIVED',
+          payload: {
+            comment_id: Date.now(), // Would be actual comment ID
+            snip_id: snipId,
+            commenter_id: userId,
+            commenter_name: await getUserName(userId),
+            comment_content: content.trim(),
+            commented_at: new Date()
+          },
+          source: 'user_action',
+          priority: 4
+        });
+      }
 
       res.json({ message: "Comment added successfully" });
     } catch (error) {
@@ -793,6 +879,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       await storage.addSnipShare(userId, snipId);
       await storage.updateSnipEngagement(snipId, 'shares', 1);
+
+      // Get the snip to find the agent for event publishing
+      const snip = await storage.getSnip(snipId);
+      if (snip && snip.assistantId) {
+        // Publish SNIP_SHARED event for the agent
+        await storage.createEvent({
+          id: `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          agentId: snip.assistantId,
+          eventType: 'SNIP_SHARED',
+          payload: {
+            snip_id: snipId,
+            sharer_id: userId,
+            sharer_name: await getUserName(userId),
+            shared_at: new Date()
+          },
+          source: 'user_action',
+          priority: 6
+        });
+      }
 
       res.json({ message: "Snip shared successfully" });
     } catch (error) {
@@ -1517,6 +1622,206 @@ Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metad
     } catch (error) {
       console.error("Error fetching metric progress:", error);
       res.status(500).json({ message: "Failed to fetch metric progress" });
+    }
+  });
+
+  // Agent Event System API endpoints
+  app.get('/api/agents/:id/heartbeats', isAuthenticated, async (req: any, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const limit = parseInt(req.query.limit as string) || 10;
+      const heartbeats = await storage.getAgentHeartbeats(agentId, limit);
+      res.json(heartbeats);
+    } catch (error) {
+      console.error("Error fetching heartbeats:", error);
+      res.status(500).json({ message: "Failed to fetch heartbeats" });
+    }
+  });
+
+  app.get('/api/agents/:id/events', isAuthenticated, async (req: any, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const limit = parseInt(req.query.limit as string) || 50;
+      const eventType = req.query.event_type as string;
+      
+      let events;
+      if (eventType) {
+        // Filter by event type
+        const allEvents = await storage.getAgentEvents(agentId, limit * 2); // Get more to filter
+        events = allEvents.filter(e => e.eventType === eventType).slice(0, limit);
+      } else {
+        events = await storage.getAgentEvents(agentId, limit);
+      }
+      
+      res.json(events);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      res.status(500).json({ message: "Failed to fetch events" });
+    }
+  });
+
+  app.get('/api/agents/:id/actions', isAuthenticated, async (req: any, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const limit = parseInt(req.query.limit as string) || 20;
+      const actions = await storage.getAgentActions(agentId, limit);
+      
+      // Enrich actions with tool names
+      const enrichedActions = await Promise.all(
+        actions.map(async (action) => {
+          // In a real implementation, you'd join with tools table
+          // For now, we'll extract tool name from the response_meta or use a lookup
+          let toolName = 'Unknown';
+          if (action.responseMeta && typeof action.responseMeta === 'object') {
+            const meta = action.responseMeta as any;
+            toolName = meta.tool_name || 'Unknown';
+          }
+          
+          return {
+            ...action,
+            toolName
+          };
+        })
+      );
+      
+      res.json(enrichedActions);
+    } catch (error) {
+      console.error("Error fetching actions:", error);
+      res.status(500).json({ message: "Failed to fetch actions" });
+    }
+  });
+
+  app.get('/api/agents/:id/memories', isAuthenticated, async (req: any, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const memoryType = req.query.memory_type as string;
+      const memories = await storage.getAgentMemories(agentId, memoryType);
+      res.json(memories);
+    } catch (error) {
+      console.error("Error fetching memories:", error);
+      res.status(500).json({ message: "Failed to fetch memories" });
+    }
+  });
+
+  app.post('/api/agents/:id/trigger-heartbeat', isAuthenticated, async (req: any, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      
+      // Create immediate heartbeat
+      const heartbeat = await storage.createHeartbeat({
+        id: `hb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        agentId,
+        status: 'PENDING',
+        scheduledAt: new Date()
+      });
+      
+      res.json({ 
+        message: "Heartbeat triggered", 
+        heartbeatId: heartbeat.id,
+        scheduledAt: heartbeat.scheduledAt
+      });
+    } catch (error) {
+      console.error("Error triggering heartbeat:", error);
+      res.status(500).json({ message: "Failed to trigger heartbeat" });
+    }
+  });
+
+  // RSS Feed Management API endpoints
+  app.get('/api/agents/:id/rss-feeds', isAuthenticated, async (req: any, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const rssScheduler = RssFeedScheduler.getInstance();
+      const feeds = await rssScheduler.getAgentFeeds(agentId);
+      res.json(feeds);
+    } catch (error) {
+      console.error("Error fetching RSS feeds:", error);
+      res.status(500).json({ message: "Failed to fetch RSS feeds" });
+    }
+  });
+
+  app.post('/api/agents/:id/rss-feeds', isAuthenticated, async (req: any, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const { feeds } = req.body;
+      const rssScheduler = RssFeedScheduler.getInstance();
+      await rssScheduler.configureAgentFeeds(agentId, feeds);
+      res.json({ message: "RSS feeds configured successfully" });
+    } catch (error) {
+      console.error("Error configuring RSS feeds:", error);
+      res.status(500).json({ message: "Failed to configure RSS feeds" });
+    }
+  });
+
+  app.post('/api/agents/:id/rss-feeds/add', isAuthenticated, async (req: any, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const feed = req.body;
+      const rssScheduler = RssFeedScheduler.getInstance();
+      await rssScheduler.addFeedToAgent(agentId, feed);
+      res.json({ message: "RSS feed added successfully" });
+    } catch (error) {
+      console.error("Error adding RSS feed:", error);
+      res.status(500).json({ message: "Failed to add RSS feed" });
+    }
+  });
+
+  app.delete('/api/agents/:id/rss-feeds/:feedId', isAuthenticated, async (req: any, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const { feedId } = req.params;
+      const rssScheduler = RssFeedScheduler.getInstance();
+      await rssScheduler.removeFeedFromAgent(agentId, feedId);
+      res.json({ message: "RSS feed removed successfully" });
+    } catch (error) {
+      console.error("Error removing RSS feed:", error);
+      res.status(500).json({ message: "Failed to remove RSS feed" });
+    }
+  });
+
+  app.get('/api/agents/:id/rss-stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const rssScheduler = RssFeedScheduler.getInstance();
+      const stats = await rssScheduler.getFeedStats(agentId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching RSS stats:", error);
+      res.status(500).json({ message: "Failed to fetch RSS stats" });
+    }
+  });
+
+  app.post('/api/agents/:id/trigger-rss-check', isAuthenticated, async (req: any, res) => {
+    try {
+      const agentId = parseInt(req.params.id);
+      const agent = await storage.getAgent(agentId);
+      
+      if (!agent) {
+        return res.status(404).json({ message: "Agent not found" });
+      }
+
+      // Publish RSS_FEED_CHECK event immediately
+      await storage.createEvent({
+        agentId: agentId,
+        eventType: 'RSS_FEED_CHECK',
+        payload: {
+          agent_id: agentId,
+          agent_name: agent.name,
+          expertise: agent.expertise,
+          triggered_manually: true,
+          triggered_at: new Date()
+        },
+        source: 'user_action',
+        priority: 2  // High priority for manual triggers
+      });
+
+      res.json({ 
+        message: "RSS check triggered", 
+        agent_id: agentId,
+        triggered_at: new Date()
+      });
+    } catch (error) {
+      console.error("Error triggering RSS check:", error);
+      res.status(500).json({ message: "Failed to trigger RSS check" });
     }
   });
 

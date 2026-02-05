@@ -10,13 +10,18 @@ import {
   interactions,
   notifications,
   agentConnections,
-  mempodItems,
-  goalMetrics,
-  goalProgress,
   snipLikes,
   snipShares,
   snipComments,
   snipViews,
+  resonances,
+  // Event System imports
+  heartbeats,
+  events,
+  tools,
+  toolSubscriptions,
+  actions,
+  agentMemories,
   type User,
   type UpsertUser,
   type Agent,
@@ -35,21 +40,19 @@ import {
   type InsertNotification,
   type AgentConnection,
   type InsertAgentConnection,
-  type MemPodItem,
-  type InsertMemPodItem,
-  type GoalMetric,
-  type InsertGoalMetric,
-  type GoalProgress,
-  type InsertGoalProgress,
-  mempodKnowledge,
-  type MempodKnowledge,
-  type InsertMempodKnowledge,
-  mempodNotes,
-  type MempodNote,
-  type InsertMempodNote,
-  mempodGoals,
-  type MempodGoal,
-  type InsertMempodGoal,
+  // Event System types
+  type Heartbeat,
+  type InsertHeartbeat,
+  type Event,
+  type InsertEvent,
+  type Tool,
+  type InsertTool,
+  type ToolSubscription,
+  type InsertToolSubscription,
+  type Action,
+  type InsertAction,
+  type AgentMemory,
+  type InsertAgentMemory,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, sql, count, isNull, ilike } from "drizzle-orm";
@@ -103,6 +106,10 @@ export interface IStorage {
   addSnipComment(userId: string, snipId: number, content: string): Promise<void>;
   addSnipView(userId: string, snipId: number): Promise<void>;
   
+  // Agent operations (needed for event system)
+  getAgents(): Promise<Agent[]>;
+  getHeartbeat(id: string): Promise<Heartbeat | null>;
+  
   // Conversation operations
   getOrCreateConversation(userId: string, agentId: number): Promise<Conversation>;
   getUserConversations(userId: string): Promise<Conversation[]>;
@@ -128,45 +135,31 @@ export interface IStorage {
   getTrendingTopics(limit?: number): Promise<any[]>;
   getUserAnalytics(userId: string): Promise<any>;
   
-  // MemPod operations
-  createMemPodItem(item: InsertMemPodItem): Promise<MemPodItem>;
-  getUserMemPodItems(userId: string, type?: string): Promise<MemPodItem[]>;
-  getMemPodItem(id: number): Promise<MemPodItem | undefined>;
-  updateMemPodItem(id: number, updates: Partial<InsertMemPodItem>): Promise<MemPodItem>;
-  deleteMemPodItem(id: number): Promise<void>;
+  // Event System operations
+  createHeartbeat(heartbeat: InsertHeartbeat): Promise<Heartbeat>;
+  getPendingHeartbeats(): Promise<Heartbeat[]>;
+  updateHeartbeat(id: string, updates: Partial<InsertHeartbeat>): Promise<Heartbeat>;
+  getAgentHeartbeats(agentId: number, limit?: number): Promise<Heartbeat[]>;
   
-  // Goal metrics operations
-  createGoalMetric(metric: InsertGoalMetric): Promise<GoalMetric>;
-  getGoalMetrics(goalId: number): Promise<GoalMetric[]>;
-  updateGoalMetric(id: number, updates: Partial<InsertGoalMetric>): Promise<GoalMetric>;
-  deleteGoalMetric(id: number): Promise<void>;
+  createEvent(event: InsertEvent): Promise<Event>;
+  getEventsInTimeWindow(agentId: number, start: Date, end: Date): Promise<Event[]>;
+  getAgentEvents(agentId: number, limit?: number): Promise<Event[]>;
   
-  // Goal progress operations
-  addGoalProgress(progress: InsertGoalProgress): Promise<GoalProgress>;
-  getMetricProgress(metricId: number): Promise<GoalProgress[]>;
-  updateGoalOverallProgress(goalId: number): Promise<void>;
+  createTool(tool: InsertTool): Promise<Tool>;
+  getActiveTools(): Promise<Tool[]>;
+  getToolSubscriptions(eventType: string): Promise<any[]>;
+  
+  createAction(action: InsertAction): Promise<Action>;
+  updateAction(id: string, updates: Partial<InsertAction>): Promise<Action>;
+  getAgentActions(agentId: number, limit?: number): Promise<Action[]>;
+  
+  createAgentMemory(memory: InsertAgentMemory): Promise<AgentMemory>;
+  getAgentMemories(agentId: number, memoryType?: string): Promise<AgentMemory[]>;
+  updateAgentMemory(id: string, updates: Partial<InsertAgentMemory>): Promise<AgentMemory>;
   
   // Search operations
   searchSnips(query: string): Promise<any[]>;
   searchWhispers(query: string): Promise<any[]>;
-
-  // Mempod Knowledge operations
-  getMempodKnowledge(userId: string): Promise<MempodKnowledge[]>;
-  createMempodKnowledge(knowledge: InsertMempodKnowledge): Promise<MempodKnowledge>;
-  updateMempodKnowledge(id: number, updates: Partial<InsertMempodKnowledge>): Promise<MempodKnowledge>;
-  deleteMempodKnowledge(id: number): Promise<void>;
-
-  // Mempod Notes operations
-  getMempodNotes(userId: string): Promise<MempodNote[]>;
-  createMempodNote(note: InsertMempodNote): Promise<MempodNote>;
-  updateMempodNote(id: number, updates: Partial<InsertMempodNote>): Promise<MempodNote>;
-  deleteMempodNote(id: number): Promise<void>;
-
-  // Mempod Goals operations
-  getMempodGoals(userId: string): Promise<MempodGoal[]>;
-  createMempodGoal(goal: InsertMempodGoal): Promise<MempodGoal>;
-  updateMempodGoal(id: number, updates: Partial<InsertMempodGoal>): Promise<MempodGoal>;
-  deleteMempodGoal(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -495,7 +488,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(snips.id, id));
   }
 
-  async getSnipWithAssistant(id: number): Promise<any> {
+  async getSnipWithAgent(id: number): Promise<any> {
     const [result] = await db
       .select({
         id: snips.id,
@@ -918,123 +911,143 @@ export class DatabaseStorage implements IStorage {
     return userStats;
   }
 
-  // MemPod operations
-  async createMemPodItem(item: InsertMemPodItem): Promise<MemPodItem> {
-    const [newItem] = await db.insert(mempodItems).values(item).returning();
-    return newItem;
+  // Event System operations
+  async createHeartbeat(heartbeat: InsertHeartbeat): Promise<Heartbeat> {
+    const [newHeartbeat] = await db.insert(heartbeats).values(heartbeat).returning();
+    return newHeartbeat;
   }
 
-  async getUserMemPodItems(userId: string, type?: string): Promise<MemPodItem[]> {
-    if (type) {
+  async getPendingHeartbeats(): Promise<Heartbeat[]> {
+    return await db
+      .select()
+      .from(heartbeats)
+      .where(and(eq(heartbeats.status, 'PENDING'), lte(heartbeats.scheduledAt, new Date())))
+      .orderBy(heartbeats.scheduledAt);
+  }
+
+  async updateHeartbeat(id: string, updates: Partial<InsertHeartbeat>): Promise<Heartbeat> {
+    const [updated] = await db
+      .update(heartbeats)
+      .set(updates)
+      .where(eq(heartbeats.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getAgentHeartbeats(agentId: number, limit: number = 50): Promise<Heartbeat[]> {
+    return await db
+      .select()
+      .from(heartbeats)
+      .where(eq(heartbeats.agentId, agentId))
+      .orderBy(desc(heartbeats.createdAt))
+      .limit(limit);
+  }
+
+  async createEvent(event: InsertEvent): Promise<Event> {
+    const [newEvent] = await db.insert(events).values(event).returning();
+    return newEvent;
+  }
+
+  async getEventsInTimeWindow(agentId: number, start: Date, end: Date): Promise<Event[]> {
+    return await db
+      .select()
+      .from(events)
+      .where(and(
+        eq(events.agentId, agentId),
+        gt(events.createdAt, start),
+        lte(events.createdAt, end)
+      ))
+      .orderBy(events.createdAt);
+  }
+
+  async getAgentEvents(agentId: number, limit: number = 100): Promise<Event[]> {
+    return await db
+      .select()
+      .from(events)
+      .where(eq(events.agentId, agentId))
+      .orderBy(desc(events.createdAt))
+      .limit(limit);
+  }
+
+  async createTool(tool: InsertTool): Promise<Tool> {
+    const [newTool] = await db.insert(tools).values(tool).returning();
+    return newTool;
+  }
+
+  async getActiveTools(): Promise<Tool[]> {
+    return await db
+      .select()
+      .from(tools)
+      .where(eq(tools.isActive, true))
+      .orderBy(tools.name);
+  }
+
+  async getToolSubscriptions(eventType: string): Promise<any[]> {
+    return await db
+      .select({
+        tool: tools,
+        subscription: toolSubscriptions
+      })
+      .from(toolSubscriptions)
+      .innerJoin(tools, eq(tools.id, toolSubscriptions.toolId))
+      .where(and(
+        eq(toolSubscriptions.eventType, eventType),
+        eq(toolSubscriptions.isActive, true),
+        eq(tools.isActive, true)
+      ))
+      .orderBy(toolSubscriptions.executionOrder);
+  }
+
+  async createAction(action: InsertAction): Promise<Action> {
+    const [newAction] = await db.insert(actions).values(action).returning();
+    return newAction;
+  }
+
+  async updateAction(id: string, updates: Partial<InsertAction>): Promise<Action> {
+    const [updated] = await db
+      .update(actions)
+      .set(updates)
+      .where(eq(actions.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getAgentActions(agentId: number, limit: number = 100): Promise<Action[]> {
+    return await db
+      .select()
+      .from(actions)
+      .where(eq(actions.agentId, agentId))
+      .orderBy(desc(actions.createdAt))
+      .limit(limit);
+  }
+
+  async createAgentMemory(memory: InsertAgentMemory): Promise<AgentMemory> {
+    const [newMemory] = await db.insert(agentMemories).values(memory).returning();
+    return newMemory;
+  }
+
+  async getAgentMemories(agentId: number, memoryType?: string): Promise<AgentMemory[]> {
+    if (memoryType) {
       return await db
         .select()
-        .from(mempodItems)
-        .where(and(eq(mempodItems.userId, userId), eq(mempodItems.type, type)))
-        .orderBy(desc(mempodItems.createdAt));
+        .from(agentMemories)
+        .where(and(eq(agentMemories.agentId, agentId), eq(agentMemories.memoryType, memoryType)))
+        .orderBy(desc(agentMemories.relevanceScore));
     }
     
     return await db
       .select()
-      .from(mempodItems)
-      .where(eq(mempodItems.userId, userId))
-      .orderBy(desc(mempodItems.createdAt));
+      .from(agentMemories)
+      .where(eq(agentMemories.agentId, agentId))
+      .orderBy(desc(agentMemories.relevanceScore));
   }
 
-  async getMemPodItem(id: number): Promise<MemPodItem | undefined> {
-    const [item] = await db.select().from(mempodItems).where(eq(mempodItems.id, id));
-    return item;
-  }
-
-  async updateMemPodItem(id: number, updates: Partial<InsertMemPodItem>): Promise<MemPodItem> {
-    const [updatedItem] = await db
-      .update(mempodItems)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(mempodItems.id, id))
+  async updateAgentMemory(id: string, updates: Partial<InsertAgentMemory>): Promise<AgentMemory> {
+    const [updated] = await db
+      .update(agentMemories)
+      .set({ ...updates, updatedAt: new Date(), lastAccessedAt: new Date() })
       .returning();
-    return updatedItem;
-  }
-
-  async deleteMemPodItem(id: number): Promise<void> {
-    await db.delete(mempodItems).where(eq(mempodItems.id, id));
-  }
-
-  // Goal metrics operations
-  async createGoalMetric(metric: InsertGoalMetric): Promise<GoalMetric> {
-    const [newMetric] = await db.insert(goalMetrics).values(metric).returning();
-    return newMetric;
-  }
-
-  async getGoalMetrics(goalId: number): Promise<GoalMetric[]> {
-    return await db
-      .select()
-      .from(goalMetrics)
-      .where(eq(goalMetrics.goalId, goalId))
-      .orderBy(goalMetrics.createdAt);
-  }
-
-  async updateGoalMetric(id: number, updates: Partial<InsertGoalMetric>): Promise<GoalMetric> {
-    const [updatedMetric] = await db
-      .update(goalMetrics)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(goalMetrics.id, id))
-      .returning();
-    return updatedMetric;
-  }
-
-  async deleteGoalMetric(id: number): Promise<void> {
-    await db.delete(goalMetrics).where(eq(goalMetrics.id, id));
-  }
-
-  // Goal progress operations
-  async addGoalProgress(progress: InsertGoalProgress): Promise<GoalProgress> {
-    const [newProgress] = await db.insert(goalProgress).values(progress).returning();
-    
-    // Update the metric's current value
-    await db
-      .update(goalMetrics)
-      .set({ currentValue: progress.value, updatedAt: new Date() })
-      .where(eq(goalMetrics.id, progress.metricId));
-    
-    // Update overall goal progress
-    const metric = await db.select().from(goalMetrics).where(eq(goalMetrics.id, progress.metricId)).limit(1);
-    if (metric[0]) {
-      await this.updateGoalOverallProgress(metric[0].goalId);
-    }
-    
-    return newProgress;
-  }
-
-  async getMetricProgress(metricId: number): Promise<GoalProgress[]> {
-    return await db
-      .select()
-      .from(goalProgress)
-      .where(eq(goalProgress.metricId, metricId))
-      .orderBy(desc(goalProgress.recordedAt));
-  }
-
-  async updateGoalOverallProgress(goalId: number): Promise<void> {
-    // Get all metrics for this goal
-    const metrics = await db
-      .select()
-      .from(goalMetrics)
-      .where(eq(goalMetrics.goalId, goalId));
-    
-    if (metrics.length === 0) return;
-    
-    // Calculate overall progress as average of all metric progress percentages
-    let totalProgress = 0;
-    for (const metric of metrics) {
-      const progressPercentage = Math.min(100, ((metric.currentValue || 0) / metric.targetValue) * 100);
-      totalProgress += progressPercentage;
-    }
-    
-    const overallProgress = Math.round(totalProgress / metrics.length);
-    
-    // Update the goal's progress
-    await db
-      .update(mempodItems)
-      .set({ progress: overallProgress, updatedAt: new Date() })
-      .where(eq(mempodItems.id, goalId));
+    return updated;
   }
 
   // Search operations
@@ -1084,94 +1097,14 @@ export class DatabaseStorage implements IStorage {
     return results;
   }
 
-  // Mempod Knowledge operations
-  async getMempodKnowledge(userId: string): Promise<MempodKnowledge[]> {
-    return await db
-      .select()
-      .from(mempodKnowledge)
-      .where(eq(mempodKnowledge.userId, userId))
-      .orderBy(desc(mempodKnowledge.createdAt));
+  // Agent operations (needed for event system)
+  async getAgents(): Promise<Agent[]> {
+    return await db.select().from(agents).where(eq(agents.isActive, true));
   }
 
-  async createMempodKnowledge(knowledge: InsertMempodKnowledge): Promise<MempodKnowledge> {
-    const [newKnowledge] = await db
-      .insert(mempodKnowledge)
-      .values({ ...knowledge, createdAt: new Date(), updatedAt: new Date() })
-      .returning();
-    return newKnowledge;
-  }
-
-  async updateMempodKnowledge(id: number, updates: Partial<InsertMempodKnowledge>): Promise<MempodKnowledge> {
-    const [updated] = await db
-      .update(mempodKnowledge)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(mempodKnowledge.id, id))
-      .returning();
-    return updated;
-  }
-
-  async deleteMempodKnowledge(id: number): Promise<void> {
-    await db.delete(mempodKnowledge).where(eq(mempodKnowledge.id, id));
-  }
-
-  // Mempod Notes operations
-  async getMempodNotes(userId: string): Promise<MempodNote[]> {
-    return await db
-      .select()
-      .from(mempodNotes)
-      .where(eq(mempodNotes.userId, userId))
-      .orderBy(desc(mempodNotes.isPinned), desc(mempodNotes.createdAt));
-  }
-
-  async createMempodNote(note: InsertMempodNote): Promise<MempodNote> {
-    const [newNote] = await db
-      .insert(mempodNotes)
-      .values({ ...note, createdAt: new Date(), updatedAt: new Date() })
-      .returning();
-    return newNote;
-  }
-
-  async updateMempodNote(id: number, updates: Partial<InsertMempodNote>): Promise<MempodNote> {
-    const [updated] = await db
-      .update(mempodNotes)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(mempodNotes.id, id))
-      .returning();
-    return updated;
-  }
-
-  async deleteMempodNote(id: number): Promise<void> {
-    await db.delete(mempodNotes).where(eq(mempodNotes.id, id));
-  }
-
-  // Mempod Goals operations
-  async getMempodGoals(userId: string): Promise<MempodGoal[]> {
-    return await db
-      .select()
-      .from(mempodGoals)
-      .where(eq(mempodGoals.userId, userId))
-      .orderBy(desc(mempodGoals.createdAt));
-  }
-
-  async createMempodGoal(goal: InsertMempodGoal): Promise<MempodGoal> {
-    const [newGoal] = await db
-      .insert(mempodGoals)
-      .values({ ...goal, createdAt: new Date(), updatedAt: new Date() })
-      .returning();
-    return newGoal;
-  }
-
-  async updateMempodGoal(id: number, updates: Partial<InsertMempodGoal>): Promise<MempodGoal> {
-    const [updated] = await db
-      .update(mempodGoals)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(mempodGoals.id, id))
-      .returning();
-    return updated;
-  }
-
-  async deleteMempodGoal(id: number): Promise<void> {
-    await db.delete(mempodGoals).where(eq(mempodGoals.id, id));
+  async getHeartbeat(id: string): Promise<Heartbeat | null> {
+    const [heartbeat] = await db.select().from(heartbeats).where(eq(heartbeats.id, id));
+    return heartbeat || null;
   }
 }
 

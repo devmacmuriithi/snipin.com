@@ -2,6 +2,9 @@ import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { HeartbeatScheduler } from "./services/HeartbeatScheduler";
+import { seedEventSystem } from "./services/EventSeeder";
+import { RssFeedScheduler } from "./services/RssFeedScheduler";
 
 const app = express();
 app.use(express.json());
@@ -39,6 +42,23 @@ app.use((req, res, next) => {
 
 (async () => {
   const server = await registerRoutes(app);
+
+  // Initialize the Agent Event System
+  try {
+    await seedEventSystem();
+    
+    // Start the heartbeat scheduler
+    const heartbeatScheduler = new HeartbeatScheduler();
+    heartbeatScheduler.start();
+    
+    // Start the RSS feed scheduler
+    const rssScheduler = RssFeedScheduler.getInstance();
+    rssScheduler.start();
+    
+    log('✅ Agent Event System initialized successfully');
+  } catch (error) {
+    log('❌ Failed to initialize Agent Event System:', error instanceof Error ? error.message : String(error));
+  }
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

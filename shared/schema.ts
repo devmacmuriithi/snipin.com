@@ -28,10 +28,11 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table (mandatory for Replit Auth)
+// User storage table for email/password authentication
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
-  email: varchar("email").unique(),
+  email: varchar("email").unique().notNull(),
+  password: varchar("password").notNull(), // Hashed password
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
@@ -249,40 +250,114 @@ export const resonances = pgTable("resonances", {
   unique().on(table.snipId, table.resonatingSnipId), // Prevent duplicate resonances
 ]);
 
-// MemPod items for personal intelligence management
-export const mempodItems = pgTable("mempod_items", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  type: varchar("type").notNull(), // 'capture', 'task', 'note', 'goal', 'knowledge'
-  title: varchar("title").notNull(),
-  content: text("content").notNull(),
-  status: varchar("status"), // 'pending', 'completed', etc.
-  priority: varchar("priority"), // 'high', 'medium', 'low'
-  progress: integer("progress").default(0), // 0-100 for goals
-  tags: text("tags").array(), // Array of tags
-  metadata: jsonb("metadata"), // Additional structured data
+// Agent Event System Tables
+
+// 1. heartbeats table - core of the system
+export const heartbeats = pgTable("heartbeats", {
+  id: varchar("id").primaryKey().notNull(),
+  agentId: integer("agent_id").notNull().references(() => agents.id, { onDelete: "cascade" }),
+  status: varchar("status").notNull().default("PENDING"), // PENDING, EXECUTING, COMPLETED, FAILED
+  scheduledAt: timestamp("scheduled_at").notNull(),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  eventsProcessed: integer("events_processed").default(0),
+  actionsTriggered: integer("actions_triggered").default(0),
+  errorMessage: text("error_message"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_heartbeats_agent_scheduled").on(table.agentId, table.scheduledAt),
+  index("idx_heartbeats_status").on(table.status),
+  index("idx_heartbeats_agent_status").on(table.agentId, table.status),
+]);
+
+// 2. events table - immutable event log
+export const events = pgTable("events", {
+  id: varchar("id").primaryKey().notNull(),
+  agentId: integer("agent_id").references(() => agents.id, { onDelete: "cascade" }),
+  eventType: varchar("event_type").notNull(),
+  payload: jsonb("payload").notNull(),
+  source: varchar("source"), // 'system', 'user_action', 'tool:ToolName'
+  priority: integer("priority").default(5), // 1=highest, 10=lowest
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_events_agent_created").on(table.agentId, table.createdAt),
+  index("idx_events_type").on(table.eventType),
+  index("idx_events_created").on(table.createdAt),
+  index("idx_events_agent_type_created").on(table.agentId, table.eventType, table.createdAt),
+]);
+
+// 3. tools table - registry of agent capabilities
+export const tools = pgTable("tools", {
+  id: varchar("id").primaryKey().notNull(),
+  name: varchar("name").notNull().unique(),
+  description: text("description"),
+  handlerClass: varchar("handler_class").notNull(),
+  config: jsonb("config"),
+  isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_tools_name").on(table.name),
+  index("idx_tools_active").on(table.isActive),
+]);
 
-export const goalMetrics = pgTable("goal_metrics", {
-  id: serial("id").primaryKey(),
-  goalId: integer("goal_id").notNull().references(() => mempodItems.id, { onDelete: "cascade" }),
-  name: varchar("name").notNull(),
-  targetValue: integer("target_value").notNull(),
-  currentValue: integer("current_value").default(0),
-  unit: varchar("unit").notNull(), // 'days', 'hours', 'count', 'percentage', etc.
+// 4. tool_subscriptions table - event-to-tool mapping
+export const toolSubscriptions = pgTable("tool_subscriptions", {
+  id: varchar("id").primaryKey().notNull(),
+  toolId: varchar("tool_id").notNull().references(() => tools.id, { onDelete: "cascade" }),
+  eventType: varchar("event_type").notNull(),
+  filterConfig: jsonb("filter_config"),
+  executionOrder: integer("execution_order").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  unique().on(table.toolId, table.eventType),
+  index("idx_subscriptions_event_type").on(table.eventType),
+  index("idx_subscriptions_tool").on(table.toolId),
+  index("idx_subscriptions_active").on(table.isActive),
+]);
+
+// 5. actions table - execution log
+export const actions = pgTable("actions", {
+  id: varchar("id").primaryKey().notNull(),
+  agentId: integer("agent_id").notNull().references(() => agents.id, { onDelete: "cascade" }),
+  toolId: varchar("tool_id").notNull().references(() => tools.id, { onDelete: "restrict" }),
+  heartbeatId: varchar("heartbeat_id").notNull().references(() => heartbeats.id, { onDelete: "cascade" }),
+  eventId: varchar("event_id").notNull().references(() => events.id, { onDelete: "cascade" }),
+  parentActionId: varchar("parent_action_id").references(() => actions.id, { onDelete: "set null" }),
+  status: varchar("status").notNull().default("PENDING"), // PENDING, RUNNING, COMPLETED, FAILED
+  requestMeta: jsonb("request_meta").notNull(),
+  responseMeta: jsonb("response_meta"),
+  errorMessage: text("error_message"),
+  executionTimeMs: integer("execution_time_ms"),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_actions_agent_heartbeat").on(table.agentId, table.heartbeatId),
+  index("idx_actions_status").on(table.status),
+  index("idx_actions_tool").on(table.toolId),
+  index("idx_actions_parent").on(table.parentActionId),
+  index("idx_actions_event").on(table.eventId),
+]);
+
+// 6. agent_memories table - persistent agent knowledge
+export const agentMemories = pgTable("agent_memories", {
+  id: varchar("id").primaryKey().notNull(),
+  agentId: integer("agent_id").notNull().references(() => agents.id, { onDelete: "cascade" }),
+  memoryType: varchar("memory_type").notNull(),
+  content: jsonb("content").notNull(),
+  relevanceScore: real("relevance_score").default(1.0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+  lastAccessedAt: timestamp("last_accessed_at"),
+}, (table) => [
+  index("idx_memories_agent_type").on(table.agentId, table.memoryType),
+  index("idx_memories_relevance").on(table.agentId, table.relevanceScore.desc()),
+]);
 
-export const goalProgress = pgTable("goal_progress", {
-  id: serial("id").primaryKey(),
-  metricId: integer("metric_id").notNull().references(() => goalMetrics.id, { onDelete: "cascade" }),
-  value: integer("value").notNull(),
-  note: text("note"),
-  recordedAt: timestamp("recorded_at").defaultNow(),
-});
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
@@ -292,6 +367,10 @@ export const usersRelations = relations(users, ({ many }) => ({
   conversations: many(conversations),
   interactions: many(interactions),
   notifications: many(notifications),
+  heartbeats: many(heartbeats),
+  events: many(events),
+  actions: many(actions),
+  agentMemories: many(agentMemories),
 }));
 
 export const agentsRelations = relations(agents, ({ one, many }) => ({
@@ -301,6 +380,10 @@ export const agentsRelations = relations(agents, ({ one, many }) => ({
   conversations: many(conversations),
   fromConnections: many(agentConnections, { relationName: "fromAgent" }),
   toConnections: many(agentConnections, { relationName: "toAgent" }),
+  heartbeats: many(heartbeats),
+  events: many(events),
+  actions: many(actions),
+  agentMemories: many(agentMemories),
 }));
 
 export const whispersRelations = relations(whispers, ({ one, many }) => ({
@@ -347,207 +430,41 @@ export const resonancesRelations = relations(resonances, ({ one }) => ({
   resonatingSnip: one(snips, { fields: [resonances.resonatingSnipId], references: [snips.id], relationName: "resonatingSnipResonances" }),
 }));
 
-// Enhanced Mempod Tables for Second Brain PARA Method
-
-// Quick Capture - Inbox for rapid note-taking
-export const mempodCapture = pgTable("mempod_capture", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  content: text("content").notNull(),
-  captureType: varchar("capture_type").default("note"), // "note", "idea", "task", "quote", "question"
-  processed: boolean("processed").default(false),
-  processedInto: varchar("processed_into"), // "projects", "areas", "resources", "archives"
-  processedItemId: integer("processed_item_id"),
-  source: varchar("source"),
-  urgency: varchar("urgency").default("normal"), // "low", "normal", "high"
-  tags: json("tags").$type<string[]>().default([]),
-  createdAt: timestamp("created_at").defaultNow(),
-  processedAt: timestamp("processed_at"),
-});
-
-// Projects - Things with outcomes and deadlines
-export const mempodProjects = pgTable("mempod_projects", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  title: varchar("title").notNull(),
-  description: text("description"),
-  outcome: text("outcome"), // Specific outcome or deliverable
-  deadline: timestamp("deadline"),
-  status: varchar("status").default("active"), // "active", "on_hold", "completed", "cancelled"
-  priority: varchar("priority").default("medium"),
-  progress: integer("progress").default(0),
-  nextActions: json("next_actions").$type<string[]>().default([]),
-  resources: json("resources").$type<number[]>().default([]), // Links to resource IDs
-  tags: json("tags").$type<string[]>().default([]),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Areas - Ongoing responsibilities and standards to maintain
-export const mempodAreas = pgTable("mempod_areas", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  title: varchar("title").notNull(),
-  description: text("description"),
-  standard: text("standard"), // What does success look like?
-  reviewFrequency: varchar("review_frequency").default("monthly"),
-  lastReview: timestamp("last_review"),
-  nextReview: timestamp("next_review"),
-  currentFocus: text("current_focus"),
-  metrics: json("metrics").$type<string[]>().default([]),
-  resources: json("resources").$type<number[]>().default([]),
-  tags: json("tags").$type<string[]>().default([]),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Resources - Topics of ongoing interest (enhanced knowledge base)
-export const mempodResources = pgTable("mempod_resources", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  title: varchar("title").notNull(),
-  content: text("content").notNull(),
-  resourceType: varchar("resource_type"), // "article", "book", "video", "podcast", "course", "tool"
-  source: varchar("source"),
-  sourceUrl: varchar("source_url"),
-  author: varchar("author"),
-  summary: text("summary"),
-  keyTakeaways: json("key_takeaways").$type<string[]>().default([]),
-  actionability: varchar("actionability").default("reference"), // "actionable", "reference"
-  connectedItems: json("connected_items").$type<number[]>().default([]),
-  lastAccessed: timestamp("last_accessed").defaultNow(),
-  tags: json("tags").$type<string[]>().default([]),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Archives - Inactive items from other categories
-export const mempodArchives = pgTable("mempod_archives", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  originalType: varchar("original_type").notNull(), // "project", "area", "resource"
-  originalId: integer("original_id").notNull(),
-  title: varchar("title").notNull(),
-  content: text("content"),
-  archiveReason: text("archive_reason"),
-  originalData: json("original_data"),
-  tags: json("tags").$type<string[]>().default([]),
-  archivedAt: timestamp("archived_at").defaultNow(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-// Legacy tables (keeping for compatibility)
-export const mempodKnowledge = pgTable("mempod_knowledge", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  title: varchar("title").notNull(),
-  content: text("content").notNull(),
-  category: varchar("category"),
-  tags: json("tags").$type<string[]>().default([]),
-  source: varchar("source"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-export const mempodNotes = pgTable("mempod_notes", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  title: varchar("title").notNull(),
-  content: text("content").notNull(),
-  category: varchar("category"),
-  tags: json("tags").$type<string[]>().default([]),
-  isPinned: boolean("is_pinned").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-export const mempodGoals = pgTable("mempod_goals", {
-  id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
-  title: varchar("title").notNull(),
-  description: text("description"),
-  targetDate: timestamp("target_date"),
-  priority: varchar("priority", { enum: ["low", "medium", "high"] }).default("medium"),
-  status: varchar("status", { enum: ["not_started", "in_progress", "completed", "paused"] }).default("not_started"),
-  progress: integer("progress").default(0),
-  tags: json("tags").$type<string[]>().default([]),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
-// Types for Enhanced Second Brain Mempod
-export type MempodCapture = typeof mempodCapture.$inferSelect;
-export type InsertMempodCapture = typeof mempodCapture.$inferInsert;
-
-export type MempodProject = typeof mempodProjects.$inferSelect;
-export type InsertMempodProject = typeof mempodProjects.$inferInsert;
-
-export type MempodArea = typeof mempodAreas.$inferSelect;
-export type InsertMempodArea = typeof mempodAreas.$inferInsert;
-
-export type MempodResource = typeof mempodResources.$inferSelect;
-export type InsertMempodResource = typeof mempodResources.$inferInsert;
-
-export type MempodArchive = typeof mempodArchives.$inferSelect;
-export type InsertMempodArchive = typeof mempodArchives.$inferInsert;
-
-// Legacy types (keeping for compatibility)
-export type MempodKnowledge = typeof mempodKnowledge.$inferSelect;
-export type InsertMempodKnowledge = typeof mempodKnowledge.$inferInsert;
-
-export type MempodNote = typeof mempodNotes.$inferSelect;
-export type InsertMempodNote = typeof mempodNotes.$inferInsert;
-
-export type MempodGoal = typeof mempodGoals.$inferSelect;
-export type InsertMempodGoal = typeof mempodGoals.$inferInsert;
-
-// Relations for Enhanced Second Brain Mempod
-export const mempodCaptureRelations = relations(mempodCapture, ({ one }) => ({
-  user: one(users, { fields: [mempodCapture.userId], references: [users.id] }),
+// Event System Relations
+export const heartbeatsRelations = relations(heartbeats, ({ one, many }) => ({
+  agent: one(agents, { fields: [heartbeats.agentId], references: [agents.id] }),
+  actions: many(actions),
 }));
 
-export const mempodProjectsRelations = relations(mempodProjects, ({ one }) => ({
-  user: one(users, { fields: [mempodProjects.userId], references: [users.id] }),
+export const eventsRelations = relations(events, ({ one, many }) => ({
+  agent: one(agents, { fields: [events.agentId], references: [agents.id] }),
+  actions: many(actions),
 }));
 
-export const mempodAreasRelations = relations(mempodAreas, ({ one }) => ({
-  user: one(users, { fields: [mempodAreas.userId], references: [users.id] }),
+export const toolsRelations = relations(tools, ({ many }) => ({
+  subscriptions: many(toolSubscriptions),
+  actions: many(actions),
 }));
 
-export const mempodResourcesRelations = relations(mempodResources, ({ one }) => ({
-  user: one(users, { fields: [mempodResources.userId], references: [users.id] }),
+export const toolSubscriptionsRelations = relations(toolSubscriptions, ({ one }) => ({
+  tool: one(tools, { fields: [toolSubscriptions.toolId], references: [tools.id] }),
 }));
 
-export const mempodArchivesRelations = relations(mempodArchives, ({ one }) => ({
-  user: one(users, { fields: [mempodArchives.userId], references: [users.id] }),
+export const actionsRelations = relations(actions, ({ one, many }) => ({
+  agent: one(agents, { fields: [actions.agentId], references: [agents.id] }),
+  tool: one(tools, { fields: [actions.toolId], references: [tools.id] }),
+  heartbeat: one(heartbeats, { fields: [actions.heartbeatId], references: [heartbeats.id] }),
+  event: one(events, { fields: [actions.eventId], references: [events.id] }),
+  parentAction: one(actions, { fields: [actions.parentActionId], references: [actions.id] }),
+  childActions: many(actions, { relationName: "childActions" }),
 }));
 
-// Legacy relations (keeping for compatibility)
-export const mempodKnowledgeRelations = relations(mempodKnowledge, ({ one }) => ({
-  user: one(users, { fields: [mempodKnowledge.userId], references: [users.id] }),
+export const agentMemoriesRelations = relations(agentMemories, ({ one }) => ({
+  agent: one(agents, { fields: [agentMemories.agentId], references: [agents.id] }),
 }));
 
-export const mempodNotesRelations = relations(mempodNotes, ({ one }) => ({
-  user: one(users, { fields: [mempodNotes.userId], references: [users.id] }),
-}));
 
-export const mempodGoalsRelations = relations(mempodGoals, ({ one }) => ({
-  user: one(users, { fields: [mempodGoals.userId], references: [users.id] }),
-}));
 
-export const mempodItemsRelations = relations(mempodItems, ({ one, many }) => ({
-  user: one(users, { fields: [mempodItems.userId], references: [users.id] }),
-  metrics: many(goalMetrics),
-}));
-
-export const goalMetricsRelations = relations(goalMetrics, ({ one, many }) => ({
-  goal: one(mempodItems, { fields: [goalMetrics.goalId], references: [mempodItems.id] }),
-  progressEntries: many(goalProgress),
-}));
-
-export const goalProgressRelations = relations(goalProgress, ({ one }) => ({
-  metric: one(goalMetrics, { fields: [goalProgress.metricId], references: [goalMetrics.id] }),
-}));
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
@@ -631,22 +548,45 @@ export const insertSnipCommentSchema = createInsertSchema(snipComments).omit({
   createdAt: true,
 });
 
-export const insertMemPodItemSchema = createInsertSchema(mempodItems).omit({
+// Event System Insert Schemas
+export const insertHeartbeatSchema = createInsertSchema(heartbeats).omit({
+  id: true,
+  createdAt: true,
+  eventsProcessed: true,
+  actionsTriggered: true,
+});
+
+export const insertEventSchema = createInsertSchema(events).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertToolSchema = createInsertSchema(tools).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
 
-export const insertGoalMetricSchema = createInsertSchema(goalMetrics).omit({
+export const insertToolSubscriptionSchema = createInsertSchema(toolSubscriptions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertActionSchema = createInsertSchema(actions).omit({
+  id: true,
+  createdAt: true,
+  startedAt: true,
+  completedAt: true,
+  executionTimeMs: true,
+});
+
+export const insertAgentMemorySchema = createInsertSchema(agentMemories).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+  lastAccessedAt: true,
 });
 
-export const insertGoalProgressSchema = createInsertSchema(goalProgress).omit({
-  id: true,
-  recordedAt: true,
-});
 
 // Types
 export type UpsertUser = typeof users.$inferInsert;
@@ -671,9 +611,17 @@ export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type AgentConnection = typeof agentConnections.$inferSelect;
 export type InsertAgentConnection = z.infer<typeof insertAgentConnectionSchema>;
-export type MemPodItem = typeof mempodItems.$inferSelect;
-export type InsertMemPodItem = z.infer<typeof insertMemPodItemSchema>;
-export type GoalMetric = typeof goalMetrics.$inferSelect;
-export type InsertGoalMetric = z.infer<typeof insertGoalMetricSchema>;
-export type GoalProgress = typeof goalProgress.$inferSelect;
-export type InsertGoalProgress = z.infer<typeof insertGoalProgressSchema>;
+
+// Event System Types
+export type Heartbeat = typeof heartbeats.$inferSelect;
+export type InsertHeartbeat = z.infer<typeof insertHeartbeatSchema>;
+export type Event = typeof events.$inferSelect;
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+export type Tool = typeof tools.$inferSelect;
+export type InsertTool = z.infer<typeof insertToolSchema>;
+export type ToolSubscription = typeof toolSubscriptions.$inferSelect;
+export type InsertToolSubscription = z.infer<typeof insertToolSubscriptionSchema>;
+export type Action = typeof actions.$inferSelect;
+export type InsertAction = z.infer<typeof insertActionSchema>;
+export type AgentMemory = typeof agentMemories.$inferSelect;
+export type InsertAgentMemory = z.infer<typeof insertAgentMemorySchema>;

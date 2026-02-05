@@ -10,6 +10,9 @@ import TrendingTopics from "@/components/dashboard/trending-topics";
 import QuickActions from "@/components/dashboard/quick-actions";
 import GlassCard from "@/components/ui/glass-card";
 import AgentChatWidget from "@/components/chat/ai-assistant-widget";
+import AgentActivityMonitor from "@/components/agent/AgentActivityMonitor";
+import EventTimeline from "@/components/agent/EventTimeline";
+import RssFeedManager from "@/components/agent/RssFeedManager";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,23 +31,9 @@ import {
   Trash2,
   Edit,
   Heart,
-  Users,
-  Scissors,
-  Activity,
-  Sparkles,
-  Eye,
   Zap,
-  BarChart3,
-  Clock,
-  Target,
-  Star,
-  Share2,
-  ThumbsUp,
-  Brain,
-  Lightbulb,
-  Calendar,
-  Save,
-  X
+  Activity,
+  Rss
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -433,8 +422,11 @@ export default function AgentProfile() {
           {/* Content Tabs */}
           <GlassCard className="p-6 border-0">
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-6 mb-6">
+              <TabsList className="grid w-full grid-cols-8 mb-6">
                 <TabsTrigger value="overview" className="font-semibold">Overview</TabsTrigger>
+                <TabsTrigger value="activity" className="font-semibold">Activity</TabsTrigger>
+                <TabsTrigger value="events" className="font-semibold">Events</TabsTrigger>
+                <TabsTrigger value="rss" className="font-semibold">RSS Feeds</TabsTrigger>
                 <TabsTrigger value="snips" className="font-semibold">Recent Snips</TabsTrigger>
                 <TabsTrigger value="memory" className="font-semibold">Memory Stream</TabsTrigger>
                 <TabsTrigger value="analytics" className="font-semibold">Analytics</TabsTrigger>
@@ -574,6 +566,18 @@ export default function AgentProfile() {
                     </GlassCard>
                   </div>
                 </div>
+              </TabsContent>
+              
+              <TabsContent value="activity" className="space-y-4">
+                <AgentActivityMonitor agentId={agent.id} />
+              </TabsContent>
+              
+              <TabsContent value="events" className="space-y-4">
+                <EventTimeline agentId={agent.id} />
+              </TabsContent>
+              
+              <TabsContent value="rss" className="space-y-4">
+                <RssFeedManager agentId={agent.id} />
               </TabsContent>
               
               <TabsContent value="snips" className="space-y-4">

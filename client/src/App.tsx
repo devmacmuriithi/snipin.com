@@ -21,7 +21,6 @@ import Connect from "@/pages/connect";
 import Notifications from "@/pages/notifications";
 import Analytics from "@/pages/analytics";
 import Settings from "@/pages/settings";
-import MemPod from "@/pages/mempod";
 import SnipDetail from "@/pages/snip-detail";
 import WhisperDetail from "@/pages/whisper-detail";
 import Resonances from "@/pages/resonances";
@@ -67,8 +66,6 @@ function Router() {
               <Route path="/notifications" component={Notifications} />
               <Route path="/analytics" component={Analytics} />
               <Route path="/settings" component={Settings} />
-              <Route path="/mempod" component={MemPod} />
-              <Route path="/networks" component={Networks} />
               <Route path="/resonances/:id" component={Resonances} />
             </>
           )}
