@@ -1,7 +1,49 @@
 import { storage } from '../storage';
 import { db } from '../db';
-import { tools, tool_subscriptions } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { tools, toolSubscriptions, assistants } from '@shared/schema';
+import { eq, sql } from 'drizzle-orm';
+
+/**
+ * Backfill heartbeats for all existing agents that don't have one
+ */
+export async function backfillAgentHeartbeats() {
+  console.log('Backfilling heartbeats for existing agents...');
+  
+  try {
+    // Get all assistants
+    const allAgents = await db.select().from(assistants);
+    console.log(`Found ${allAgents.length} total agents`);
+    
+    let created = 0;
+    let skipped = 0;
+    
+    for (const agent of allAgents) {
+      // Check if agent already has any heartbeat
+      const existingHeartbeats = await storage.getAgentHeartbeats(agent.id, 1);
+      
+      if (existingHeartbeats.length === 0) {
+        // Create initial heartbeat scheduled for now
+        await storage.createHeartbeat({
+          agentId: agent.id,
+          status: 'PENDING',
+          scheduledAt: new Date()
+        });
+        console.log(`Created initial heartbeat for agent: ${agent.name} (ID: ${agent.id})`);
+        created++;
+      } else {
+        console.log(`Agent ${agent.name} already has ${existingHeartbeats.length} heartbeat(s), skipping`);
+        skipped++;
+      }
+    }
+    
+    console.log(`✅ Backfill complete: ${created} heartbeats created, ${skipped} agents skipped`);
+    return { created, skipped, total: allAgents.length };
+    
+  } catch (error) {
+    console.error('❌ Error backfilling heartbeats:', error);
+    throw error;
+  }
+}
 
 /**
  * Initialize the event system with tools and subscriptions
@@ -50,6 +92,22 @@ export async function seedEventSystem() {
         description: 'Automatically likes content that aligns with agent interests',
         handlerClass: 'tools/SnipLikeTool.ts',
         config: { model: 'claude-sonnet-4', max_tokens: 300 },
+        isActive: true
+      },
+      {
+        id: 'mention-handler-tool',
+        name: 'MentionHandler',
+        description: 'Detects mentions in snips/comments and routes them to the agent',
+        handlerClass: 'tools/MentionHandlerTool.ts',
+        config: { model: 'claude-sonnet-4', max_tokens: 600 },
+        isActive: true
+      },
+      {
+        id: 'whisper-handler-tool',
+        name: 'WhisperHandler',
+        description: 'Processes incoming whispers and converts them into events/actions',
+        handlerClass: 'tools/WhisperHandlerTool.ts',
+        config: { model: 'claude-sonnet-4', max_tokens: 600 },
         isActive: true
       },
       {
@@ -140,13 +198,13 @@ export async function seedEventSystem() {
       // Check if subscription already exists
       const existing = await db
         .select()
-        .from(tool_subscriptions)
-        .where(eq(tool_subscriptions.toolId, subData.toolId))
-        .where(eq(tool_subscriptions.eventType, subData.eventType))
+        .from(toolSubscriptions)
+        .where(eq(toolSubscriptions.toolId, subData.toolId))
+        .where(eq(toolSubscriptions.eventType, subData.eventType))
         .limit(1);
 
       if (existing.length === 0) {
-        await db.insert(tool_subscriptions).values({
+        await db.insert(toolSubscriptions).values({
           id: `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           ...subData,
           isActive: true
@@ -166,7 +224,6 @@ export async function seedEventSystem() {
 
       if (!hasPending) {
         await storage.createHeartbeat({
-          id: `hb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           agentId: agent.id,
           status: 'PENDING',
           scheduledAt: new Date()

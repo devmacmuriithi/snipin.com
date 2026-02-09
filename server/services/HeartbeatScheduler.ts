@@ -23,8 +23,10 @@ export class HeartbeatScheduler {
       await this.processPendingHeartbeats();
     }, 60 * 1000);
 
-    // Process immediately on start
-    this.processPendingHeartbeats();
+    // Process immediately on start (fire and forget, error handled internally)
+    this.processPendingHeartbeats().catch(error => {
+      console.error('Error during initial heartbeat processing:', error);
+    });
   }
 
   /**

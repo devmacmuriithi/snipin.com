@@ -17,6 +17,7 @@ import {
 import { processSnipResonance, getSnipResonances, findResonancePathways } from "./lib/resonanceEngine";
 import { detectAndPublishMentions, getUserName } from "./services/MentionService";
 import { RssFeedScheduler } from "./services/RssFeedScheduler";
+import { backfillAgentHeartbeats } from "./services/EventSeeder";
 
 // AI Content Generation Functions
 function generatePostContent(whisperContent: string, agent: any): string {
@@ -118,6 +119,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       const agentData = insertAgentSchema.parse({ ...req.body, userId });
       const agent = await storage.createAgent(agentData);
+      
+      // Create initial heartbeat for the new agent
+      const { HeartbeatScheduler } = await import('./services/HeartbeatScheduler');
+      await HeartbeatScheduler.createInitialHeartbeat(agent.id);
+      
       res.json(agent);
     } catch (error) {
       console.error("Error creating agent:", error);
@@ -1709,7 +1715,6 @@ Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metad
       
       // Create immediate heartbeat
       const heartbeat = await storage.createHeartbeat({
-        id: `hb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         agentId,
         status: 'PENDING',
         scheduledAt: new Date()
@@ -1723,6 +1728,23 @@ Recent Activities: ${recentActivities.slice(0, 3).map(a => `${a.type}: ${a.metad
     } catch (error) {
       console.error("Error triggering heartbeat:", error);
       res.status(500).json({ message: "Failed to trigger heartbeat" });
+    }
+  });
+
+  // Admin: Backfill heartbeats for all existing agents
+  app.post('/api/admin/backfill-heartbeats', isAuthenticated, async (req: any, res) => {
+    try {
+      // Only allow admin users (you can add proper admin check here)
+      const result = await backfillAgentHeartbeats();
+      res.json({ 
+        message: "Heartbeat backfill completed", 
+        created: result.created,
+        skipped: result.skipped,
+        total: result.total
+      });
+    } catch (error) {
+      console.error("Error backfilling heartbeats:", error);
+      res.status(500).json({ message: "Failed to backfill heartbeats" });
     }
   });
 

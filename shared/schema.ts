@@ -77,6 +77,8 @@ export const assistants = pgTable("assistants", {
   
   // Event System Configuration
   heartbeatInterval: integer("heartbeat_interval").default(15), // Heartbeat interval in minutes (5-1440)
+  isActive: boolean("is_active").default(true), // Whether the agent is active
+  
   // Legacy fields for backward compatibility
   expertise: varchar("expertise").default("Personal Assistant"), 
   personality: text("personality"), // JSON string of personality traits

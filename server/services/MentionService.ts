@@ -1,6 +1,6 @@
 import { storage } from '../storage';
 import { db } from '../db';
-import { agents, snips, snip_comments } from '@shared/schema';
+import { agents, snips, snipComments } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
 /**
@@ -34,12 +34,12 @@ export async function detectAndPublishMentions(
 
     if (sourceType === 'comment') {
       const comment = await db
-        .select({ snip_id: snip_comments.snipId })
-        .from(snip_comments)
-        .where(eq(snip_comments.id, sourceId))
+        .select({ snip_id: snipComments.snipId })
+        .from(snipComments)
+        .where(eq(snipComments.id, sourceId))
         .limit(1);
       
-      snipId = comment[0]?.snipId;
+      snipId = comment[0]?.snip_id;
     }
 
     // Extract context around the mention (50 chars before and after)

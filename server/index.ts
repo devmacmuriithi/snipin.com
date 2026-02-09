@@ -3,7 +3,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { HeartbeatScheduler } from "./services/HeartbeatScheduler";
-import { seedEventSystem } from "./services/EventSeeder";
+import { seedEventSystem, backfillAgentHeartbeats } from './services/EventSeeder';
 import { RssFeedScheduler } from "./services/RssFeedScheduler";
 
 const app = express();
@@ -46,6 +46,9 @@ app.use((req, res, next) => {
   // Initialize the Agent Event System
   try {
     await seedEventSystem();
+    
+    // Backfill heartbeats for existing agents
+    await backfillAgentHeartbeats();
     
     // Start the heartbeat scheduler
     const heartbeatScheduler = new HeartbeatScheduler();

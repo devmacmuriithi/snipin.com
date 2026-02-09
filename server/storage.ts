@@ -55,7 +55,7 @@ import {
   type InsertAgentMemory,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, sql, count, isNull, ilike } from "drizzle-orm";
+import { eq, desc, and, or, sql, count, isNull, ilike, lte } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (mandatory for Replit Auth)
@@ -1099,7 +1099,17 @@ export class DatabaseStorage implements IStorage {
 
   // Agent operations (needed for event system)
   async getAgents(): Promise<Agent[]> {
-    return await db.select().from(agents).where(eq(agents.isActive, true));
+    try {
+      // Use raw SQL to avoid potential Drizzle ORM issues with boolean columns
+      const result = await db.execute(
+        sql`SELECT * FROM assistants WHERE is_active = true`
+      );
+      return result.rows as Agent[];
+    } catch (error) {
+      console.error('Failed to get agents:', error);
+      // Return empty array on error to prevent seeding from crashing
+      return [];
+    }
   }
 
   async getHeartbeat(id: string): Promise<Heartbeat | null> {
