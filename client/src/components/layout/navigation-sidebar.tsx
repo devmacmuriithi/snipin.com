@@ -120,7 +120,7 @@ function NavigationSidebar() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => window.location.href = '/api/logout'}
+            onClick={() => window.location.href = '/api/auth/logout'}
             className="text-slate-400 hover:text-blue-600 transition-colors p-2"
           >
             <LogOut className="h-4 w-4" />

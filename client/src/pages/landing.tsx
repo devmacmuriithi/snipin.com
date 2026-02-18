@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { Link } from "wouter";
 
 export default function Landing() {
   const [email, setEmail] = useState("");
@@ -15,19 +16,18 @@ export default function Landing() {
 
   async function handleEmailSignup(e: React.FormEvent) {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!email.trim() || !password.trim()) return;
 
     try {
       setIsSubmitting(true);
-      await apiRequest("POST", "/api/login", {
+      await apiRequest("POST", "/api/auth/login", {
         email: email.trim(),
-        firstName: firstName.trim() || undefined,
-        lastName: undefined,
+        password: password.trim(),
       });
 
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
     } catch (error) {
-      console.error("Email signup failed", error);
+      console.error("Login failed", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -46,7 +46,7 @@ export default function Landing() {
             </span>
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-300">
-            Already have an account? <span className="text-purple-600 dark:text-purple-400 font-medium cursor-pointer hover:underline">Sign in →</span>
+            Don't have an account? <Link href="/register" className="text-purple-600 dark:text-purple-400 font-medium cursor-pointer hover:underline">Sign up →</Link>
           </div>
         </div>
       </header>
@@ -185,35 +185,14 @@ export default function Landing() {
             <Card className="w-full max-w-md bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-0 shadow-2xl">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Join The Cognitive Internet Today
+                  Welcome Back
                 </CardTitle>
                 <CardDescription className="text-gray-600 dark:text-gray-300">
-                  Connect your thoughts to the collective intelligence
+                  Sign in to your account
                 </CardDescription>
               </CardHeader>
               
               <CardContent className="space-y-6">
-                {/* OAuth Login Button */}
-                <Button 
-                  type="button"
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 py-3 text-lg font-semibold"
-                  size="lg"
-                >
-                  <Brain className="w-5 h-5 mr-2" />
-                  Continue with your AI Twin
-                </Button>
-
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-gray-200 dark:border-gray-700" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white dark:bg-gray-800 px-2 text-gray-500 dark:text-gray-400">
-                      Or sign up with email
-                    </span>
-                  </div>
-                </div>
-
                 {/* Email/Password Form */}
                 <form className="space-y-4" onSubmit={handleEmailSignup}>
                   <div className="space-y-2">
@@ -229,6 +208,7 @@ export default function Landing() {
                         className="pl-10 bg-white/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        required
                       />
                     </div>
                   </div>
@@ -242,10 +222,11 @@ export default function Landing() {
                       <Input
                         id="password"
                         type="password"
-                        placeholder="Create a password"
+                        placeholder="Enter your password"
                         className="pl-10 bg-white/50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-700"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        required
                       />
                     </div>
                   </div>
@@ -256,21 +237,17 @@ export default function Landing() {
                     size="lg"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Creating Account..." : "Create Account"}
+                    {isSubmitting ? "Signing In..." : "Sign In"}
                     <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                 </form>
 
                 <div className="text-center">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    By signing up, you agree to our{" "}
-                    <span className="text-purple-600 dark:text-purple-400 hover:underline cursor-pointer">
-                      Terms of Service
-                    </span>{" "}
-                    and{" "}
-                    <span className="text-purple-600 dark:text-purple-400 hover:underline cursor-pointer">
-                      Privacy Policy
-                    </span>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Don't have an account?{" "}
+                    <Link href="/register" className="text-purple-600 dark:text-purple-400 hover:underline font-medium">
+                      Sign up
+                    </Link>
                   </p>
                 </div>
               </CardContent>

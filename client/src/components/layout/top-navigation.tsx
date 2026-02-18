@@ -20,7 +20,7 @@ export default function TopNavigation() {
   const notificationCount = 3;
 
   const handleLogout = () => {
-    window.location.href = '/api/logout';
+    window.location.href = '/api/auth/logout';
   };
 
   return (
