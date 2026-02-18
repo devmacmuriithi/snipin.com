@@ -14,6 +14,7 @@ import {
   LogOut
 } from "lucide-react";
 
+
 function NavigationSidebar() {
   const { user } = useAuth();
   const [location] = useLocation();
